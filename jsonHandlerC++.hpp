@@ -13,6 +13,8 @@
 #include <variant>
 #include <functional>
 #include <stdexcept>
+#include <sstream>
+#include <iomanip>
 
 class JSON_API Json {
 public:
@@ -26,6 +28,7 @@ public:
     Json(const std::string& s);
     Json(const JsonObject& obj);
     Json(const JsonArray& arr);
+    Json(const char* s);
 
     bool isNull() const;
     bool isBool() const;
@@ -33,6 +36,7 @@ public:
     bool isString() const;
     bool isObject() const;
     bool isArray() const;
+    bool isBigNumber() const;
 
     bool asBool() const;
     double asNumber() const;
@@ -42,6 +46,8 @@ public:
 
     Json& operator[](const std::string& key);
     Json& operator[](size_t index);
+    const Json& operator[](const std::string& key) const;
+    const Json& operator[](size_t index) const;
     void push_back(const Json& json);
 
     std::string serialize() const;

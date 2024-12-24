@@ -16,4 +16,6 @@
 #include <stdexcept>
 #include <cctype>
 #include <functional>
+#include <sstream>
+#include <iomanip>
 #endif //PCH_H
