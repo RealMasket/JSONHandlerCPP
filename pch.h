@@ -18,4 +18,5 @@
 #include <functional>
 #include <sstream>
 #include <iomanip>
+#include <optional>
 #endif //PCH_H

@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iomanip>
+#include <optional>
 
 class JSON_API Json {
 public:
@@ -49,8 +50,16 @@ public:
     const Json& operator[](const std::string& key) const;
     const Json& operator[](size_t index) const;
     void push_back(const Json& json);
+    template<typename... Args>
+    void push_back(const Json& json, Args... args);
 
-    std::string serialize() const;
+    size_t size() const;
+    void remove(size_t index);
+    bool contains(const Json& json) const;
+
+    bool operator==(const Json& other) const;
+
+    std::string serialize(bool pretty, int indentLevel) const;
     static Json parse(const std::string& str);
 
 private:
@@ -58,8 +67,9 @@ private:
     JsonValue value;
 
     static std::string escapeString(const std::string& input);
-    static std::string serializeObject(const JsonObject& obj);
-    static std::string serializeArray(const JsonArray& arr);
+    std::string serializeObject(const JsonObject& obj, bool pretty, int indentLevel) const;
+    std::string serializeArray(const JsonArray& arr, bool pretty, int indentLevel) const;
+    void mergeObject(const JsonObject& other, bool overwrite);
 };
 
 #endif // JSON_HANDLERC_HPP

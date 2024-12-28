@@ -18,7 +18,17 @@ bool Json::isNumber() const { return std::holds_alternative<double>(value); }
 bool Json::isString() const { return std::holds_alternative<std::string>(value); }
 bool Json::isObject() const { return std::holds_alternative<JsonObject>(value); }
 bool Json::isArray() const { return std::holds_alternative<JsonArray>(value); }
-bool Json::isBigNumber() const { return isString() && asString().find_first_not_of("0123456789") == std::string::npos; }
+bool Json::isBigNumber() const {
+    static thread_local std::optional<size_t> cachedResult;
+    if (isString()) {
+        const auto& str = asString();
+        if (!cachedResult.has_value()) {
+            cachedResult = str.find_first_not_of("0123456789");
+        }
+        return cachedResult.value() == std::string::npos;
+    }
+    return false;
+}
 
 // Accessors
 bool Json::asBool() const {
@@ -96,6 +106,38 @@ void Json::push_back(const Json& json) {
     std::get<JsonArray>(value).push_back(json);
 }
 
+template<typename... Args>
+void Json::push_back(const Json& json, Args... args) {
+    push_back(json);
+    push_back(args...);
+}
+
+// Array functions to make things easier
+size_t Json::size() const {
+    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    return std::get<JsonArray>(value).size();
+}
+
+void Json::remove(size_t index) {
+    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    auto& arr = std::get<JsonArray>(value);
+    if (index >= arr.size()) throw std::runtime_error("Index out of range");
+    arr.erase(arr.begin() + index);
+}
+
+bool Json::contains(const Json& json) const {
+    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    const auto& arr = std::get<JsonArray>(value);
+    return std::find(arr.begin(), arr.end(), json) != arr.end();
+}
+
+bool Json::operator==(const Json& other) const {
+    if (value.index() != other.value.index()) return false;
+    if (isArray()) return asArray() == other.asArray();
+    if (isObject()) return asObject() == other.asObject();
+    return value == other.value;
+}
+
 // Parsing
 Json Json::parse(const std::string& str) {
     size_t pos = 0;
@@ -118,7 +160,7 @@ Json Json::parse(const std::string& str) {
                 switch (str[pos]) {
                 case 'n': result += '\n'; break;
                 case 't': result += '\t'; break;
-                case '\"': result += '\"'; break;
+                case '"': result += '"'; break;
                 case '\\': result += '\\'; break;
                 default: throwError("Invalid escape character");
                 }
@@ -131,6 +173,18 @@ Json Json::parse(const std::string& str) {
         if (pos >= str.size() || str[pos] != '"') throwError("Unterminated string");
         ++pos; // Skip closing quote
         return result;
+        };
+
+    auto parseNumber = [&]() -> Json {
+        size_t start = pos;
+        while (pos < str.size() && (isdigit(str[pos]) || str[pos] == '.' || str[pos] == 'e' || str[pos] == 'E' || str[pos] == '+' || str[pos] == '-')) {
+            ++pos;
+        }
+        std::string numberStr = str.substr(start, pos - start);
+        char* end;
+        double value = strtod(numberStr.c_str(), &end);
+        if (*end != '\0') throwError("Invalid number format");
+        return Json(value);
         };
 
     std::function<Json()> parseValue = [&]() -> Json {
@@ -154,23 +208,7 @@ Json Json::parse(const std::string& str) {
             return Json(false);
         }
         if (isdigit(str[pos]) || str[pos] == '-') {
-            size_t start = pos;
-            bool isBig = false;
-            while (pos < str.size() &&
-                (isdigit(str[pos]) || str[pos] == '.' || str[pos] == 'e' || str[pos] == 'E' || str[pos] == '+' || str[pos] == '-')) {
-                if (str[pos] == '.' || str[pos] == 'e' || str[pos] == 'E') isBig = true;
-                ++pos;
-            }
-            std::string numberStr = str.substr(start, pos - start);
-            if (isBig || numberStr.size() > 18) {  // For numbers with excessive digits
-                return Json(numberStr);
-            }
-            try {
-                return Json(std::stod(numberStr));
-            }
-            catch (...) {
-                throwError("Invalid number format");
-            }
+            return parseNumber();
         }
         if (str[pos] == '{') {
             ++pos;
@@ -214,7 +252,8 @@ Json Json::parse(const std::string& str) {
 }
 
 // Serialization
-std::string Json::serialize() const {
+std::string Json::serialize(bool pretty, int indentLevel) const {
+    std::string indent(pretty ? indentLevel * 2 : 0, ' ');
     if (isNull()) return "null";
     if (isBool()) return asBool() ? "true" : "false";
     if (isNumber()) {
@@ -224,8 +263,8 @@ std::string Json::serialize() const {
     }
     if (isBigNumber()) return asString();
     if (isString()) return "\"" + escapeString(asString()) + "\"";
-    if (isObject()) return serializeObject(asObject());
-    if (isArray()) return serializeArray(asArray());
+    if (isObject()) return serializeObject(asObject(), pretty, indentLevel);
+    if (isArray()) return serializeArray(asArray(), pretty, indentLevel);
     return "";
 }
 
@@ -245,25 +284,40 @@ std::string Json::escapeString(const std::string& input) {
 }
 
 // Serialize JSON Object
-std::string Json::serializeObject(const JsonObject& obj) {
+std::string Json::serializeObject(const JsonObject& obj, bool pretty, int indentLevel) const {
     std::string result = "{";
+    std::string newLine = pretty ? "\n" : "";
+    std::string indent(pretty ? (indentLevel + 1) * 2 : 0, ' ');
     bool first = true;
     for (const auto& [key, value] : obj) {
         if (!first) result += ",";
-        result += "\"" + key + "\":" + value.serialize();
+        result += newLine + indent + "\"" + key + "\": " + value.serialize(pretty, indentLevel + 1);
         first = false;
     }
-    result += "}";
+    result += newLine + std::string(pretty ? indentLevel * 2 : 0, ' ') + "}";
     return result;
 }
 
 // Serialize JSON Array
-std::string Json::serializeArray(const JsonArray& arr) {
+std::string Json::serializeArray(const JsonArray& arr, bool pretty, int indentLevel) const {
     std::string result = "[";
+    std::string newLine = pretty ? "\n" : "";
+    std::string indent(pretty ? (indentLevel + 1) * 2 : 0, ' ');
     for (size_t i = 0; i < arr.size(); ++i) {
         if (i > 0) result += ",";
-        result += arr[i].serialize();
+        result += newLine + indent + arr[i].serialize(pretty, indentLevel + 1);
     }
-    result += "]";
+    result += newLine + std::string(pretty ? indentLevel * 2 : 0, ' ') + "]";
     return result;
+}
+
+// Merge Object
+void Json::mergeObject(const JsonObject& other, bool overwrite) {
+    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    auto& obj = std::get<JsonObject>(value);
+    for (const auto& [key, value] : other) {
+        if (overwrite || obj.find(key) == obj.end()) {
+            obj[key] = value;
+        }
+    }
 }
