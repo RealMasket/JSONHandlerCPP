@@ -30,6 +30,7 @@ public:
     Json(const JsonObject& obj);
     Json(const JsonArray& arr);
     Json(const char* s);
+    Json(int i);
 
     bool isNull() const;
     bool isBool() const;

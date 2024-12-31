@@ -10,7 +10,7 @@ Json::Json(const std::string& s) : value(s) {}
 Json::Json(const JsonObject& obj) : value(obj) {}
 Json::Json(const JsonArray& arr) : value(arr) {}
 Json::Json(const char* s) : value(std::string(s)) {}
-
+Json::Json(int i) : value(static_cast<double>(i)) {}
 // Type checks
 bool Json::isNull() const { return std::holds_alternative<std::nullptr_t>(value); }
 bool Json::isBool() const { return std::holds_alternative<bool>(value); }
@@ -291,7 +291,7 @@ std::string Json::serializeObject(const JsonObject& obj, bool pretty, int indent
     bool first = true;
     for (const auto& [key, value] : obj) {
         if (!first) result += ",";
-        result += newLine + indent + "\"" + key + "\": " + value.serialize(pretty, indentLevel + 1);
+        result += newLine + indent + key + ": " + value.serialize(pretty, indentLevel + 1);
         first = false;
     }
     result += newLine + std::string(pretty ? indentLevel * 2 : 0, ' ') + "}";
