@@ -60,8 +60,11 @@ public:
 
     bool operator==(const Json& other) const;
 
-    std::string serialize(bool pretty, int indentLevel) const;
     static Json parse(const std::string& str);
+    std::string serialize(bool pretty, int indentLevel) const;
+    void mergeObject(const JsonObject& other, bool overwrite);
+    void saveToFile(const std::string& filename) const;
+    void loadFromFile(const std::string& filename);
 
 private:
     using JsonValue = std::variant<std::nullptr_t, bool, double, std::string, JsonObject, JsonArray>;
@@ -70,7 +73,6 @@ private:
     static std::string escapeString(const std::string& input);
     std::string serializeObject(const JsonObject& obj, bool pretty, int indentLevel) const;
     std::string serializeArray(const JsonArray& arr, bool pretty, int indentLevel) const;
-    void mergeObject(const JsonObject& other, bool overwrite);
 };
 
 #endif // JSON_HANDLERC_HPP
