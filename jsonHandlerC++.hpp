@@ -16,6 +16,7 @@
 #include <sstream>
 #include <iomanip>
 #include <optional>
+#include <algorithm>
 
 class JSON_API Json {
 public:
@@ -56,15 +57,20 @@ public:
 
     size_t size() const;
     void remove(size_t index);
+    void remove(const std::string& key);
+    bool contains(const std::string& key) const;
     bool contains(const Json& json) const;
+    std::vector<std::string> keys() const;
 
     bool operator==(const Json& other) const;
 
     static Json parse(const std::string& str);
     std::string serialize(bool pretty, int indentLevel) const;
     void mergeObject(const JsonObject& other, bool overwrite);
+    void mergeArray(const JsonArray& other);
     void saveToFile(const std::string& filename) const;
-    void loadFromFile(const std::string& filename);
+    void loadFromFile(const std::string& filename); 
+    void sortByPath(const std::string& keyPath, bool ascending);
 
 private:
     using JsonValue = std::variant<std::nullptr_t, bool, double, std::string, JsonObject, JsonArray>;

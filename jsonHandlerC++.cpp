@@ -182,8 +182,13 @@ void Json::push_back(const Json& json, Args... args) {
  * @throws std::runtime_error if the current value is not an array.
  */
 size_t Json::size() const {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
-    return std::get<JsonArray>(value).size();
+    if (isObject()) {
+        return std::get<JsonObject>(value).size();
+    }
+    if (isArray()) {
+        return std::get<JsonArray>(value).size();
+    }
+    throw std::runtime_error("Json value is not an object or array");
 }
 
 /**
@@ -199,6 +204,29 @@ void Json::remove(size_t index) {
 }
 
 /**
+ * @brief Removes an element from a JSON object by key.
+ * @param key The key of the element to remove.
+ * @throws std::runtime_error if the current value is not an object.
+ */
+void Json::remove(const std::string& key) {
+    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    auto& obj = std::get<JsonObject>(value);
+    obj.erase(key);
+}
+
+/**
+ * @brief Checks if a JSON object contains a specific value.
+ * @param string The key to check for.
+ * @return True if the key exists in the object, false otherwise.
+ * @throws std::runtime_error if the current value is not an object.
+ */
+bool Json::contains(const std::string& key) const {
+    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    const auto& obj = std::get<JsonObject>(value);
+    return obj.find(key) != obj.end();
+}
+
+/**
  * @brief Checks if a JSON array contains a specific value.
  * @param json The JSON value to check for.
  * @return True if the value exists in the array, false otherwise.
@@ -208,6 +236,21 @@ bool Json::contains(const Json& json) const {
     if (!isArray()) throw std::runtime_error("Json value is not an array");
     const auto& arr = std::get<JsonArray>(value);
     return std::find(arr.begin(), arr.end(), json) != arr.end();
+}
+
+/**
+ * @brief Returns a list of all keys in the object.
+ * @return vector<string> of keys.
+ * @throws std::runtime_error if the current value is not an object.
+ */
+std::vector<std::string> Json::keys() const {
+    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    const auto& obj = std::get<JsonObject>(value);
+    std::vector<std::string> keys;
+    for (const auto& pair : obj) {
+        keys.push_back(pair.first);
+    }
+    return keys;
 }
 
 /**
@@ -233,11 +276,11 @@ Json Json::parse(const std::string& str) {
 
     auto throwError = [&](const std::string& message) {
         throw std::runtime_error("Parse error at position " + std::to_string(pos) + ": " + message);
-        };
+    };
 
     auto skipWhitespace = [&]() {
         while (pos < str.size() && std::isspace(str[pos])) ++pos;
-        };
+    };
 
     auto parseString = [&]() -> std::string {
         ++pos; // Skip opening quote
@@ -262,7 +305,7 @@ Json Json::parse(const std::string& str) {
         if (pos >= str.size() || str[pos] != '"') throwError("Unterminated string");
         ++pos; // Skip closing quote
         return result;
-        };
+    };
 
     auto parseNumber = [&]() -> Json {
         size_t start = pos;
@@ -274,7 +317,7 @@ Json Json::parse(const std::string& str) {
         double value = strtod(numberStr.c_str(), &end);
         if (*end != '\0') throwError("Invalid number format");
         return Json(value);
-        };
+    };
 
     std::function<Json()> parseValue = [&]() -> Json {
         skipWhitespace();
@@ -335,7 +378,7 @@ Json Json::parse(const std::string& str) {
 
         throwError("Invalid value");
         return Json(); // Return default null
-        };
+    };
 
     return parseValue();
 }
@@ -434,6 +477,17 @@ void Json::mergeObject(const JsonObject& other, bool overwrite) {
 }
 
 /**
+ * @brief Merges another JSON array into the current array.
+ * @param other The JSON array to merge.
+ * @throws std::runtime_error if the current value is not an array.
+ */
+void Json::mergeArray(const JsonArray& other) {
+    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    auto& arr = std::get<JsonArray>(value);
+    arr.insert(arr.end(), other.begin(), other.end());
+}
+
+/**
  * @brief Saves the JSON value to a file.
  * @param filename The name of the file to save to.
  * @throws std::runtime_error if the file cannot be opened.
@@ -461,4 +515,51 @@ void Json::loadFromFile(const std::string& filename) {
     file.close();
 
     *this = parse(buffer.str());
+}
+
+/**
+ * @brief Sorts a JSON array of objects by a nested key path (e.g., "Marks.MathMark").
+ * @param keyPath The key path to sort by (e.g., "Marks.MathMark").
+ * @param ascending If true, sorts in ascending order; otherwise, descending.
+ * @throws std::runtime_error if the JSON value is not an array of objects or the key path is invalid.
+ */
+void Json::sortByPath(const std::string& keyPath, bool ascending) {
+    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    auto& arr = std::get<JsonArray>(value);
+
+    // Split the keyPath into individual keys
+    std::vector<std::string> keys;
+    size_t start = 0, end;
+    while ((end = keyPath.find('.', start)) != std::string::npos) {
+        keys.push_back(keyPath.substr(start, end - start));
+        start = end + 1;
+    }
+    keys.push_back(keyPath.substr(start));
+
+    // Lambda for accessing a nested value by key path
+    auto getValueByPath = [&keys](const Json& json) -> const Json& {
+        const Json* current = &json;
+        for (const auto& key : keys) {
+            if (!current->isObject() || !current->asObject().count(key)) {
+                throw std::runtime_error("Invalid key path: " + key);
+            }
+            current = &current->asObject().at(key);
+        }
+        return *current;
+        };
+
+    // Perform sorting
+    std::sort(arr.begin(), arr.end(), [&](const Json& a, const Json& b) {
+        const Json& valA = getValueByPath(a);
+        const Json& valB = getValueByPath(b);
+
+        if (valA.isNumber() && valB.isNumber()) {
+            return ascending ? valA.asNumber() < valB.asNumber() : valA.asNumber() > valB.asNumber();
+        }
+        if (valA.isString() && valB.isString()) {
+            return ascending ? valA.asString() < valB.asString() : valA.asString() > valB.asString();
+        }
+
+        throw std::runtime_error("Cannot compare values of different types");
+        });
 }

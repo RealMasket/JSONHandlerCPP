@@ -20,4 +20,5 @@
 #include <iomanip>
 #include <optional>
 #include <fstream>
+#include <algorithm>
 #endif //PCH_H
