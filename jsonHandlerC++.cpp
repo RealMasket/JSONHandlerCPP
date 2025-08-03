@@ -180,9 +180,7 @@ const Json& Json::operator[](size_t index) const {
 
 /**
  * @brief Adds a new element to a JSON array.
- * (Only works if the current value is an array.)
  * @param json The JSON value to add to the array.
- * @throws std::runtime_error if the current value is not an array.
  */
 void Json::push_back(const Json& json) {
     if (!isArray()) value = JsonArray{};
@@ -191,10 +189,8 @@ void Json::push_back(const Json& json) {
 
 /**
  * @brief Adds multiple elements to a JSON array.
- * (Only works if the current value is an array.)
  * @param json The first JSON value to add.
  * @param args Additional JSON values to add.
- * @throws std::runtime_error if the current value is not an array.
  */
 template<typename... Args>
 void Json::push_back(const Json& json, Args... args) {
@@ -257,6 +253,50 @@ bool Json::contains(const Json& j) const {
     return std::find(asArray().begin(), asArray().end(), j) != asArray().end();
 }
 
+/**
+ * @brief Checks if the JSON value is empty.
+ * @return True if the JSON value is empty (null, empty object, or empty array), false otherwise.
+ */
+bool Json::isEmpty() const {
+    if (isNull()) return true;
+    if (isObject()) return asObject().empty();
+    if (isArray()) return asArray().empty();
+    return false; // Non-empty primitive values are not considered empty
+}
+
+/**
+ * @brief Retrieves a value from a JSON object or array by key or index.
+ * @param key The key to look for in an object, or the index in an array.
+ * @param defaultValue The value to return if the key/index is not found.
+ * @return The JSON value associated with the key/index, or defaultValue if not found.
+ * @throws std::runtime_error if the current value is not an object or array.
+ */
+Json Json::get(const std::string& key, const Json& defaultValue) const {
+    if (isObject()) {
+        auto it = asObject().find(key);
+        if (it != asObject().end()) return it->second;
+    }
+    else if (isArray()) {
+        try {
+            size_t index = std::stoul(key);
+            if (index < asArray().size()) return asArray()[index];
+        }
+        catch (...) {
+            // Ignore conversion errors
+        }
+    }
+    return defaultValue; // Return default value if key not found
+}
+Json Json::get(size_t index, const Json& defaultValue) const {
+	if (isArray()) {
+		if (index < asArray().size()) return asArray()[index];
+	}
+	else if (isObject()) {
+		auto it = asObject().find(std::to_string(index));
+		if (it != asObject().end()) return it->second;
+	}
+	return defaultValue; // Return default value if index not found
+}
 /**
  * @brief Returns a list of all keys in the object.
  * @return vector<string> of keys.
@@ -580,18 +620,8 @@ void Json::fromFile(const std::string& filename, bool commentsFlag) {
     loadFromFile(filename, commentsFlag);
 }
 
-/**
- * @brief Returns an iterator to the beginning of the JSON array.
- * @return An iterator to the first element of the array.
- */
 Json::JsonArray::iterator Json::begin() { return std::get<JsonArray>(value).begin(); }
-
-/**
- * @brief Returns an iterator to the end of the JSON array.
- * @return An iterator to one past the last element of the array.
- */
 Json::JsonArray::iterator Json::end() { return std::get<JsonArray>(value).end(); }
-
 Json::JsonArray::const_iterator Json::begin() const { return std::get<JsonArray>(value).begin(); }
 Json::JsonArray::const_iterator Json::end() const { return std::get<JsonArray>(value).end(); }
 Json::JsonArray::const_iterator Json::cbegin() const { return std::get<JsonArray>(value).cbegin(); }
@@ -714,8 +744,8 @@ void Json::sortByPath(const std::string& keyPath, bool ascending) {
  * @brief Removes comments from a JSON string.
  * This function removes both single-line and multi-line comments,
  * while preserving comments inside string literals.
-	* @param input The JSON string with potential comments.
-	* @return The JSON string without comments.
+ * @param input The JSON string with potential comments.
+ * @return The JSON string without comments.
 */
 std::string Json::removeJsonComments(const std::string& input) {
     std::string output;
