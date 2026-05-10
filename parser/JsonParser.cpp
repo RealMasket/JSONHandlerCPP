@@ -2,12 +2,21 @@
 #include "JsonParser.hpp"
 #include "JsonLexer.hpp"
 #include "ParseException.hpp"
+#include "DiagnosticFormatter.hpp"
 
 /*
 * @brief Constructs a JsonParser with the given vector of tokens.
 * @param tokens The vector of tokens to parse.
+* @param source The original JSON source string (used for error reporting).
 */
-JsonParser::JsonParser(const std::vector<Token>& tokens) : tokens(tokens) { }
+JsonParser::JsonParser(
+    const std::vector<Token>& tokens,
+    const std::string& source
+)
+    : tokens(tokens),
+    source(source)
+{
+}
 
 /*
 * @brief Checks if the parser has reached the end of the token stream.
@@ -64,7 +73,7 @@ Json JsonParser::parse(const std::string& source)
 
     auto tokens = lexer.tokenize();
 
-    JsonParser parser(tokens);
+    JsonParser parser(tokens, source);
 
     return parser.parseValue();
 }
@@ -106,7 +115,16 @@ Json JsonParser::parseValue()
         return parseArray();
     }
 
-    throw ParseException("Invalid JSON value", previous().line, previous().column);
+    throw ParseException(
+        DiagnosticFormatter::format(
+			source,
+            previous().line,
+            previous().column,
+            "Invalid JSON value"
+        ),
+        previous().line,
+        previous().column
+    );
 }
 
 /*
@@ -127,7 +145,16 @@ Json JsonParser::parseObject()
     {
         if (!match(Parser::TokenType::String))
         {
-            throw ParseException("Expected string key", previous().line, previous().column);
+            throw ParseException(
+                DiagnosticFormatter::format(
+                    source,
+                    previous().line,
+                    previous().column,
+                    "Expected string key"
+                ),
+                previous().line,
+                previous().column
+            );
         }
 
         std::string key =
@@ -135,7 +162,16 @@ Json JsonParser::parseObject()
 
         if (!match(Parser::TokenType::Colon))
         {
-            throw ParseException("Expected ':'", previous().line, previous().column);
+            throw ParseException(
+                DiagnosticFormatter::format(
+                    source,
+                    previous().line,
+                    previous().column,
+                    "Expected ':' after key"
+                ),
+                previous().line,
+                previous().column
+			);
         }
 
         obj[key] = parseValue();
@@ -147,7 +183,16 @@ Json JsonParser::parseObject()
 
         if (!match(Parser::TokenType::Comma))
         {
-            throw ParseException("Expected ','", previous().line, previous().column);
+            throw ParseException(
+                DiagnosticFormatter::format(
+                    source,
+                    previous().line,
+                    previous().column,
+                    "Expected ',' between key-value pairs"
+                ),
+                previous().line,
+                previous().column
+            );
         }
     }
 
@@ -179,7 +224,16 @@ Json JsonParser::parseArray()
 
         if (!match(Parser::TokenType::Comma))
         {
-            throw ParseException("Expected ','", previous().line, previous().column);
+            throw ParseException(
+                DiagnosticFormatter::format(
+                    source,
+                    previous().line,
+                    previous().column,
+                    "Expected ',' between array elements"
+                ),
+                previous().line,
+                previous().column
+            );
         }
     }
 

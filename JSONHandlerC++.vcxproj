@@ -116,13 +116,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\errors</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,6 +151,7 @@
     <Text Include="Deleted.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="diagnostics\DiagnosticFormatter.hpp" />
     <ClInclude Include="errors\AccessException.hpp" />
     <ClInclude Include="core\JsonHandler.hpp" />
     <ClInclude Include="errors\FileException.hpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="utils\pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="diagnostics\DiagnosticFormatter.cpp" />
     <ClCompile Include="errors\AccessException.cpp" />
     <ClCompile Include="core\JsonHandler.cpp" />
     <ClCompile Include="errors\LexerException.cpp" />

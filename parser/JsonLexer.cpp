@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "JsonLexer.hpp"
 #include "LexerException.hpp"
+#include "DiagnosticFormatter.hpp"
 
 /*
 * @brief Constructs a JsonLexer with the given source string.
@@ -95,7 +96,16 @@ Token JsonLexer::string()
         {
             if (isAtEnd())
             {
-                throw LexerException("Unterminated escape sequence", line, column);
+                throw LexerException(
+                    DiagnosticFormatter::format(
+                        source,
+                        line,
+                        column,
+                        "Unterminated escape sequence"
+                    ),
+                    line,
+                    column
+                );
             }
 
             char escaped = advance();
@@ -108,7 +118,16 @@ Token JsonLexer::string()
             case '\\': value += '\\'; break;
 
             default:
-                throw LexerException("Invalid escape sequence", line, column);
+                throw LexerException(
+                    DiagnosticFormatter::format(
+                        source,
+                        line,
+                        column,
+                        "Invalid escape sequence: \\" + std::string(1, escaped)
+                    ),
+                    line,
+                    column
+                );
             }
         }
         else
@@ -119,7 +138,16 @@ Token JsonLexer::string()
 
     if (isAtEnd())
     {
-        throw LexerException("Unterminated string", line, column);
+        throw LexerException(
+            DiagnosticFormatter::format(
+                source,
+                line,
+                column,
+                "Unterminated string"
+            ),
+            line,
+            column
+        );
     }
 
     advance(); // closing quote
@@ -186,7 +214,16 @@ Token JsonLexer::keyword()
     if (value == "null")
         return makeToken(Parser::TokenType::Null, value);
 
-    throw LexerException("Unknown keyword: " + value, line, column);
+    throw LexerException(
+        DiagnosticFormatter::format(
+            source,
+            line,
+            column,
+            "Unexpected keyword: " + value
+        ),
+        line,
+        column
+    );
 }
 
 /*
@@ -260,7 +297,16 @@ std::vector<Token> JsonLexer::tokenize()
             }
             else
             {
-                throw LexerException("Unexpected character", line, column);
+                throw LexerException(
+                    DiagnosticFormatter::format(
+                        source,
+                        line,
+                        column,
+                        "Unexpected character: " + std::string(1, c)
+                    ),
+                    line,
+                    column
+                );
             }
         }
     }

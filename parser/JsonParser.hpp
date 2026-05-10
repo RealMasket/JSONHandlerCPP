@@ -8,9 +8,12 @@ public:
     /*
     * @brief Constructs a JsonParser with the given vector of tokens.
     * @param tokens The vector of tokens to parse.
+    * @param source The original JSON source string (used for error reporting).
     */
     explicit JsonParser(
-        const std::vector<Token>& tokens);
+        const std::vector<Token>& tokens,
+        const std::string& source
+    );
 
     /*
     * @brief Parses a JSON string and returns the corresponding Json value.
@@ -22,6 +25,7 @@ public:
 
 private:
     const std::vector<Token>& tokens;
+    const std::string& source;
 
     size_t current = 0;
 

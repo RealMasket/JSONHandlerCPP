@@ -73,6 +73,9 @@
     <ClInclude Include="errors\OperationException.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="diagnostics\DiagnosticFormatter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\dllmain.cpp">
@@ -115,6 +118,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="errors\OperationException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="diagnostics\DiagnosticFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
