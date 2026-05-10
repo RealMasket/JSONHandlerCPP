@@ -1,6 +1,6 @@
-#include "../utils/pch.h"
+#include "pch.h"
 #include "JsonHandler.hpp"
-#include "../utils/JsonAlgorithms.hpp"
+#include "JsonAlgorithms.hpp"
 
 // Constructors
 

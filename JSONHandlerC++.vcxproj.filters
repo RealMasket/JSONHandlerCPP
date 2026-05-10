@@ -46,6 +46,12 @@
     <ClInclude Include="io\JsonFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser\JsonLexer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\Token.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\dllmain.cpp">
@@ -67,6 +73,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="io\JsonFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\JsonLexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

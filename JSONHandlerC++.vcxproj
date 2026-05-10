@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -113,11 +116,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>C:\Users\kuzin\source\repos\JSONHandlerC++\core;C:\Users\kuzin\source\repos\JSONHandlerC++\utils;C:\Users\kuzin\source\repos\JSONHandlerC++\io;C:\Users\kuzin\source\repos\JSONHandlerC++\parser;C:\Users\kuzin\source\repos\JSONHandlerC++\serializer</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,7 +153,9 @@
   <ItemGroup>
     <ClInclude Include="core\JsonHandler.hpp" />
     <ClInclude Include="io\JsonFile.hpp" />
+    <ClInclude Include="parser\JsonLexer.hpp" />
     <ClInclude Include="parser\JsonParser.hpp" />
+    <ClInclude Include="parser\Token.hpp" />
     <ClInclude Include="serializer\JsonSerializer.hpp" />
     <ClInclude Include="utils\JsonAlgorithms.hpp" />
     <ClInclude Include="utils\framework.h" />
@@ -157,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="core\JsonHandler.cpp" />
     <ClCompile Include="io\JsonFile.cpp" />
+    <ClCompile Include="parser\JsonLexer.cpp" />
     <ClCompile Include="parser\JsonParser.cpp" />
     <ClCompile Include="serializer\JsonSerializer.cpp" />
     <ClCompile Include="utils\JsonAlgorithms.cpp" />

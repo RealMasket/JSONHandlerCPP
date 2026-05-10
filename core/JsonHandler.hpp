@@ -11,12 +11,6 @@
 #include <map>
 #include <vector>
 #include <variant>
-#include <functional>
-#include <stdexcept>
-#include <sstream>
-#include <iomanip>
-#include <optional>
-#include <algorithm>
 
 class JSON_API Json {
 public:

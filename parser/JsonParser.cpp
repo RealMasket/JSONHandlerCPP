@@ -1,120 +1,190 @@
-#include "../utils/pch.h"
+#include "pch.h"
 #include "JsonParser.hpp"
+#include "JsonLexer.hpp"
 
-/**
- * @brief Parses a JSON string into a Json object.
- * @param str The JSON string to parse.
- * @return Parsed Json object.
- * @throws std::runtime_error if the string is not valid JSON.
- */
-Json JsonParser::parse(const std::string& str) {
-    size_t pos = 0;
+/*
+* @brief Constructs a JsonParser with the given vector of tokens.
+* @param tokens The vector of tokens to parse.
+*/
+JsonParser::JsonParser(const std::vector<Token>& tokens) : tokens(tokens) { }
 
-    auto throwError = [&](const std::string& message) {
-        throw std::runtime_error("Parse error at position " + std::to_string(pos) + ": " + message);
-        };
+/*
+* @brief Checks if the parser has reached the end of the token stream.
+* @return True if at the end of the token stream, false otherwise.
+*/
+bool JsonParser::isAtEnd() const
+{
+    return peek().type == Parser::TokenType::EndOfFile;
+}
 
-    auto skipWhitespace = [&]() {
-        while (pos < str.size() && std::isspace(str[pos])) ++pos;
-        };
+/*
+* @brief Peeks at the current token without advancing the position.
+* @return The current token.
+*/
+const Token& JsonParser::peek() const
+{
+    return tokens[current];
+}
 
-    auto parseString = [&]() -> std::string {
-        ++pos; // Skip opening quote
-        std::string result;
-        while (pos < str.size() && str[pos] != '"') {
-            if (str[pos] == '\\') {
-                ++pos;
-                if (pos >= str.size()) throwError("Unexpected end of input in string");
-                switch (str[pos]) {
-                case 'n': result += '\n'; break;
-                case 't': result += '\t'; break;
-                case '"': result += '"'; break;
-                case '\\': result += '\\'; break;
-                default: throwError("Invalid escape character");
-                }
-            }
-            else {
-                result += str[pos];
-            }
-            ++pos;
+/*
+* @brief Retrieves the previous token (the last one that was matched).
+* @return The previous token.
+*/
+const Token& JsonParser::previous() const
+{
+    return tokens[current - 1];
+}
+
+/*
+* @brief Checks if the current token matches the expected type and advances if it does.
+* @param type The expected token type to match.
+* @return True if the current token matches the expected type, false otherwise.
+*/
+bool JsonParser::match(Parser::TokenType type)
+{
+    if (peek().type == type)
+    {
+        ++current;
+        return true;
+    }
+
+    return false;
+}
+
+/*
+* @brief Parses a JSON string and returns the corresponding Json value.
+* @param source The JSON string to parse.
+* @return The parsed Json value.
+* @throws std::runtime_error if the input string is not valid JSON.
+*/
+Json JsonParser::parse(const std::string& source)
+{
+    JsonLexer lexer(source);
+
+    auto tokens = lexer.tokenize();
+
+    JsonParser parser(tokens);
+
+    return parser.parseValue();
+}
+
+/*
+* @brief Parses a JSON value based on the current token and returns the corresponding Json value.
+* @return The parsed Json value.
+* @throws std::runtime_error if the current token does not represent a valid JSON value.
+*/
+Json JsonParser::parseValue()
+{
+    if (match(Parser::TokenType::Null))
+        return nullptr;
+
+    if (match(Parser::TokenType::True))
+        return true;
+
+    if (match(Parser::TokenType::False))
+        return false;
+
+    if (match(Parser::TokenType::String))
+        return previous().lexeme;
+
+    if (match(Parser::TokenType::Number))
+    {
+        double number =
+            std::stod(previous().lexeme);
+
+        return number;
+    }
+
+    if (match(Parser::TokenType::LeftBrace))
+    {
+        return parseObject();
+    }
+
+    if (match(Parser::TokenType::LeftBracket))
+    {
+        return parseArray();
+    }
+
+    throw std::runtime_error("Invalid JSON value");
+}
+
+/*
+* @brief Parses a JSON object from the token stream and returns the corresponding Json value.
+* @return The parsed Json object.
+* @throws std::runtime_error if the token stream does not represent a valid JSON object.
+*/
+Json JsonParser::parseObject()
+{
+    Json::JsonObject obj;
+
+    if (match(Parser::TokenType::RightBrace))
+    {
+        return obj;
+    }
+
+    while (true)
+    {
+        if (!match(Parser::TokenType::String))
+        {
+            throw std::runtime_error(
+                "Expected string key");
         }
-        if (pos >= str.size() || str[pos] != '"') throwError("Unterminated string");
-        ++pos; // Skip closing quote
-        return result;
-        };
 
-    auto parseNumber = [&]() -> Json {
-        size_t start = pos;
-        while (pos < str.size() && (isdigit(str[pos]) || str[pos] == '.' || str[pos] == 'e' || str[pos] == 'E' || str[pos] == '+' || str[pos] == '-')) {
-            ++pos;
-        }
-        std::string numberStr = str.substr(start, pos - start);
-        char* end;
-        double value = strtod(numberStr.c_str(), &end);
-        if (*end != '\0') throwError("Invalid number format");
-        return Json(value);
-        };
+        std::string key =
+            previous().lexeme;
 
-    std::function<Json()> parseValue = [&]() -> Json {
-        skipWhitespace();
-        if (pos >= str.size()) throwError("Unexpected end of input");
-
-        if (str[pos] == '"') return Json(parseString());
-        if (str[pos] == 'n') {
-            if (str.substr(pos, 4) != "null") throwError("Invalid token");
-            pos += 4;
-            return { nullptr };
-        }
-        if (str[pos] == 't') {
-            if (str.substr(pos, 4) != "true") throwError("Invalid token");
-            pos += 4;
-            return { true };
-        }
-        if (str[pos] == 'f') {
-            if (str.substr(pos, 5) != "false") throwError("Invalid token");
-            pos += 5;
-            return { false };
-        }
-        if (isdigit(str[pos]) || str[pos] == '-') {
-            return parseNumber();
-        }
-        if (str[pos] == '{') {
-            ++pos;
-            Json::JsonObject obj;
-            skipWhitespace();
-            while (pos < str.size() && str[pos] != '}') {
-                std::string key = parseValue().asString();
-                skipWhitespace();
-                if (pos >= str.size() || str[pos] != ':') throwError("Expected ':'");
-                ++pos;
-                skipWhitespace();
-                obj[key] = parseValue();
-                skipWhitespace();
-                if (str[pos] == ',') ++pos;
-                skipWhitespace();
-            }
-            if (pos >= str.size() || str[pos] != '}') throwError("Expected '}'");
-            ++pos;
-            return Json(obj);
-        }
-        if (str[pos] == '[') {
-            ++pos;
-            Json::JsonArray arr;
-            skipWhitespace();
-            while (pos < str.size() && str[pos] != ']') {
-                arr.push_back(parseValue());
-                skipWhitespace();
-                if (str[pos] == ',') ++pos;
-                skipWhitespace();
-            }
-            if (pos >= str.size() || str[pos] != ']') throwError("Expected ']'");
-            ++pos;
-            return Json(arr);
+        if (!match(Parser::TokenType::Colon))
+        {
+            throw std::runtime_error(
+                "Expected ':'");
         }
 
-        throwError("Invalid value");
-        return {}; // Return default null
-        };
+        obj[key] = parseValue();
 
-    return parseValue();
+        if (match(Parser::TokenType::RightBrace))
+        {
+            break;
+        }
+
+        if (!match(Parser::TokenType::Comma))
+        {
+            throw std::runtime_error(
+                "Expected ','");
+        }
+    }
+
+    return obj;
+}
+
+/*
+* @brief Parses a JSON array from the token stream and returns the corresponding Json value.
+* @return The parsed Json array.
+* @throws std::runtime_error if the token stream does not represent a valid JSON array.
+*/
+Json JsonParser::parseArray()
+{
+    Json::JsonArray arr;
+
+    if (match(Parser::TokenType::RightBracket))
+    {
+        return arr;
+    }
+
+    while (true)
+    {
+        arr.push_back(parseValue());
+
+        if (match(Parser::TokenType::RightBracket))
+        {
+            break;
+        }
+
+        if (!match(Parser::TokenType::Comma))
+        {
+            throw std::runtime_error(
+                "Expected ','");
+        }
+    }
+
+    return arr;
 }

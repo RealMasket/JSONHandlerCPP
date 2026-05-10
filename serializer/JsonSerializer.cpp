@@ -1,6 +1,6 @@
 #include "JsonSerializer.hpp"
-#include "../utils/pch.h"
-#include "../core/JsonHandler.hpp"
+#include "pch.h"
+#include "JsonHandler.hpp"
 #include <sstream>
 
 /**
@@ -25,7 +25,13 @@ std::string JsonSerializer::serialize(const Json& json, bool pretty, int indentL
     return "";
 }
 
-// Serialize JSON Object
+/*
+* @brief Serializes a JSON object to a string with optional pretty-printing.
+* @param obj The JSON object to serialize.
+* @param pretty If true, the output will be indented for readability.
+* @param indentLevel The current indentation level for pretty-printing.
+* @return The serialized JSON object as a string.
+*/
 std::string JsonSerializer::serializeObject(const Json::JsonObject& obj, bool pretty, int indentLevel) {
     std::string result = (pretty ? ("\n" + std::string(indentLevel * 2, ' ')) : "") + "{";
     std::string indent((indentLevel + 1) * 2, ' ');
@@ -51,7 +57,13 @@ std::string JsonSerializer::serializeObject(const Json::JsonObject& obj, bool pr
     return result;
 }
 
-// Serialize JSON Array
+/*
+* @brief Serializes a JSON array to a string with optional pretty-printing.
+* @param arr The JSON array to serialize.
+* @param pretty If true, the output will be indented for readability.
+* @param indentLevel The current indentation level for pretty-printing.
+* @return The serialized JSON array as a string.
+*/
 std::string JsonSerializer::serializeArray(const Json::JsonArray& arr, bool pretty, int indentLevel) {
     std::string result = "[";
     std::string newLine = pretty ? "\n" : "";
@@ -64,7 +76,11 @@ std::string JsonSerializer::serializeArray(const Json::JsonArray& arr, bool pret
     return result;
 }
 
-// Helper for string escaping
+/*
+* @brief Escapes special characters in a string for JSON serialization.
+* @param input The input string to escape.
+* @return The escaped string suitable for JSON output.
+*/
 std::string JsonSerializer::escapeString(const std::string& input) {
     std::string escaped;
     for (char c : input) {
