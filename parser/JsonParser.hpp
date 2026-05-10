@@ -16,7 +16,7 @@ public:
     * @brief Parses a JSON string and returns the corresponding Json value.
     * @param source The JSON string to parse.
     * @return The parsed Json value.
-    * @throws std::runtime_error if the input string is not valid JSON.
+    * @throws ParseException if the input string is not valid JSON.
     */
     static Json parse(const std::string& source);
 
@@ -29,20 +29,20 @@ private:
     /*
     * @brief Parses a JSON value based on the current token and returns the corresponding Json value.
     * @return The parsed Json value.
-    * @throws std::runtime_error if the current token does not represent a valid JSON value.
+    * @throws ParseException if the current token does not represent a valid JSON value.
     */
     Json parseValue();
 
     /*
     * @brief Parses a JSON object from the token stream and returns the corresponding Json value.
     * @return The parsed Json object.
-    * @throws std::runtime_error if the token stream does not represent a valid JSON object.
+    * @throws ParseException if the token stream does not represent a valid JSON object.
     */
     Json parseObject();
     /*
     * @brief Parses a JSON array from the token stream and returns the corresponding Json value.
     * @return The parsed Json array.
-    * @throws std::runtime_error if the token stream does not represent a valid JSON array.
+    * @throws ParseException if the token stream does not represent a valid JSON array.
     */
     Json parseArray();
 

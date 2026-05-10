@@ -17,7 +17,7 @@ public:
     /*
     * @brief Tokenizes the input JSON string into a vector of tokens.
     * @return A vector of Token objects representing the tokenized input.
-    * @throws std::runtime_error if an unexpected character is encountered.
+    * @throws LexerException if an unexpected character is encountered.
     */
     std::vector<Token> tokenize();
 
@@ -54,19 +54,18 @@ private:
     /*
     * @brief Parses a string token from the input, handling escape sequences.
     * @return A Token object representing the parsed string.
-    * @throws std::runtime_error if the string is unterminated or contains invalid escape sequences.
+    * @throws LexerException if the string is unterminated or contains invalid escape sequences.
     */
     Token string();
     /*
     * @brief Parses a number token from the input, handling integers, decimals, and scientific notation.
     * @return A Token object representing the parsed number.
-    * @throws std::runtime_error if the number format is invalid.
+    * @throws LexerException if the number format is invalid.
     */
     Token number();
     /*
     * @brief Parses a keyword token from the input, handling true, false, and null.
     * @return A Token object representing the parsed keyword.
-    * @throws std::runtime_error if the keyword is unknown.
     */
     Token keyword();
 

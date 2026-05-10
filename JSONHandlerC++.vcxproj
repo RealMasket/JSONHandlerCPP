@@ -116,13 +116,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\Users\kuzin\source\repos\JSONHandlerC++\core;C:\Users\kuzin\source\repos\JSONHandlerC++\utils;C:\Users\kuzin\source\repos\JSONHandlerC++\io;C:\Users\kuzin\source\repos\JSONHandlerC++\parser;C:\Users\kuzin\source\repos\JSONHandlerC++\serializer</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\errors</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,8 +151,15 @@
     <Text Include="Deleted.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="errors\AccessException.hpp" />
     <ClInclude Include="core\JsonHandler.hpp" />
+    <ClInclude Include="errors\FileException.hpp" />
+    <ClInclude Include="errors\JsonException.hpp" />
+    <ClInclude Include="errors\LexerException.hpp" />
+    <ClInclude Include="errors\ParseException.hpp" />
+    <ClInclude Include="errors\TypeException.hpp" />
     <ClInclude Include="io\JsonFile.hpp" />
+    <ClInclude Include="errors\OperationException.hpp" />
     <ClInclude Include="parser\JsonLexer.hpp" />
     <ClInclude Include="parser\JsonParser.hpp" />
     <ClInclude Include="parser\Token.hpp" />
@@ -162,8 +169,14 @@
     <ClInclude Include="utils\pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="errors\AccessException.cpp" />
     <ClCompile Include="core\JsonHandler.cpp" />
+    <ClCompile Include="errors\LexerException.cpp" />
+    <ClCompile Include="errors\ParseException.cpp" />
+    <ClCompile Include="errors\FileException.cpp" />
+    <ClCompile Include="errors\TypeException.cpp" />
     <ClCompile Include="io\JsonFile.cpp" />
+    <ClCompile Include="errors\OperationException.cpp" />
     <ClCompile Include="parser\JsonLexer.cpp" />
     <ClCompile Include="parser\JsonParser.cpp" />
     <ClCompile Include="serializer\JsonSerializer.cpp" />

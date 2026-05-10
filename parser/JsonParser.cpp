@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "JsonParser.hpp"
 #include "JsonLexer.hpp"
+#include "ParseException.hpp"
 
 /*
 * @brief Constructs a JsonParser with the given vector of tokens.
@@ -55,7 +56,7 @@ bool JsonParser::match(Parser::TokenType type)
 * @brief Parses a JSON string and returns the corresponding Json value.
 * @param source The JSON string to parse.
 * @return The parsed Json value.
-* @throws std::runtime_error if the input string is not valid JSON.
+* @throws ParseException if the input string is not valid JSON.
 */
 Json JsonParser::parse(const std::string& source)
 {
@@ -71,7 +72,7 @@ Json JsonParser::parse(const std::string& source)
 /*
 * @brief Parses a JSON value based on the current token and returns the corresponding Json value.
 * @return The parsed Json value.
-* @throws std::runtime_error if the current token does not represent a valid JSON value.
+* @throws ParseException if the current token does not represent a valid JSON value.
 */
 Json JsonParser::parseValue()
 {
@@ -105,13 +106,13 @@ Json JsonParser::parseValue()
         return parseArray();
     }
 
-    throw std::runtime_error("Invalid JSON value");
+    throw ParseException("Invalid JSON value", previous().line, previous().column);
 }
 
 /*
 * @brief Parses a JSON object from the token stream and returns the corresponding Json value.
 * @return The parsed Json object.
-* @throws std::runtime_error if the token stream does not represent a valid JSON object.
+* @throws ParseException if the token stream does not represent a valid JSON object.
 */
 Json JsonParser::parseObject()
 {
@@ -126,8 +127,7 @@ Json JsonParser::parseObject()
     {
         if (!match(Parser::TokenType::String))
         {
-            throw std::runtime_error(
-                "Expected string key");
+            throw ParseException("Expected string key", previous().line, previous().column);
         }
 
         std::string key =
@@ -135,8 +135,7 @@ Json JsonParser::parseObject()
 
         if (!match(Parser::TokenType::Colon))
         {
-            throw std::runtime_error(
-                "Expected ':'");
+            throw ParseException("Expected ':'", previous().line, previous().column);
         }
 
         obj[key] = parseValue();
@@ -148,8 +147,7 @@ Json JsonParser::parseObject()
 
         if (!match(Parser::TokenType::Comma))
         {
-            throw std::runtime_error(
-                "Expected ','");
+            throw ParseException("Expected ','", previous().line, previous().column);
         }
     }
 
@@ -159,7 +157,7 @@ Json JsonParser::parseObject()
 /*
 * @brief Parses a JSON array from the token stream and returns the corresponding Json value.
 * @return The parsed Json array.
-* @throws std::runtime_error if the token stream does not represent a valid JSON array.
+* @throws ParseException if the token stream does not represent a valid JSON array.
 */
 Json JsonParser::parseArray()
 {
@@ -181,8 +179,7 @@ Json JsonParser::parseArray()
 
         if (!match(Parser::TokenType::Comma))
         {
-            throw std::runtime_error(
-                "Expected ','");
+            throw ParseException("Expected ','", previous().line, previous().column);
         }
     }
 

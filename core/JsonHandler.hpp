@@ -35,53 +35,58 @@ public:
     bool isArray() const;
     bool isBigNumber() const;
 
+    /*
+    * @brief Returns a string representation of the JSON value's type (e.g., "null", "bool", "number", "string", "object", "array").
+    * @return A string representing the type of the JSON value.
+    */
+	std::string typeName() const;
     /**
      * @brief Retrieves the JSON value as a boolean.
      * @return Boolean value.
-     * @throws std::runtime_error if the value is not a boolean.
+     * @throws TypeException if the value is not a boolean.
      */
     bool asBool() const;
     /**
      * @brief Retrieves the JSON value as a number (double).
      * @return Double value.
-     * @throws std::runtime_error if the value is not a number.
+     * @throws TypeException if the value is not a number.
      */
     double asNumber() const;
     /**
      * @brief Retrieves the JSON value as a string (const version).
      * @return String value.
-     * @throws std::runtime_error if the value is not a string.
+     * @throws TypeException if the value is not a string.
      */
     const std::string& asString() const;
     /**
      * @brief Retrieves the JSON value as an object (const version).
      * @return The object value.
-     * @throws std::runtime_error if the value is not an object.
+     * @throws TypeException if the value is not an object.
      */
     const JsonObject& asObject() const;
     /**
      * @brief Retrieves the JSON value as an array (const version).
      * @return The array value.
-     * @throws std::runtime_error if the value is not an array.
+     * @throws TypeException if the value is not an array.
      */
     const JsonArray& asArray() const;
 
     /**
      * @brief Retrieves the JSON value as a string (non-const version).
      * @return String value.
-     * @throws std::runtime_error if the value is not a string.
+     * @throws TypeException if the value is not a string.
      */
     std::string& asString();
     /**
      * @brief Retrieves the JSON value as an object (non-const version).
      * @return The object value.
-     * @throws std::runtime_error if the value is not an object.
+     * @throws TypeException if the value is not an object.
      */
     JsonObject& asObject();
     /**
      * @brief Retrieves the JSON value as an array (non-const version).
      * @return The array value.
-     * @throws std::runtime_error if the value is not an array.
+     * @throws TypeException if the value is not an array.
      */
     JsonArray& asArray();
 
@@ -104,21 +109,23 @@ public:
      * @brief Indexing operator for accessing a value in a JSON object (const version).
      * @param key The key to access in the JSON object.
      * @return A reference to the corresponding value in the JSON object.
-     * @throws std::runtime_error if the JSON value is not an object or if the key is not found.
+     * @throws TypeException if the JSON value is not an object.
+     * @throws AccessException if the key is not found in the JSON object.
      */
     const Json& operator[](const std::string& key) const;
     /**
      * @brief Indexing operator for accessing a value in a JSON array (const version).
      * @param index The index to access in the JSON array.
      * @return A reference to the corresponding value in the JSON array.
-     * @throws std::runtime_error if the JSON value is not an array or if the index is out of range.
+     * @throws TypeException if the JSON value is not an array.
+     * @throws AccessException if the index is out of range.
      */
     const Json& operator[](size_t index) const;
     /**
      * @brief Adds a new element to a JSON array.
      * (Only works if the current value is an array.)
      * @param json The JSON value to add to the array.
-     * @throws std::runtime_error if the current value is not an array.
+     * @throws TypeException if the current value is not an array.
      */
     void push_back(const Json& json);
     template<typename... Args>
@@ -127,39 +134,41 @@ public:
     /**
      * @brief Retrieves the size of a JSON array.
      * @return The number of elements in the array.
-     * @throws std::runtime_error if the current value is not an array.
+     * @throws TypeException if the current value is not an array.
      */
     size_t size() const;
     /**
      * @brief Removes an element from a JSON array by index.
      * @param index The index of the element to remove.
-     * @throws std::runtime_error if the current value is not an array or the index is out of range.
+     * @throws TypeException if the current value is not an array.
+     * @throws AccessException if the index is out of range.
      */
     void remove(size_t index);
     /**
      * @brief Removes an element from a JSON object by key.
      * @param key The key of the element to remove.
-     * @throws std::runtime_error if the current value is not an object.
+     * @throws TypeException if the current value is not an object.
+     * @throws AccessException if the key is not found in the JSON object.
      */
     void remove(const std::string& key);
     /**
      * @brief Checks if a JSON object contains a specific value.
      * @param string The key to check for.
      * @return True if the key exists in the object, false otherwise.
-     * @throws std::runtime_error if the current value is not an object.
+     * @throws TypeException if the current value is not an object.
      */
     bool contains(const std::string& key) const;
     /**
      * @brief Checks if a JSON array contains a specific value.
      * @param json The JSON value to check for.
      * @return True if the value exists in the array, false otherwise.
-     * @throws std::runtime_error if the current value is not an array.
+     * @throws TypeException if the current value is not an array.
      */
     bool contains(const Json& json) const;
     /**
      * @brief Returns a list of all keys in the object.
      * @return vector<string> of keys.
-     * @throws std::runtime_error if the current value is not an object.
+     * @throws TypeException if the current value is not an object.
      */
     std::vector<std::string> keys() const;
 

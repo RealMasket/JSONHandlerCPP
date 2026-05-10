@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "JsonLexer.hpp"
+#include "LexerException.hpp"
 
 /*
 * @brief Constructs a JsonLexer with the given source string.
@@ -78,7 +79,7 @@ Token JsonLexer::makeToken(
 /*
 * @brief Parses a string token from the input, handling escape sequences.
 * @return A Token object representing the parsed string.
-* @throws std::runtime_error if the string is unterminated or contains invalid escape sequences.
+* @throws LexerException if the string is unterminated or contains invalid escape sequences.
 */
 Token JsonLexer::string()
 {
@@ -94,7 +95,7 @@ Token JsonLexer::string()
         {
             if (isAtEnd())
             {
-                throw std::runtime_error("Unterminated escape sequence");
+                throw LexerException("Unterminated escape sequence", line, column);
             }
 
             char escaped = advance();
@@ -107,7 +108,7 @@ Token JsonLexer::string()
             case '\\': value += '\\'; break;
 
             default:
-                throw std::runtime_error("Invalid escape sequence");
+                throw LexerException("Invalid escape sequence", line, column);
             }
         }
         else
@@ -118,7 +119,7 @@ Token JsonLexer::string()
 
     if (isAtEnd())
     {
-        throw std::runtime_error("Unterminated string");
+        throw LexerException("Unterminated string", line, column);
     }
 
     advance(); // closing quote
@@ -129,7 +130,6 @@ Token JsonLexer::string()
 /*
 * @brief Parses a number token from the input, handling integers, decimals, and scientific notation.
 * @return A Token object representing the parsed number.
-* @throws std::runtime_error if the number format is invalid.
 */
 Token JsonLexer::number()
 {
@@ -163,7 +163,7 @@ Token JsonLexer::number()
 /*
 * @brief Parses a keyword token from the input, handling true, false, and null.
 * @return A Token object representing the parsed keyword.
-* @throws std::runtime_error if the keyword is unknown.
+* @throws LexerException if the keyword is unknown.
 */
 Token JsonLexer::keyword()
 {
@@ -186,13 +186,13 @@ Token JsonLexer::keyword()
     if (value == "null")
         return makeToken(Parser::TokenType::Null, value);
 
-    throw std::runtime_error("Unknown keyword: " + value);
+    throw LexerException("Unknown keyword: " + value, line, column);
 }
 
 /*
 * @brief Tokenizes the input JSON string into a vector of tokens.
 * @return A vector of Token objects representing the tokenized input.
-* @throws std::runtime_error if an unexpected character is encountered.
+* @throws LexerException if an unexpected character is encountered.
 */
 std::vector<Token> JsonLexer::tokenize()
 {
@@ -260,8 +260,7 @@ std::vector<Token> JsonLexer::tokenize()
             }
             else
             {
-                throw std::runtime_error(
-                    "Unexpected character");
+                throw LexerException("Unexpected character", line, column);
             }
         }
     }

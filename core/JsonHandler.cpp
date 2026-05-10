@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "JsonHandler.hpp"
 #include "JsonAlgorithms.hpp"
+#include "TypeException.hpp"
+#include "AccessException.hpp"
 
 // Constructors
 
@@ -34,85 +36,117 @@ bool Json::isBigNumber() const {
     return false;
 }
 
+/*
+* @brief Returns a string representation of the JSON value's type (e.g., "null", "bool", "number", "string", "object", "array").
+* @return A string representing the type of the JSON value.
+*/
+std::string Json::typeName() const
+{
+    if (isNull()) return "null";
+    if (isBool()) return "bool";
+    if (isNumber()) return "number";
+    if (isString()) return "string";
+    if (isObject()) return "object";
+    if (isArray()) return "array";
+
+    return "unknown";
+}
+
 // Accessors
 
 /**
  * @brief Retrieves the JSON value as a boolean.
  * @return Boolean value.
- * @throws std::runtime_error if the value is not a boolean.
+ * @throws TypeException if the value is not a boolean.
  */
 bool Json::asBool() const {
-    if (!isBool()) throw std::runtime_error("Json value is not a boolean");
+    if (!isBool()) throw TypeException(
+        "Expected boolean but got " + typeName()
+    );
     return std::get<bool>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as a number (double).
  * @return Double value.
- * @throws std::runtime_error if the value is not a number.
+ * @throws TypeException if the value is not a number.
  */
 double Json::asNumber() const {
-    if (!isNumber()) throw std::runtime_error("Json value is not a number");
+    if (!isNumber()) throw TypeException(
+        "Expected number but got " + typeName()
+    );
     return std::get<double>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as a string (const version).
  * @return String value.
- * @throws std::runtime_error if the value is not a string.
+ * @throws TypeException if the value is not a string.
  */
 const std::string& Json::asString() const {
-    if (!isString()) throw std::runtime_error("Json value is not a string");
+    if (!isString()) throw TypeException(
+        "Expected string but got " + typeName()
+    );
     return std::get<std::string>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as an object (const version).
  * @return The object value.
- * @throws std::runtime_error if the value is not an object.
+ * @throws TypeException if the value is not an object.
  */
 const Json::JsonObject& Json::asObject() const {
-    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    if (!isObject()) throw TypeException(
+        "Expected JSON object but got " + typeName()
+    );
     return std::get<JsonObject>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as an array (const version).
  * @return The array value.
- * @throws std::runtime_error if the value is not an array.
+ * @throws TypeException if the value is not an array.
  */
 const Json::JsonArray& Json::asArray() const {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    if (!isArray()) throw TypeException(
+        "Expected JSON array but got " + typeName()
+    );
     return std::get<JsonArray>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as a string (non-const version).
  * @return String value.
- * @throws std::runtime_error if the value is not a string.
+ * @throws TypeException if the value is not a string.
  */
 std::string& Json::asString() {
-    if (!isString()) throw std::runtime_error("Json value is not a string");
+    if (!isString()) throw TypeException(
+        "Expected string but got " + typeName()
+    );
     return std::get<std::string>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as an object (non-const version).
  * @return The object value.
- * @throws std::runtime_error if the value is not an object.
+ * @throws TypeException if the value is not an object.
  */
 Json::JsonObject& Json::asObject() {
-    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    if (!isObject()) throw TypeException(
+        "Expected JSON object but got " + typeName()
+    );
     return std::get<JsonObject>(value);
 }
 
 /**
  * @brief Retrieves the JSON value as an array (non-const version).
  * @return The array value.
- * @throws std::runtime_error if the value is not an array.
+ * @throws TypeException if the value is not an array.
  */
 Json::JsonArray& Json::asArray() {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    if (!isArray()) throw TypeException(
+        "Expected JSON array but got " + typeName()
+    );
     return std::get<JsonArray>(value);
 }
 
@@ -152,16 +186,17 @@ Json& Json::operator[](size_t index) {
  * @brief Indexing operator for accessing a value in a JSON object (const version).
  * @param key The key to access in the JSON object.
  * @return A reference to the corresponding value in the JSON object.
- * @throws std::runtime_error if the JSON value is not an object or if the key is not found.
+ * @throws TypeException if the JSON value is not an object.
+ * @throws AccessException if the key is not found in the JSON object.
  */
 const Json& Json::operator[](const std::string& key) const {
     if (!isObject()) {
-        throw std::runtime_error("Json value is not an object");
+        throw TypeException("Expected JSON object but got " + typeName());
     }
     const auto& obj = std::get<JsonObject>(value);
     auto it = obj.find(key);
     if (it == obj.end()) {
-        throw std::runtime_error("Key not found: " + key);
+        throw AccessException("Key not found in object: " + key);
     }
     return it->second;
 }
@@ -170,15 +205,22 @@ const Json& Json::operator[](const std::string& key) const {
  * @brief Indexing operator for accessing a value in a JSON array (const version).
  * @param index The index to access in the JSON array.
  * @return A reference to the corresponding value in the JSON array.
- * @throws std::runtime_error if the JSON value is not an array or if the index is out of range.
+ * @throws TypeException if the JSON value is not an array.
+ * @throws AccessException if the index is out of range.
  */
 const Json& Json::operator[](size_t index) const {
     if (!isArray()) {
-        throw std::runtime_error("Json value is not an array");
+        throw TypeException("Expected JSON array but got " + typeName());
     }
     const auto& arr = std::get<JsonArray>(value);
     if (index >= arr.size()) {
-        throw std::runtime_error("Index out of range");
+        throw AccessException(
+            "Index " +
+            std::to_string(index) +
+            " is out of range (size = " +
+            std::to_string(arr.size()) +
+            ")"
+        );
     }
     return arr[index];
 }
@@ -187,10 +229,10 @@ const Json& Json::operator[](size_t index) const {
  * @brief Adds a new element to a JSON array.
  * (Only works if the current value is an array.)
  * @param json The JSON value to add to the array.
- * @throws std::runtime_error if the current value is not an array.
+ * @throws TypeException if the current value is not an array.
  */
 void Json::push_back(const Json& json) {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    if (!isArray()) throw TypeException("Expected JSON array but got " + typeName());
     std::get<JsonArray>(value).push_back(json);
 }
 template<typename... Args>
@@ -202,7 +244,7 @@ void Json::push_back(const Json& json, Args... args) {
 /**
  * @brief Retrieves the size of a JSON array.
  * @return The number of elements in the array.
- * @throws std::runtime_error if the current value is not an array.
+ * @throws TypeException if the current value is not an array.
  */
 size_t Json::size() const {
     if (isObject()) {
@@ -211,28 +253,35 @@ size_t Json::size() const {
     if (isArray()) {
         return std::get<JsonArray>(value).size();
     }
-    throw std::runtime_error("Json value is not an object or array");
+    throw TypeException("Expected JSON object or array but got " + typeName());
 }
 
 /**
  * @brief Removes an element from a JSON array by index.
  * @param index The index of the element to remove.
- * @throws std::runtime_error if the current value is not an array or the index is out of range.
+ * @throws TypeException if the current value is not an array.
+ * @throws AccessException if the index is out of range.
  */
 void Json::remove(size_t index) {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    if (!isArray()) throw TypeException("Expected JSON array but got " + typeName());
     auto& arr = std::get<JsonArray>(value);
-    if (index >= arr.size()) throw std::runtime_error("Index out of range");
+    if (index >= arr.size()) throw AccessException(
+        "Index " +
+        std::to_string(index) +
+        " is out of range (size = " +
+        std::to_string(arr.size()) +
+        ")"
+    );
     arr.erase(arr.begin() + index);
 }
 
 /**
  * @brief Removes an element from a JSON object by key.
  * @param key The key of the element to remove.
- * @throws std::runtime_error if the current value is not an object.
+ * @throws TypeException if the current value is not an object.
  */
 void Json::remove(const std::string& key) {
-    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    if (!isObject()) throw TypeException("Expected JSON object but got " + typeName());
     auto& obj = std::get<JsonObject>(value);
     obj.erase(key);
 }
@@ -241,10 +290,10 @@ void Json::remove(const std::string& key) {
  * @brief Checks if a JSON object contains a specific value.
  * @param string The key to check for.
  * @return True if the key exists in the object, false otherwise.
- * @throws std::runtime_error if the current value is not an object.
+ * @throws TypeException if the current value is not an object.
  */
 bool Json::contains(const std::string& key) const {
-    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    if (!isObject()) throw TypeException("Expected JSON object but got " + typeName());
     const auto& obj = std::get<JsonObject>(value);
     return obj.find(key) != obj.end();
 }
@@ -253,10 +302,10 @@ bool Json::contains(const std::string& key) const {
  * @brief Checks if a JSON array contains a specific value.
  * @param json The JSON value to check for.
  * @return True if the value exists in the array, false otherwise.
- * @throws std::runtime_error if the current value is not an array.
+ * @throws TypeException if the current value is not an array.
  */
 bool Json::contains(const Json& json) const {
-    if (!isArray()) throw std::runtime_error("Json value is not an array");
+    if (!isArray()) throw TypeException("Expected JSON array but got " + typeName());
     const auto& arr = std::get<JsonArray>(value);
     return std::find(arr.begin(), arr.end(), json) != arr.end();
 }
@@ -264,10 +313,10 @@ bool Json::contains(const Json& json) const {
 /**
  * @brief Returns a list of all keys in the object.
  * @return vector<string> of keys.
- * @throws std::runtime_error if the current value is not an object.
+ * @throws TypeException if the current value is not an object.
  */
 std::vector<std::string> Json::keys() const {
-    if (!isObject()) throw std::runtime_error("Json value is not an object");
+    if (!isObject()) throw TypeException("Expected JSON object but got " + typeName());
     const auto& obj = std::get<JsonObject>(value);
     std::vector<std::string> keys;
     for (const auto& pair : obj) {
@@ -289,26 +338,34 @@ bool Json::operator==(const Json& other) const {
 }
 
 /**
- * @brief Merges another JSON object into this one.
+ * @brief Merges another JSON object into the current object.
+ * (Existing keys are overwritten based on the overwrite parameter.)
+ * @param target The target JSON object to merge into.
  * @param other The JSON object to merge.
- * @param overwrite Whether to overwrite existing keys.
+ * @param overwrite If true, existing keys will be overwritten.
+ * @throws TypeException if the current value is not an object.
  */
 void Json::mergeObject(const Json& other, bool overwrite) {
     JsonAlgorithms::mergeObject(*this, other, overwrite);
 }
 
 /**
- * @brief Merges another JSON array into this one.
+ * @brief Merges another JSON array into the current array.
+ * @param target The target JSON array to merge into.
  * @param other The JSON array to merge.
+ * @throws TypeException if the current value is not an array.
  */
 void Json::mergeArray(const Json& other) {
     JsonAlgorithms::mergeArray(*this, other);
 }
 
 /**
- * @brief Sorts a JSON array by a specified key path.
- * @param keyPath The key path to sort by.
- * @param ascending Whether to sort in ascending order.
+ * @brief Sorts a JSON array of objects by a nested key path (e.g., "Marks.MathMark").
+ * @param target The target JSON array to sort.
+ * @param keyPath The key path to sort by (e.g., "Marks.MathMark").
+ * @param ascending If true, sorts in ascending order; otherwise, descending.
+ * @throws TypeException if the JSON value is not an array of objects.
+ * @throws AccessException if the key path does not exist in the objects.
  */
 void Json::sortByPath(const std::string& keyPath, bool ascending) {
     JsonAlgorithms::sortByPath(*this, keyPath, ascending);

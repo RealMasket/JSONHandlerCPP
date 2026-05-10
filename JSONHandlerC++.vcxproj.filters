@@ -52,6 +52,27 @@
     <ClInclude Include="parser\Token.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="errors\JsonException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\ParseException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\LexerException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\TypeException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\FileException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\AccessException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors\OperationException.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\dllmain.cpp">
@@ -76,6 +97,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parser\JsonLexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\ParseException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\LexerException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\TypeException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\AccessException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\FileException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors\OperationException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
