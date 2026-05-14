@@ -1,5 +1,6 @@
 #pragma once
 #include "JsonHandler.hpp"
+#include "Api.hpp"
 #include "Token.hpp"
 
 class JSON_API JsonParser

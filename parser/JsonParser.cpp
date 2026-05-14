@@ -33,6 +33,11 @@ bool JsonParser::isAtEnd() const
 */
 const Token& JsonParser::peek() const
 {
+    if (current >= tokens.size())
+    {
+        return tokens.back();
+    }
+
     return tokens[current];
 }
 
@@ -42,6 +47,11 @@ const Token& JsonParser::peek() const
 */
 const Token& JsonParser::previous() const
 {
+    if (current == 0)
+    {
+        return tokens.front();
+	}
+
     return tokens[current - 1];
 }
 
@@ -75,7 +85,25 @@ Json JsonParser::parse(const std::string& source)
 
     JsonParser parser(tokens, source);
 
-    return parser.parseValue();
+    Json result = parser.parseValue();
+
+    if (!parser.isAtEnd())
+    {
+        const Token& token = parser.peek();
+
+        throw ParseException(
+            DiagnosticFormatter::format(
+                source,
+                token.line,
+                token.column,
+                "Unexpected token after JSON value"
+            ),
+            token.line,
+            token.column
+        );
+    }
+
+    return result;
 }
 
 /*

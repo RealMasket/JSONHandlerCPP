@@ -89,6 +89,10 @@ std::string JsonSerializer::escapeString(const std::string& input) {
         case '\\': escaped += "\\\\"; break;
         case '\n': escaped += "\\n"; break;
         case '\t': escaped += "\\t"; break;
+        case '\r': escaped += "\\r"; break;
+        case '\b': escaped += "\\b"; break;
+        case '\f': escaped += "\\f"; break;
+        case '/': escaped += "\\/"; break;
         default: escaped += c;
         }
     }

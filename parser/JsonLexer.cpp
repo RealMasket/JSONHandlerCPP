@@ -146,6 +146,10 @@ Token JsonLexer::string()
             case 't': value += '\t'; break;
             case '"': value += '"'; break;
             case '\\': value += '\\'; break;
+            case 'r': value += '\r'; break;
+            case 'b': value += '\b'; break;
+            case 'f': value += '\f'; break;
+            case '/': value += '/'; break;
 
             default:
                 throw LexerException(
