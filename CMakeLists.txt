@@ -38,9 +38,8 @@ add_library(JSONHandlerCPP_master STATIC
         parser/JsonParser.hpp
         parser/Token.hpp
         serializer/JsonSerializer.cpp
-        serializer/JsonSerializer.hpp
+        jsonHandlerC++.hpp
         utils/Api.hpp
-        utils/framework.h
         utils/JsonAlgorithms.cpp
         utils/JsonAlgorithms.hpp
         pch.cpp

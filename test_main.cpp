@@ -1,6 +1,5 @@
 #include <iostream>
-#include "core/JsonHandler.hpp"
-#include "serializer/JsonSerializer.hpp"
+#include "jsonHandlerC++.hpp"
 
 int main() {
     Json json;
