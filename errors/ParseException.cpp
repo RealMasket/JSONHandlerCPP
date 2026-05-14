@@ -1,4 +1,5 @@
 #include "ParseException.hpp"
+#include "pch.h"
 
 ParseException::ParseException(
     const std::string& message,

@@ -4,8 +4,9 @@
 #include <string>
 
 #include "Token.hpp"
+#include "Api.hpp"
 
-class JsonLexer
+class JSON_API JsonLexer
 {
 public:
     /*
@@ -22,7 +23,7 @@ public:
     std::vector<Token> tokenize();
 
 private:
-    const std::string& source;
+    std::string source;
 
     size_t position = 0;
     size_t line = 1;
@@ -40,6 +41,17 @@ private:
     * @return The current character, or '\0' if at the end of the input.
     */
     char peek() const;
+    /*
+    * @brief Checks if the current character matches the expected character and advances if it does.
+    * @param expected The character to match against the current character.
+    * @return True if the current character matches the expected character, false otherwise.
+    */
+    bool match(char expected);
+    /*
+    * @brief Peeks at the next character without advancing the position.
+    * @return The next character, or '\0' if at the end of the input.
+    */
+    char peekNext() const;
     /*
     * @brief Advances the position and returns the current character.
     * @return The current character, or '\0' if at the end of the input.

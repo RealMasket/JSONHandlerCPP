@@ -42,11 +42,11 @@ std::string JsonSerializer::serializeObject(const Json::JsonObject& obj, bool pr
         if (!first) result += ",";
         result += "\n" + indent;
 
-        if (!pretty) {
+        if (pretty) {
             result += "\"" + escapeString(key) + "\": ";
         }
         else {
-            result += "\"" + escapeString(key) + "\": ";
+            result += "\"" + escapeString(key) + "\":";
         }
 
         result += serialize(value, pretty, indentLevel + 1);

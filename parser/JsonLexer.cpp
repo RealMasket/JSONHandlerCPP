@@ -29,6 +29,36 @@ char JsonLexer::peek() const
 }
 
 /*
+* @brief Checks if the current character matches the expected character and advances if it does.
+* @param expected The character to match against the current character.
+* @return True if the current character matches the expected character, false otherwise.
+*/
+bool JsonLexer::match(char expected)
+{
+    if (isAtEnd())
+        return false;
+
+    if (source[position] != expected)
+        return false;
+
+    advance();
+
+    return true;
+}
+
+/*
+* @brief Peeks at the next character without advancing the position.
+* @return The next character, or '\0' if at the end of the input.
+*/
+char JsonLexer::peekNext() const
+{
+    if (position + 1 >= source.size())
+        return '\0';
+
+    return source[position + 1];
+}
+
+/*
 * @brief Advances the position and returns the current character.
 * @return The current character, or '\0' if at the end of the input.
 */
@@ -158,34 +188,121 @@ Token JsonLexer::string()
 /*
 * @brief Parses a number token from the input, handling integers, decimals, and scientific notation.
 * @return A Token object representing the parsed number.
+* @throws LexerException if the number format is invalid.
 */
 Token JsonLexer::number()
 {
     size_t start = position;
 
-    while (!isAtEnd())
+    // optional minus
+    if (peek() == '-')
     {
-        char c = peek();
+        advance();
+    }
 
-        if (isdigit(c)
-            || c == '.'
-            || c == '-'
-            || c == '+'
-            || c == 'e'
-            || c == 'E')
+    // integer part
+    if (peek() == '0')
+    {
+        advance();
+
+        // leading zero check
+        if (isdigit(peek()))
+        {
+            throw LexerException(
+                DiagnosticFormatter::format(
+                    source,
+                    line,
+                    column,
+                    "Leading zeros are not allowed"
+                ),
+                line,
+                column
+            );
+        }
+    }
+    else if (isdigit(peek()))
+    {
+        while (isdigit(peek()))
         {
             advance();
         }
-        else
+    }
+    else
+    {
+        throw LexerException(
+            DiagnosticFormatter::format(
+                source,
+                line,
+                column,
+                "Invalid number"
+            ),
+            line,
+            column
+        );
+    }
+
+    // fraction
+    if (peek() == '.')
+    {
+        advance();
+
+        if (!isdigit(peek()))
         {
-            break;
+            throw LexerException(
+                DiagnosticFormatter::format(
+                    source,
+                    line,
+                    column,
+                    "Expected digit after decimal point"
+                ),
+                line,
+                column
+            );
+        }
+
+        while (isdigit(peek()))
+        {
+            advance();
+        }
+    }
+
+    // exponent
+    if (peek() == 'e' || peek() == 'E')
+    {
+        advance();
+
+        if (peek() == '+' || peek() == '-')
+        {
+            advance();
+        }
+
+        if (!isdigit(peek()))
+        {
+            throw LexerException(
+                DiagnosticFormatter::format(
+                    source,
+                    line,
+                    column,
+                    "Invalid exponent"
+                ),
+                line,
+                column
+            );
+        }
+
+        while (isdigit(peek()))
+        {
+            advance();
         }
     }
 
     std::string value =
         source.substr(start, position - start);
 
-    return makeToken(Parser::TokenType::Number, value);
+    return makeToken(
+        Parser::TokenType::Number,
+        value
+    );
 }
 
 /*

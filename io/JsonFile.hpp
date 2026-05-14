@@ -1,7 +1,8 @@
 #pragma once
 #include "JsonHandler.hpp"
+#include "Api.hpp"
 
-class JsonFile
+class JSON_API JsonFile
 {
 public:
 	/**

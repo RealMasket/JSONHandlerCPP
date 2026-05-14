@@ -1,5 +1,5 @@
 #include "DiagnosticFormatter.hpp"
-
+#include "pch.h"
 #include <sstream>
 
 std::string DiagnosticFormatter::format(

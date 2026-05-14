@@ -113,16 +113,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,8 +135,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="Directory.Build.props" />
     <None Include="README.MD" />
   </ItemGroup>
   <ItemGroup>
@@ -165,9 +170,10 @@
     <ClInclude Include="parser\JsonParser.hpp" />
     <ClInclude Include="parser\Token.hpp" />
     <ClInclude Include="serializer\JsonSerializer.hpp" />
+    <ClInclude Include="utils\Api.hpp" />
     <ClInclude Include="utils\JsonAlgorithms.hpp" />
     <ClInclude Include="utils\framework.h" />
-    <ClInclude Include="utils\pch.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="diagnostics\DiagnosticFormatter.cpp" />
@@ -184,7 +190,7 @@
     <ClCompile Include="serializer\JsonSerializer.cpp" />
     <ClCompile Include="utils\JsonAlgorithms.cpp" />
     <ClCompile Include="utils\dllmain.cpp" />
-    <ClCompile Include="utils\pch.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

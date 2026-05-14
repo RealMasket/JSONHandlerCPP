@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Ensure the precompiled header source file actually creates the PCH so other translation units can use it -->
+  <ItemGroup>
+    <ClCompile Update="utils\pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+</Project>

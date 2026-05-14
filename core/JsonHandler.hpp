@@ -1,16 +1,11 @@
 #ifndef JSON_HANDLERC_HPP
 #define JSON_HANDLERC_HPP
 
-#ifdef JSONHANDLERC_EXPORTS
-#define JSON_API __declspec(dllexport)
-#else
-#define JSON_API __declspec(dllimport)
-#endif
-
 #include <string>
 #include <map>
 #include <vector>
 #include <variant>
+#include "Api.hpp"
 
 class JSON_API Json {
 public:

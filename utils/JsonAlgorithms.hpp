@@ -1,7 +1,7 @@
 #pragma once
 #include "JsonHandler.hpp"
 
-class JsonAlgorithms
+class JSON_API JsonAlgorithms
 {
 public:
     /**

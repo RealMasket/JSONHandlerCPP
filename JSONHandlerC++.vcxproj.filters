@@ -18,6 +18,7 @@
     <None Include="README.MD">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deleted.txt">
@@ -31,7 +32,7 @@
     <ClInclude Include="utils\framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utils\pch.h">
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\JsonAlgorithms.hpp">
@@ -76,12 +77,15 @@
     <ClInclude Include="diagnostics\DiagnosticFormatter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="utils\Api.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils\pch.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\JsonHandler.cpp">
