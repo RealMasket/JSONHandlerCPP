@@ -162,6 +162,7 @@ Json JsonParser::parseValue()
 */
 Json JsonParser::parseObject()
 {
+    enterDepth();
     Json::JsonObject obj;
 
     if (match(Parser::TokenType::RightBrace))
@@ -224,6 +225,7 @@ Json JsonParser::parseObject()
         }
     }
 
+	leaveDepth();
     return obj;
 }
 
@@ -234,6 +236,7 @@ Json JsonParser::parseObject()
 */
 Json JsonParser::parseArray()
 {
+	enterDepth();
     Json::JsonArray arr;
 
     if (match(Parser::TokenType::RightBracket))
@@ -265,5 +268,40 @@ Json JsonParser::parseArray()
         }
     }
 
+	leaveDepth();
     return arr;
+}
+
+/*
+* @brief Enters a new depth level in the JSON structure and checks for maximum nesting depth.
+* @throws ParseException if the maximum nesting depth is exceeded.
+*/
+void JsonParser::enterDepth()
+{
+    ++currentDepth;
+
+    if (currentDepth > MAX_DEPTH)
+    {
+        throw ParseException(
+            DiagnosticFormatter::format(
+                source,
+                peek().line,
+                peek().column,
+                "Maximum nesting depth exceeded"
+            ),
+            peek().line,
+            peek().column
+        );
+    }
+}
+
+/*
+* @brief Leaves the current depth level in the JSON structure, ensuring it does not go below zero.
+*/
+void JsonParser::leaveDepth()
+{
+    if (currentDepth > 0)
+    {
+        --currentDepth;
+    }
 }

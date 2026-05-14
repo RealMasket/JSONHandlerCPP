@@ -29,6 +29,9 @@ private:
     const std::string& source;
 
     size_t current = 0;
+    size_t currentDepth = 0;
+
+    static constexpr size_t MAX_DEPTH = 128;
 
 private:
     /*
@@ -68,6 +71,16 @@ private:
     * @return The previous token.
     */
     const Token& previous() const;
+
+    /*
+    * @brief Enters a new depth level in the JSON structure and checks for maximum nesting depth.
+    * @throws ParseException if the maximum nesting depth is exceeded.
+    */
+    void enterDepth();
+    /*
+    * @brief Leaves the current depth level in the JSON structure, ensuring it does not go below zero.
+    */
+    void leaveDepth();
 
     /*
     * @brief Checks if the parser has reached the end of the token stream.

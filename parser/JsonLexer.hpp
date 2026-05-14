@@ -91,4 +91,11 @@ private:
         Parser::TokenType type,
         const std::string& lexeme
     );
+
+    /*
+    * @brief Parses a unicode escape sequence in a JSON string and returns the corresponding UTF-8 encoded string.
+    * @return A UTF-8 encoded string representing the parsed unicode character.
+    * @throws LexerException if the unicode escape sequence is invalid.
+    */
+    std::string parseUnicodeEscape();
 };

@@ -150,6 +150,9 @@ Token JsonLexer::string()
             case 'b': value += '\b'; break;
             case 'f': value += '\f'; break;
             case '/': value += '/'; break;
+            case 'u':
+                value += parseUnicodeEscape();
+                break;
 
             default:
                 throw LexerException(
@@ -436,4 +439,64 @@ std::vector<Token> JsonLexer::tokenize()
         makeToken(Parser::TokenType::EndOfFile, ""));
 
     return tokens;
+}
+
+/*
+* @brief Parses a unicode escape sequence in a JSON string and returns the corresponding UTF-8 encoded string.
+* @return A UTF-8 encoded string representing the parsed unicode character.
+* @throws LexerException if the unicode escape sequence is invalid.
+*/
+std::string JsonLexer::parseUnicodeEscape()
+{
+    std::string hex;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (isAtEnd() || !std::isxdigit(peek()))
+        {
+            throw LexerException(
+                DiagnosticFormatter::format(
+                    source,
+                    line,
+                    column,
+                    "Invalid unicode escape"
+                ),
+                line,
+                column
+            );
+        }
+
+        hex += advance();
+    }
+
+    unsigned int codepoint =
+        std::stoul(hex, nullptr, 16);
+
+    std::string utf8;
+
+    if (codepoint <= 0x7F)
+    {
+        utf8 += static_cast<char>(codepoint);
+    }
+    else if (codepoint <= 0x7FF)
+    {
+        utf8 += static_cast<char>(
+            0xC0 | ((codepoint >> 6) & 0x1F));
+
+        utf8 += static_cast<char>(
+            0x80 | (codepoint & 0x3F));
+    }
+    else
+    {
+        utf8 += static_cast<char>(
+            0xE0 | ((codepoint >> 12) & 0x0F));
+
+        utf8 += static_cast<char>(
+            0x80 | ((codepoint >> 6) & 0x3F));
+
+        utf8 += static_cast<char>(
+            0x80 | (codepoint & 0x3F));
+    }
+
+    return utf8;
 }
