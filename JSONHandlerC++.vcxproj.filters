@@ -21,15 +21,7 @@
     <None Include="Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Deleted.txt">
-      <Filter>Header Files</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="core\JsonHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -80,6 +72,9 @@
     <ClInclude Include="utils\Api.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="utils\framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils\dllmain.cpp">
@@ -127,5 +122,8 @@
     <ClCompile Include="diagnostics\DiagnosticFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include "JsonAlgorithms.hpp"
 #include "TypeException.hpp"
 #include "AccessException.hpp"
+#include "JsonSerializer.hpp"
 
 // Constructors
 
@@ -34,6 +35,32 @@ bool Json::isBigNumber() const {
         return cachedResult.value() == std::string::npos;
     }
     return false;
+}
+bool Json::isEmpty() const {
+    if (isObject()) {
+        return std::get<JsonObject>(value).empty();
+    }
+    if (isArray()) {
+        return std::get<JsonArray>(value).empty();
+    }
+    return false;
+}
+
+/*
+* @brief Clears the contents of the JSON value. If it's an object or array, it will be emptied. For other types, it will be set to null.
+* @return A reference to the current JSON value after clearing.
+*/
+Json& Json::clear() {
+    if (isObject()) {
+        std::get<JsonObject>(value).clear();
+    }
+    else if (isArray()) {
+        std::get<JsonArray>(value).clear();
+    }
+    else {
+        value = nullptr;
+    }
+    return *this;
 }
 
 /*
@@ -338,7 +365,7 @@ bool Json::operator==(const Json& other) const {
 }
 
 /**
- * @brief Merges another JSON object into the current object.
+ * @brief Wrapper method to merge another JSON object into the current object.
  * (Existing keys are overwritten based on the overwrite parameter.)
  * @param target The target JSON object to merge into.
  * @param other The JSON object to merge.
@@ -350,7 +377,7 @@ void Json::mergeObject(const Json& other, bool overwrite) {
 }
 
 /**
- * @brief Merges another JSON array into the current array.
+ * @brief Wrapper method to merge another JSON array into the current array.
  * @param target The target JSON array to merge into.
  * @param other The JSON array to merge.
  * @throws TypeException if the current value is not an array.
@@ -360,7 +387,7 @@ void Json::mergeArray(const Json& other) {
 }
 
 /**
- * @brief Sorts a JSON array of objects by a nested key path (e.g., "Marks.MathMark").
+ * @brief Wrapper method to sort a JSON array of objects by a nested key path (e.g., "Marks.MathMark").
  * @param target The target JSON array to sort.
  * @param keyPath The key path to sort by (e.g., "Marks.MathMark").
  * @param ascending If true, sorts in ascending order; otherwise, descending.
@@ -369,4 +396,14 @@ void Json::mergeArray(const Json& other) {
  */
 void Json::sortByPath(const std::string& keyPath, bool ascending) {
     JsonAlgorithms::sortByPath(*this, keyPath, ascending);
+}
+
+/**
+ * @brief Wrapper method to serializes the JSON value to a string.
+ * @param pretty If true, the output will be indented for readability.
+ * @param indentLevel The starting indentation level for pretty-printing.
+ * @return The serialized JSON string.
+ */
+std::string Json::serialize(bool pretty, int indentLevel) const {
+    return JsonSerializer::serialize(*this, pretty, indentLevel);
 }

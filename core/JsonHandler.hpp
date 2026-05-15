@@ -29,6 +29,13 @@ public:
     bool isObject() const;
     bool isArray() const;
     bool isBigNumber() const;
+    bool isEmpty() const;
+
+    /*
+    * @brief Clears the contents of the JSON value. If it's an object or array, it will be emptied. For other types, it will be set to null.
+    * @return A reference to the current JSON value after clearing.
+    */
+    Json& clear();
 
     /*
     * @brief Returns a string representation of the JSON value's type (e.g., "null", "bool", "number", "string", "object", "array").
@@ -193,6 +200,14 @@ public:
      * @param ascending Whether to sort in ascending order.
      */
     void sortByPath(const std::string& keyPath, bool ascending = true);
+
+    /**
+     * @brief Serializes the JSON value to a string.
+     * @param pretty If true, the output will be indented for readability.
+     * @param indentLevel The starting indentation level for pretty-printing.
+     * @return The serialized JSON string.
+     */
+    std::string serialize(bool pretty = true, int indentLevel = 0) const;
 
 private:
     using JsonValue = std::variant<std::nullptr_t, bool, double, std::string, JsonObject, JsonArray>;

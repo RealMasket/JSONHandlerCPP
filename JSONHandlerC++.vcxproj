@@ -153,9 +153,6 @@
     <None Include="README.MD" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Deleted.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="diagnostics\DiagnosticFormatter.hpp" />
     <ClInclude Include="errors\AccessException.hpp" />
     <ClInclude Include="core\JsonHandler.hpp" />
@@ -171,8 +168,8 @@
     <ClInclude Include="parser\Token.hpp" />
     <ClInclude Include="serializer\JsonSerializer.hpp" />
     <ClInclude Include="utils\Api.hpp" />
-    <ClInclude Include="utils\JsonAlgorithms.hpp" />
     <ClInclude Include="utils\framework.h" />
+    <ClInclude Include="utils\JsonAlgorithms.hpp" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +188,9 @@
     <ClCompile Include="utils\JsonAlgorithms.cpp" />
     <ClCompile Include="utils\dllmain.cpp" />
     <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

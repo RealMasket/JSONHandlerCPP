@@ -1,136 +1,405 @@
-# JsonHandlerC++ Library
+# JsonHandlerC++
 
-This is a custom JSON handling library created for personal use in future projects. It provides a simple API for parsing, manipulating, and serializing JSON data. The library is written in C++ and uses modern C++ features like `std::variant` and `std::map` to handle different JSON data types.
+Modern modular JSON parsing and serialization library for C++17.
 
-## Features
+JsonHandlerC++ is a custom JSON processing library developed as an educational and research-oriented software engineering project.  
+The library implements a complete JSON pipeline including lexical analysis, parsing, serialization, diagnostics, exception handling, and automated testing.
 
-- Supports `null`, `bool`, `number`, `string`, `object`, and `array` JSON types.
-- Ability to serialize C++ objects into JSON format and deserialize JSON back into C++ objects.
-- Access JSON data via index (`[]`) for arrays and keys for objects.
-- Push new elements to arrays with `push_back`.
-- Error handling with exceptions for invalid operations or JSON structure.
+The project focuses on:
+- modular architecture,
+- RFC-oriented validation,
+- parser reliability,
+- detailed diagnostics,
+- extensibility,
+- and modern C++ development practices.
 
-## Usage
+---
 
-To use this library, include the header file `jsonHandlerC++.hpp` and link the compiled library to your project.
+# Features
 
-### Example
-#### Basic JSON:
+## Core JSON Support
+- JSON object support
+- JSON array support
+- String, number, boolean, and null types
+- Dynamic JSON value system using `std::variant`
+
+## Lexer & Parser
+- Recursive descent parser architecture
+- Token-based lexer system
+- Detailed token metadata:
+  - line
+  - column
+  - source position
+- Strict JSON validation
+- EOF validation
+- Safe token access
+- Malformed JSON detection
+
+## Unicode & Escaping
+- Escape sequence support:
+  - `\n`
+  - `\t`
+  - `\\`
+  - `\"`
+- Unicode escape support:
+  - `\uXXXX`
+- UTF-8 conversion support
+
+## Serialization
+- Compact JSON serialization
+- Pretty-print JSON serialization
+- Recursive object/array serialization
+- String escaping system
+
+## Diagnostics & Error Handling
+- Detailed parser diagnostics
+- Line and column error reporting
+- Specialized exception hierarchy:
+  - `LexerException`
+  - `ParseException`
+  - `TypeException`
+  - `FileException`
+  - `OperationException`
+  - `AccessException`
+
+Example diagnostic:
+
+```text
+Parse error at line 4, column 15:
+Expected ',' between array elements
+````
+
+---
+
+## Robustness & Safety
+
+* Maximum nesting depth protection
+* Invalid number rejection
+* Invalid escape sequence detection
+* Defensive parser validation
+* Safe recursive parsing
+
+---
+
+## Testing
+
+The project uses Google Test for automated testing.
+
+Current test coverage includes:
+
+* Lexer validation
+* Parser validation
+* Serialization tests
+* Round-trip tests
+* Unicode handling
+* Invalid JSON rejection
+* Escape sequence validation
+* Deep nesting protection
+
+---
+
+# Architecture
+
+The library is divided into independent modules.
+
+## Core Layer
+
+Responsible for storing and manipulating JSON values.
+
+Modules:
+
+* `JsonHandler`
+
+## Lexer Layer
+
+Converts raw JSON text into token stream.
+
+Module:
+
+* `JsonLexer`
+* `Token`
+
+Responsibilities:
+
+* token generation
+* number validation
+* keyword parsing
+* escape sequence handling
+* unicode parsing
+
+## Parser Layer
+
+Builds JSON structures from tokens.
+
+Module:
+
+* `JsonParser`
+
+Responsibilities:
+
+* recursive descent parsing
+* object parsing
+* array parsing
+* syntax validation
+* nesting depth protection
+
+## Serializer Layer
+
+Converts JSON structures back into text in JSON form.
+
+Module:
+
+* `JsonSerializer`
+
+Responsibilities:
+
+* compact serialization
+* pretty serialization
+* string escaping
+
+## Diagnostics Layer
+
+Provides contextual error formatting and debugging information.
+
+Module:
+
+* `DiagnosticFormatter`
+
+## Exception Layer
+
+Provides specialized exception hierarchy.
+
+Modules:
+
+* `LexerException`
+* `ParseException`
+* `TypeException`
+* `AccessException`
+* `FileException`
+* `OperationException`
+
+---
+
+# Project Structure
+
+```text
+JsonHandlerC++/
+│
+├── core/
+│   └── JsonHandler
+│
+├── diagnostics/
+│   └── DiagnosticFormatter
+│
+├── errors/
+│   ├── AccessException
+│   ├── FileException
+│   ├── LexerException
+│   ├── OperationException
+│   ├── ParseException
+│   ├── TypeException
+│   └── JsonException (base class)
+│
+├── examples/
+│   ├── BasicJsonExample
+│   └── ParsingExample
+│
+├── examples of tests/
+│   ├── JsonLexerTests
+│   ├── JsonParserTests
+│   ├── JsonRoundTripTests
+│   └── JsonSerializerTests
+│
+├── io/
+│   └── JsonFile
+│
+├── parser/
+│   ├── JsonParser
+│   ├── JsonLexer
+│   └── Token
+│
+├── serializer/
+│   └── JsonSerializer
+│
+└── utils/
+    ├── Api
+    ├── dllmain
+    ├── framework
+    └── JsonAlgorithms
 ```
-#include "jsonHandlerC++.hpp"
+
+---
+
+# Usage
+
+## Basic Example
+
+```cpp
+#include "JsonHandler.hpp"
 #include <iostream>
 
-int main() {
-    // Create a JSON object
+int main()
+{
     Json obj(Json::JsonObject{});
 
-    // Add data to the object
     obj["name"] = "Adam";
     obj["age"] = 21.0;
+    obj["student"] = true;
 
-    // Serialize the JSON object to a string
-    std::cout << obj.serialize() << std::endl;
-
-    return 0;
-}
-```
-
-#### Example of Arrays:
-
-```
-#include "jsonHandlerC++.hpp"
-#include <iostream>
-
-int main() {
-    // Create a JSON array
-    Json::JsonArray jsonArray = { Json(1.0), Json(2.0), Json(3.5), Json("hello"), Json(true) };
-
-    // Wrap the array in a Json object
-    Json json = jsonArray;
-
-    // Access elements in the JSON array
-    std::cout << "First element: " << json[0].asNumber() << std::endl;
-    std::cout << "Second element: " << json[1].asNumber() << std::endl;
-    std::cout << "Third element: " << json[2].asNumber() << std::endl;
-    std::cout << "Fourth element: " << json[3].asString() << std::endl;
-    std::cout << "Fifth element: " << std::boolalpha << json[4].asBool() << std::endl;
-
-    // Modify an element in the array
-    json[1] = Json(42.5);
-
-    // Add new elements to the array
-    json.push_back(Json("new element"));
-    json.push_back(Json(false));
-
-    // Serialize the array
-    std::cout << "Serialized JSON array: " << json.serialize(true, 0) << std::endl;
-
-    // Parse a JSON array from a string
-    std::string jsonString = "[10, 20, 30, \"world\", false]";
-    Json parsedJson = Json::parse(jsonString);
-    std::cout << "Parsed JSON array: " << parsedJson.serialize(true, 0) << std::endl;
-
-    // Iterate through the array
-    std::cout << "Iterating through the JSON array:" << std::endl;
-    for (size_t i = 0; i < parsedJson.asArray().size(); ++i) {
-        const Json& element = parsedJson[i];
-        if (element.isNumber()) {
-            std::cout << "Number: " << element.asNumber() << std::endl;
-        }
-        else if (element.isString()) {
-            std::cout << "String: " << element.asString() << std::endl;
-        }
-        else if (element.isBool()) {
-            std::cout << "Boolean: " << element.asBool() << std::endl;
-        }
-    }
+    std::cout << obj.serialize(true, 0);
 
     return 0;
 }
 ```
 
-### Supported Operations
+## Parsing JSON
 
-- **Creating JSON objects**:
-    - `Json(JsonObject)` - Creates a JSON object.
-    - `Json(JsonArray)` - Creates a JSON array.
-    - `Json(std::string)` - Creates a JSON string.
-    - `Json(double)` - Creates a JSON number.
-    - `Json(bool)` - Creates a JSON boolean.
+```cpp
+#include "JsonHandler.hpp"
 
-- **Accessing JSON data**:
-    - Use the `operator[]` to access data in objects and arrays.
-    - `obj["key"]` for objects.
-    - `obj[index]` for arrays.
+int main()
+{
+    std::string jsonText =
+        R"({
+            "name": "Alice",
+            "age": 25
+        })";
 
-- **Parsing JSON**:
-    - `Json::parse(const std::string& str)` - Parses a JSON string into a `Json` object.
+    Json json = Json::parse(jsonText);
 
-- **Serialization**:
-    - `obj.serialize()` - Serializes a `Json` object to a JSON-formatted string.
+    std::cout << json["name"].asString();
 
-### Error Handling
+    return 0;
+}
+```
 
-The library uses C++ exceptions (`std::runtime_error`) to signal errors like:
-- Attempting to access an invalid index or key.
-- Invalid JSON format during parsing.
-- Type mismatches when converting between types.
+## Arrays
 
-## Building the Library
+```cpp
+Json::JsonArray arr =
+{
+    Json(1.0),
+    Json(2.0),
+    Json("hello"),
+    Json(true)
+};
 
-1. **Create the DLL**: Follow the instructions for creating a DLL in Visual Studio, linking the library with your project.
-2. **Link the Library**: Add `jsonHandlerC++.hpp` to your project and link against the compiled DLL or static library.
+Json json = arr;
 
-### Dependencies
+json.push_back("new value");
 
-- C++17 or later for `std::variant` and other features.
+std::cout << json.serialize(true, 0);
+```
 
-## License
+---
 
-This library is intended for personal use only and is not distributed for commercial purposes. Feel free to use it in your projects.
+# Example of Diagnostics
 
-## TODO
+Input:
 
-- Add more comprehensive error handling.
-- Improve performance for larger JSON files.
-- Expand API functionality for more complex operations.
+```json
+{
+    "name": "John"
+    "age": 25
+}
+```
+
+Diagnostic:
+
+```text
+Parse error at line 3, column 5:
+Expected ',' between key-value pairs
+```
+
+---
+
+# Build Requirements
+
+## Requirements
+
+* CMake 3.20 or newer (if using CMake)
+* C++17 or newer
+* Google Test (if you want to run tests. But it's better to do in a separate project with compiled and linked Google Test libraries and this library)
+
+---
+
+## Supported Compilers
+
+* MSVC
+* GCC
+* Clang
+
+(Basically any C++ compiler modern enough to support C++17)
+
+---
+
+# Building
+
+## Visual Studio
+
+1. Open the solution file.
+2. Build the project.
+3. Build test project separately if needed.
+
+---
+
+## CMake
+
+1.Clone the Repository
+
+```bash
+git clone https://github.com/RealMasket/JSONHandlerCPP.git
+cd JSONHandlerCPP
+````
+
+2. Configure Project
+
+```bash
+cmake -S . -B build
+```
+
+3. Build Project
+
+```bash
+cmake --build build
+```
+
+---
+
+# Future Improvements
+
+Planned future improvements include:
+
+* Streaming JSON parser
+* SAX-style parser API
+* Full UTF-16 surrogate pair support
+* Continuous Integration (CI)
+* Fuzz testing
+* Custom memory allocators
+* Improved performance optimizations
+* Iterator support
+* JSON schema validation
+
+---
+
+# Engineering Goals
+
+This project was created to explore:
+
+* parser architecture,
+* compiler-inspired design,
+* defensive programming,
+* diagnostics systems,
+* modular C++ development,
+* and automated software testing.
+
+The project is intended as both:
+
+* a practical JSON library,
+* and a software engineering research/educational project.
+
+---
+
+# License
+
+This project is provided for educational and research purposes.
