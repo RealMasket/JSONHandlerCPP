@@ -19,34 +19,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
+    <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a63ff09d-03e3-416e-a6f7-d9fb281f9acb}</ProjectGuid>
-    <RootNamespace>JSONHandlerC</RootNamespace>
+    <ProjectGuid>{d103a5cd-e1c0-47ef-8b44-24b116b00e47}</ProjectGuid>
+    <RootNamespace>LibBenchmarks</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -70,23 +70,21 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -94,38 +92,40 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\serializer;$(SolutionDir)\parser;$(SolutionDir)\io;$(SolutionDir)\utils;$(SolutionDir)\core;$(SolutionDir)\errors;$(SolutionDir)\diagnostics;$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)x64\Debug\JSONHandlerC++.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -133,60 +133,27 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;JSONHANDLERC_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)\serializer;$(SolutionDir)\parser;$(SolutionDir)\io;$(SolutionDir)\utils;$(SolutionDir)\core;$(SolutionDir)\errors;$(SolutionDir)\diagnostics;$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Directory.Build.props" />
-    <None Include="README.MD" />
+    <ClCompile Include="BenchmarkUtils.cpp" />
+    <ClCompile Include="ParseBenchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="diagnostics\DiagnosticFormatter.hpp" />
-    <ClInclude Include="errors\AccessException.hpp" />
-    <ClInclude Include="core\JsonHandler.hpp" />
-    <ClInclude Include="errors\FileException.hpp" />
-    <ClInclude Include="errors\JsonException.hpp" />
-    <ClInclude Include="errors\LexerException.hpp" />
-    <ClInclude Include="errors\ParseException.hpp" />
-    <ClInclude Include="errors\TypeException.hpp" />
-    <ClInclude Include="io\JsonFile.hpp" />
-    <ClInclude Include="errors\OperationException.hpp" />
-    <ClInclude Include="parser\JsonLexer.hpp" />
-    <ClInclude Include="parser\JsonParser.hpp" />
-    <ClInclude Include="parser\Token.hpp" />
-    <ClInclude Include="serializer\JsonSerializer.hpp" />
-    <ClInclude Include="utils\Api.hpp" />
-    <ClInclude Include="utils\framework.h" />
-    <ClInclude Include="utils\JsonAlgorithms.hpp" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="diagnostics\DiagnosticFormatter.cpp" />
-    <ClCompile Include="errors\AccessException.cpp" />
-    <ClCompile Include="core\JsonHandler.cpp" />
-    <ClCompile Include="errors\LexerException.cpp" />
-    <ClCompile Include="errors\ParseException.cpp" />
-    <ClCompile Include="errors\FileException.cpp" />
-    <ClCompile Include="errors\TypeException.cpp" />
-    <ClCompile Include="io\JsonFile.cpp" />
-    <ClCompile Include="errors\OperationException.cpp" />
-    <ClCompile Include="parser\JsonLexer.cpp" />
-    <ClCompile Include="parser\JsonParser.cpp" />
-    <ClCompile Include="serializer\JsonSerializer.cpp" />
-    <ClCompile Include="utils\JsonAlgorithms.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClInclude Include="BenchmarkUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

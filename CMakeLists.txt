@@ -19,7 +19,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Library
 # =========================
 
-add_library(JsonHandlerCPP STATIC)
+add_library(JsonHandlerCPP SHARED)
+
+target_compile_definitions(JsonHandlerCPP
+    PRIVATE JSONHANDLERC_EXPORTS
+)
 
 target_sources(JsonHandlerCPP
     PRIVATE
@@ -73,20 +77,15 @@ target_include_directories(JsonHandlerCPP
 )
 
 # =========================
+# Benchmarks
+# =========================
+
+add_subdirectory(benchmarks)
+
+# =========================
 # Compiler Features
 # =========================
 
 target_compile_features(JsonHandlerCPP
     PUBLIC cxx_std_17
 )
-
-# =========================
-# Windows DLL Support
-# =========================
-
-if(WIN32)
-    target_sources(JsonHandlerCPP
-        PRIVATE
-        utils/dllmain.cpp
-    )
-endif()
