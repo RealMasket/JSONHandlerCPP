@@ -137,7 +137,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\serializer;$(MSBuildProjectDirectory)\parser;$(MSBuildProjectDirectory)\io;$(MSBuildProjectDirectory)\utils;$(MSBuildProjectDirectory)\core;$(MSBuildProjectDirectory)\errors;$(MSBuildProjectDirectory)\diagnostics;$(MSBuildProjectDirectory)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>

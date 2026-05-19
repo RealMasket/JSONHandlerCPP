@@ -5,6 +5,15 @@
 #include "AccessException.hpp"
 #include "JsonSerializer.hpp"
 
+Json::Json(std::string&& s)
+    : value(std::move(s)) {}
+
+Json::Json(JsonObject&& obj)
+    : value(std::move(obj)) {}
+
+Json::Json(JsonArray&& arr)
+    : value(std::move(arr)) {}
+
 // Constructors
 
 Json::Json() : value(nullptr) {}
@@ -26,15 +35,13 @@ bool Json::isString() const { return std::holds_alternative<std::string>(value);
 bool Json::isObject() const { return std::holds_alternative<JsonObject>(value); }
 bool Json::isArray() const { return std::holds_alternative<JsonArray>(value); }
 bool Json::isBigNumber() const {
-    static thread_local std::optional<size_t> cachedResult;
-    if (isString()) {
-        const auto& str = asString();
-        if (!cachedResult.has_value()) {
-            cachedResult = str.find_first_not_of("0123456789");
-        }
-        return cachedResult.value() == std::string::npos;
-    }
-    return false;
+    if (!isString())
+        return false;
+
+    const auto& str = asString();
+
+    return !str.empty() &&
+        str.find_first_not_of("0123456789") == std::string::npos;
 }
 bool Json::isEmpty() const {
     if (isObject()) {

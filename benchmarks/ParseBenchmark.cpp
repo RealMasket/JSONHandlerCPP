@@ -20,16 +20,17 @@ std::string loadFile(const std::string& path)
 int main()
 {
     size_t iterations = 100;
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
         std::string fileName;
 		switch (i)
 		{
-		    case 0: fileName = "smallFile.json"; break;
-		    case 1: fileName = "mediumFile.json"; break;
-		    case 2: fileName = "bigFile.json"; break;
-		    case 3: fileName = "largeFile.json"; iterations = 10; break;
-		    case 4: fileName = "hugeFile.json"; break;
+		    case 0: fileName = "tinyFile.json"; break;
+		    case 1: fileName = "smallFile.json"; break;
+		    case 2: fileName = "mediumFile.json"; break;
+		    case 3: fileName = "bigFile.json"; break;
+		    case 4: fileName = "largeFile.json"; iterations = 10; break;
+            case 5: fileName = "hugeFile.json"; iterations = 3; break;
 		}
         std::string json =
             loadFile("benchmark_data/" + fileName);

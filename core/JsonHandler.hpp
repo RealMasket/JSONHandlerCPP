@@ -12,6 +12,10 @@ public:
     using JsonObject = std::map<std::string, Json>;
     using JsonArray = std::vector<Json>;
 
+    Json(std::string&& s);
+    Json(JsonObject&& obj);
+    Json(JsonArray&& arr);
+
     Json();
     Json(std::nullptr_t);
     Json(bool b);

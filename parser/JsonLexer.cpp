@@ -358,6 +358,7 @@ Token JsonLexer::keyword()
 std::vector<Token> JsonLexer::tokenize()
 {
     std::vector<Token> tokens;
+    tokens.reserve(source.size() / 4);
 
     while (!isAtEnd())
     {

@@ -203,7 +203,7 @@ Json JsonParser::parseObject()
 			);
         }
 
-        obj[key] = parseValue();
+        obj.emplace(std::move(key), parseValue());
 
         if (match(Parser::TokenType::RightBrace))
         {
@@ -246,7 +246,7 @@ Json JsonParser::parseArray()
 
     while (true)
     {
-        arr.push_back(parseValue());
+        arr.emplace_back(parseValue());
 
         if (match(Parser::TokenType::RightBracket))
         {
