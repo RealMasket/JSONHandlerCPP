@@ -46,6 +46,14 @@
 
 ### Build and verification
 
+- Install a relocatable CMake package with version configuration and the imported
+  JsonHandlerCPP::JsonHandlerCPP target, public headers, libraries, CLI, and docs.
+- Preserve short installed includes and add the JsonHandlerCPP/ header prefix;
+  keep implementation-only headers out of the package.
+- Add library version metadata, a Debug suffix, and relative CLI runtime lookup
+  on Linux/macOS. Export static definitions and sanitizer requirements.
+- Test a separate consumer after relocating the install prefix, including all
+  public headers, exported APIs, and CLI loading in the existing CI matrix.
 - Add optional static-build stage/allocation profiling and an affinity-controlled
   Windows before/after runner, with raw measurements and an optimization report.
 - Add wide/nested/duplicate-key array regressions and a static-build profiler

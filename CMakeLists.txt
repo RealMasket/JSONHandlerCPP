@@ -11,6 +11,9 @@ project(
     LANGUAGES CXX
 )
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 # =========================
 # C++ Standard
 # =========================
@@ -33,6 +36,11 @@ option(JSONHANDLER_BUILD_FUZZ_REPLAY "Build portable corpus replay without unit 
 
 add_library(JsonHandlerCPP)
 add_library(JsonHandlerCPP::JsonHandlerCPP ALIAS JsonHandlerCPP)
+set_target_properties(JsonHandlerCPP PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    DEBUG_POSTFIX d
+)
 
 include(cmake/Sanitizers.cmake)
 
@@ -84,14 +92,16 @@ target_sources(JsonHandlerCPP
 target_include_directories(JsonHandlerCPP
     PUBLIC
 
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/diagnostics
-    ${CMAKE_CURRENT_SOURCE_DIR}/errors
-    ${CMAKE_CURRENT_SOURCE_DIR}/io
-    ${CMAKE_CURRENT_SOURCE_DIR}/parser
-    ${CMAKE_CURRENT_SOURCE_DIR}/serializer
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/diagnostics>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/errors>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/io>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/parser>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/serializer>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/utils>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP>
 )
 
 # =========================
@@ -101,6 +111,13 @@ target_include_directories(JsonHandlerCPP
 if(JSONHANDLER_BUILD_CLI)
     add_executable(jsonhandler tools/JsonCli.cpp)
     target_link_libraries(jsonhandler PRIVATE JsonHandlerCPP)
+    file(RELATIVE_PATH jsonhandler_bin_to_lib "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}")
+    if(APPLE)
+        set_target_properties(jsonhandler PROPERTIES INSTALL_RPATH "@loader_path/${jsonhandler_bin_to_lib}")
+    elseif(UNIX)
+        set_target_properties(jsonhandler PROPERTIES INSTALL_RPATH "\$ORIGIN/${jsonhandler_bin_to_lib}")
+    endif()
+    install(TARGETS jsonhandler RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(JSONHANDLER_BUILD_BENCHMARKS)
@@ -130,6 +147,7 @@ if(BUILD_TESTING)
         set(JSONHANDLER_SHARED_LIBS ${BUILD_SHARED_LIBS})
         set(BUILD_SHARED_LIBS OFF)
         set(BUILD_GMOCK OFF)
+        set(INSTALL_GTEST OFF)
         FetchContent_MakeAvailable(googletest)
         set(BUILD_SHARED_LIBS ${JSONHANDLER_SHARED_LIBS})
     endif()
@@ -144,6 +162,26 @@ if(BUILD_TESTING)
     target_link_libraries(JsonHandlerTests PRIVATE JsonHandlerCPP GTest::gtest_main)
     include(GoogleTest)
     gtest_discover_tests(JsonHandlerTests)
+    add_test(NAME Package.InstalledConsumer COMMAND "${CMAKE_COMMAND}"
+        "-DPRODUCER_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+        "-DPRODUCER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+        "-DCONSUMER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/tests/installed-consumer"
+        "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/package-tests"
+        "-DCONFIG=$<CONFIG>"
+        "-DGENERATOR=${CMAKE_GENERATOR}"
+        "-DGENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+        "-DGENERATOR_TOOLSET=${CMAKE_GENERATOR_TOOLSET}"
+        "-DCXX_COMPILER=${CMAKE_CXX_COMPILER}"
+        "-DEXPECT_SHARED=${BUILD_SHARED_LIBS}"
+        "-DINSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}"
+        "-DINSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}"
+        "-DINSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}"
+        "-DINSTALL_DOCDIR=${CMAKE_INSTALL_DOCDIR}"
+        "-DCLI_ENABLED=${JSONHANDLER_BUILD_CLI}"
+        "-DEXECUTABLE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
+        "-DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/InstalledPackage.cmake")
+    set_tests_properties(Package.InstalledConsumer PROPERTIES TIMEOUT 180)
     if(JSONHANDLER_BUILD_CLI)
         add_test(NAME JsonCli.Integration COMMAND ${CMAKE_COMMAND}
             "-DCLI=$<TARGET_FILE:jsonhandler>"
@@ -177,3 +215,43 @@ target_compile_features(JsonHandlerCPP
 if(BUILD_TESTING OR JSONHANDLER_BUILD_FUZZ_REPLAY OR JSONHANDLER_BUILD_FUZZERS)
     add_subdirectory(fuzz)
 endif()
+
+# Public package. Implementation-only diagnostics/UTF-8/PCH headers stay private.
+install(TARGETS JsonHandlerCPP EXPORT JsonHandlerCPPTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+if(TARGET JsonHandlerSanitizers)
+    # Sanitized developer packages must retain their runtime link requirements.
+    install(TARGETS JsonHandlerSanitizers EXPORT JsonHandlerCPPTargets)
+endif()
+install(FILES
+    core/JsonHandler.hpp
+    parser/JsonLexer.hpp parser/JsonParser.hpp parser/Token.hpp
+    serializer/JsonSerializer.hpp io/JsonFile.hpp
+    errors/JsonException.hpp errors/AccessException.hpp errors/FileException.hpp
+    errors/LexerException.hpp errors/OperationException.hpp errors/ParseException.hpp
+    errors/TypeException.hpp
+    utils/Api.hpp utils/JsonAlgorithms.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP
+)
+set(jsonhandler_package_dir ${CMAKE_INSTALL_LIBDIR}/cmake/JsonHandlerCPP)
+configure_package_config_file(cmake/JsonHandlerCPPConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfig.cmake"
+    INSTALL_DESTINATION ${jsonhandler_package_dir}
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion
+)
+install(EXPORT JsonHandlerCPPTargets
+    FILE JsonHandlerCPPTargets.cmake NAMESPACE JsonHandlerCPP::
+    DESTINATION ${jsonhandler_package_dir}
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfigVersion.cmake"
+    DESTINATION ${jsonhandler_package_dir}
+)
+install(FILES README.MD CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR})

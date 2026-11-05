@@ -16,6 +16,7 @@ demonstrates tokenization, recursive descent parsing, a value tree based on
 - A command-line validator and formatter with stdin/stdout support.
 - Google Test tests integrated with CTest.
 - Corpus replay, deterministic mutations, and optional ASan/UBSan + libFuzzer.
+- An installable CMake package with shared and static library support.
 
 ## Build and test
 
@@ -62,16 +63,60 @@ toolset. CMake is the common entry point for the library, examples, and tests.
 
 ## Use from another CMake project
 
+Build and install a Release package into a prefix of your choice:
+
+```sh
+cmake -S . -B build-package -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DJSONHANDLER_BUILD_EXAMPLES=OFF
+cmake --build build-package --config Release
+cmake --install build-package --config Release --prefix /path/to/jsonhandler-install
+```
+
+Add `-DBUILD_SHARED_LIBS=OFF` when configuring to install a static library.
+Use separate installation prefixes for shared and static builds. Debug libraries
+have a `d` suffix, so Debug and Release of the same library type can share a
+prefix. Build the required configuration before installing it.
+
+In the consuming project, define your executable and link the imported target:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyApp LANGUAGES CXX)
+find_package(JsonHandlerCPP 1.0 CONFIG REQUIRED)
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE JsonHandlerCPP::JsonHandlerCPP)
+```
+
+Configure that project with
+`-DCMAKE_PREFIX_PATH=/path/to/jsonhandler-install`. Installed headers support
+`#include <JsonHandlerCPP/JsonParser.hpp>` as well as the existing short form
+`#include "JsonParser.hpp"`. CMake propagates include directories, C++17, and
+`JSONHANDLER_STATIC` for static builds; consumers do not need Google Test,
+Boost, or Qt. The version file accepts compatible requests within major version 1.
+
+The prefix contains public headers under `include/JsonHandlerCPP`, libraries
+under `lib`, package configuration under `lib/cmake/JsonHandlerCPP`, and the CLI
+under `bin` when enabled. GNUInstallDirs options can customize these locations.
+Keep them relative to the prefix to retain relocatability. The whole installed
+prefix can then be moved without rebuilding; configure consumers with its new
+location. On Linux/macOS the installed CLI locates its library relative to itself.
+On Windows, put the installed DLL beside your application or add the package's
+`bin` directory to `PATH` when running it. See
+[the independent consumer](tests/installed-consumer/CMakeLists.txt) for a DLL
+copy command. Sanitized developer builds also export their sanitizer requirements;
+use an ordinary Release build for distribution.
+
+Alternatively, include the source tree directly and use short header includes:
+
 ```cmake
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(JSONHANDLER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(JSONHANDLER_BUILD_CLI OFF CACHE BOOL "" FORCE)
 add_subdirectory(path/to/JsonHandlerCPP)
 target_link_libraries(my_app PRIVATE JsonHandlerCPP::JsonHandlerCPP)
 ```
 
-CMake propagates include directories, C++17 requirements, and the static-library
-definition. When linking a static build manually on Windows, define
-`JSONHANDLER_STATIC` for the consumer.
+When linking a static build manually on Windows, define `JSONHANDLER_STATIC`
+for the consumer.
 
 The Windows DLL exposes standard-library types in its C++ interface. Build DLL
 consumers with compatible MSVC toolset and runtime settings; a stable C ABI
@@ -139,6 +184,12 @@ Ordinary CTest runs include byte-preserving corpus replay and deterministic
 mutations. Additional Linux CI jobs run ASan/UBSan and a bounded libFuzzer
 campaign, preserving logs and failing inputs. See [fuzz/README.md](fuzz/README.md)
 for local commands and the regression workflow.
+
+`Package.InstalledConsumer` installs into a temporary prefix, moves it to a path
+containing spaces, and builds/runs a separate `find_package` consumer. It checks
+each public header independently, both include styles, exported compile settings,
+exception and file APIs, and the relocated CLI when enabled. This check runs in
+the Windows/Linux, Debug/Release, shared/static CI matrix and with sanitizers.
 
 ## Access and errors
 
@@ -224,8 +275,8 @@ the same numeric ordering. Booleans and strings are never equal to numbers.
 | `io` | File reading and writing |
 | `utils` | JSON algorithms, UTF-8 validation, export definitions |
 | `examples of tests` | Unit and regression tests |
-| `tools` / `tests` | Command-line application and its integration checks |
-| `fuzz` / `cmake` | Corpus replay, libFuzzer, and sanitizer configuration |
+| `tools` / `tests` | CLI, integration checks, and installed-package consumer |
+| `fuzz` / `cmake` | Corpus replay, libFuzzer, sanitizers, and package configuration |
 
 See [CHANGELOG.md](CHANGELOG.md) for the fixes and compatibility changes.
 GitHub Actions is configured to build and test shared and static variants on
