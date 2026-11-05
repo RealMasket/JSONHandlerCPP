@@ -42,6 +42,12 @@
 
 ### Build and verification
 
+- Add Linux ASan/UBSan configuration with fail-fast undefined-behavior checks.
+- Add a dedicated coverage-instrumented libFuzzer parser/round-trip target.
+- Add portable corpus replay and deterministic byte/dictionary mutations,
+  strict replay of known valid regressions, and failure-artifact checks to CTest.
+- Preserve corpus bytes with .gitattributes and upload Linux sanitizer/fuzzer
+  logs, crash inputs, and generated corpus from bounded CI jobs.
 - Add shared/static CMake options and the JsonHandlerCPP::JsonHandlerCPP alias.
 - Integrate Google Test and CTest, with a pinned, checksummed dependency.
 - Add regression tests for the failure cases above.

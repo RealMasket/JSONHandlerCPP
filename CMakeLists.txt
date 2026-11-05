@@ -27,9 +27,14 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(JSONHANDLER_BUILD_EXAMPLES "Build usage examples" ON)
 option(JSONHANDLER_BUILD_CLI "Build the JSON validation/formatting command line tool" ON)
 option(JSONHANDLER_BUILD_BENCHMARKS "Build benchmarks (requires external input data)" OFF)
+option(JSONHANDLER_ENABLE_SANITIZERS "Enable ASan and UBSan (Linux GCC/Clang)" OFF)
+option(JSONHANDLER_BUILD_FUZZERS "Build libFuzzer target (Linux Clang, static, sanitizers)" OFF)
+option(JSONHANDLER_BUILD_FUZZ_REPLAY "Build portable corpus replay without unit tests" OFF)
 
 add_library(JsonHandlerCPP)
 add_library(JsonHandlerCPP::JsonHandlerCPP ALIAS JsonHandlerCPP)
+
+include(cmake/Sanitizers.cmake)
 
 target_compile_definitions(JsonHandlerCPP
     PRIVATE JSONHANDLERC_EXPORTS
@@ -163,3 +168,7 @@ endif()
 target_compile_features(JsonHandlerCPP
     PUBLIC cxx_std_17
 )
+
+if(BUILD_TESTING OR JSONHANDLER_BUILD_FUZZ_REPLAY OR JSONHANDLER_BUILD_FUZZERS)
+    add_subdirectory(fuzz)
+endif()

@@ -25,3 +25,65 @@ jobs:
         run: cmake --build build --config ${{ matrix.config }} --parallel 2
       - name: Test
         run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CC: clang
+      CXX: clang++
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure ASan and UBSan
+        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_BENCHMARKS=ON
+      - name: Build
+        run: cmake --build build-sanitized --parallel 2
+      - name: Test with sanitizers
+        run: ctest --test-dir build-sanitized --output-on-failure
+      - name: Preserve sanitizer logs and reproducers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-results
+          path: |
+            build-sanitized/Testing/Temporary/
+            build-sanitized/fuzz/*-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CC: clang
+      CXX: clang++
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure instrumented libFuzzer target
+        run: cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJSONHANDLER_BUILD_EXAMPLES=OFF -DJSONHANDLER_BUILD_CLI=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_FUZZERS=ON
+      - name: Build fuzzer
+        run: cmake --build build-fuzz --target JsonParserFuzz --parallel 2
+      - name: Prepare working corpus
+        run: |
+          mkdir -p build-fuzz/artifacts build-fuzz/corpus
+          cp fuzz/corpus/* fuzz/regressions/* build-fuzz/corpus/
+      - name: Fuzz parsing and round trips for 60 seconds
+        shell: bash
+        run: |
+          set -o pipefail
+          ./build-fuzz/fuzz/JsonParserFuzz build-fuzz/corpus -dict=fuzz/json.dict -seed=20261105 -max_total_time=60 -max_len=65536 -timeout=5 -rss_limit_mb=2048 -print_final_stats=1 -artifact_prefix=build-fuzz/artifacts/ 2>&1 | tee build-fuzz/fuzz.log
+      - name: Preserve corpus, crash inputs, and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-results
+          path: |
+            build-fuzz/corpus/
+            build-fuzz/artifacts/
+            build-fuzz/fuzz.log
+          if-no-files-found: ignore
+          retention-days: 14

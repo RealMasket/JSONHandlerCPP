@@ -15,6 +15,7 @@ demonstrates tokenization, recursive descent parsing, a value tree based on
 - Checked access, object/array helpers, and file I/O.
 - A command-line validator and formatter with stdin/stdout support.
 - Google Test tests integrated with CTest.
+- Corpus replay, deterministic mutations, and optional ASan/UBSan + libFuzzer.
 
 ## Build and test
 
@@ -48,6 +49,9 @@ directory with `-DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=/path/to/googletest`.
 | `JSONHANDLER_BUILD_EXAMPLES` | `ON` | Build usage examples |
 | `JSONHANDLER_BUILD_CLI` | `ON` | Build the validator/formatter |
 | `JSONHANDLER_BUILD_BENCHMARKS` | `OFF` | Build the parser benchmark |
+| `JSONHANDLER_ENABLE_SANITIZERS` | `OFF` | ASan/UBSan on Linux GCC/Clang |
+| `JSONHANDLER_BUILD_FUZZERS` | `OFF` | Linux Clang libFuzzer; static + sanitizers required |
+| `JSONHANDLER_BUILD_FUZZ_REPLAY` | `OFF` | Build corpus replay without unit tests |
 
 With a multi-configuration generator such as Visual Studio, select the same
 configuration for build and CTest. With a single-configuration generator, set
@@ -128,6 +132,13 @@ The optional benchmark generates reproducible datasets, times parsing and
 serialization separately, and exports CSV. Boost.JSON and Qt6 Core comparisons
 are opt-in and use your local installations. See
 [benchmarks/README.md](benchmarks/README.md) for commands and methodology.
+
+## Robustness testing
+
+Ordinary CTest runs include byte-preserving corpus replay and deterministic
+mutations. Additional Linux CI jobs run ASan/UBSan and a bounded libFuzzer
+campaign, preserving logs and failing inputs. See [fuzz/README.md](fuzz/README.md)
+for local commands and the regression workflow.
 
 ## Access and errors
 
@@ -214,6 +225,7 @@ the same numeric ordering. Booleans and strings are never equal to numbers.
 | `utils` | JSON algorithms, UTF-8 validation, export definitions |
 | `examples of tests` | Unit and regression tests |
 | `tools` / `tests` | Command-line application and its integration checks |
+| `fuzz` / `cmake` | Corpus replay, libFuzzer, and sanitizer configuration |
 
 See [CHANGELOG.md](CHANGELOG.md) for the fixes and compatibility changes.
 GitHub Actions is configured to build and test shared and static variants on
@@ -221,8 +233,8 @@ Windows and Linux, in Debug and Release.
 
 ## Future work
 
-Atomic file replacement, fuzz testing, streaming/SAX parsing, arbitrary-precision
-numbers, and memory profiling.
+Atomic file replacement, longer fuzz campaigns, streaming/SAX parsing,
+arbitrary-precision numbers, and memory profiling.
 
 ## License
 

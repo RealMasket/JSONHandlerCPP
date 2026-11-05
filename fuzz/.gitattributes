@@ -1,0 +1,3 @@
+# Preserve exact bytes in corpus/reproducers across Windows and Linux checkouts.
+corpus/** -text
+regressions/** -text

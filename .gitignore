@@ -366,3 +366,4 @@ FodyWeavers.xsd
 /build
 test_main
 test_array
+/fuzz-artifacts/
