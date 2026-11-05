@@ -80,7 +80,8 @@ void JsonAlgorithms::sortByPath(Json& target, const std::string & keyPath, bool 
         const Json& valB = getValueByPath(b);
 
         if (valA.isNumber() && valB.isNumber()) {
-            return ascending ? valA.asNumber() < valB.asNumber() : valA.asNumber() > valB.asNumber();
+            const int order = valA.compareNumbers(valB);
+            return ascending ? order < 0 : order > 0;
         }
         if (valA.isString() && valB.isString()) {
             return ascending ? valA.asString() < valB.asString() : valA.asString() > valB.asString();

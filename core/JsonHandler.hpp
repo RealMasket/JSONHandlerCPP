@@ -6,6 +6,8 @@
 #include <vector>
 #include <variant>
 #include <utility>
+#include <cstdint>
+#include <type_traits>
 #include "Api.hpp"
 
 class JSON_API Json {
@@ -26,10 +28,28 @@ public:
     Json(const JsonArray& arr);
     Json(const char* s);
     Json(int i);
+    Json(std::int64_t i);
+    Json(std::uint64_t i);
+
+    // Cover all standard integral types without ambiguous signed/unsigned/double
+    // overloads (int64_t aliases differ between Windows and Linux).
+    template<class Integer, std::enable_if_t<std::is_integral_v<Integer> &&
+        !std::is_same_v<Integer, bool>, int> = 0>
+    Json(Integer i)
+        : Json(static_cast<std::conditional_t<std::is_signed_v<Integer>,
+            std::int64_t, std::uint64_t>>(i))
+    {
+        static_assert(sizeof(Integer) <= sizeof(std::uint64_t),
+            "Integer types wider than 64 bits are not supported");
+    }
 
     bool isNull() const;
     bool isBool() const;
     bool isNumber() const;
+    bool isInteger() const;
+    bool isSignedInteger() const;
+    bool isUnsignedInteger() const;
+    bool isFloatingPoint() const;
     bool isString() const;
     bool isObject() const;
     bool isArray() const;
@@ -55,11 +75,19 @@ public:
      */
     bool asBool() const;
     /**
-     * @brief Retrieves the JSON value as a number (double).
+     * @brief Converts any numeric value to double. Large integers may round.
      * @return Double value.
      * @throws TypeException if the value is not a number.
      */
     double asNumber() const;
+    // Checked access to stored integers, accepting either signedness when the
+    // value fits. Floating-point values and out-of-range values throw TypeException.
+    std::int64_t asInt64() const;
+    std::uint64_t asUInt64() const;
+
+    // Exact numeric ordering, including integer/double pairs: returns -1, 0, 1.
+    // Non-numbers throw TypeException; NaN throws OperationException.
+    int compareNumbers(const Json& other) const;
     /**
      * @brief Retrieves the JSON value as a string (const version).
      * @return String value.
@@ -226,7 +254,8 @@ public:
     std::string serialize(bool pretty = true, int indentLevel = 0) const;
 
 private:
-    using JsonValue = std::variant<std::nullptr_t, bool, double, std::string, JsonObject, JsonArray>;
+    using JsonValue = std::variant<std::nullptr_t, bool, std::int64_t, std::uint64_t,
+        double, std::string, JsonObject, JsonArray>;
     JsonValue value;
 };
 

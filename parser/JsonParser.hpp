@@ -7,7 +7,8 @@ class JSON_API JsonParser
 public:
     explicit JsonParser(const std::vector<Token>& tokens, const std::string& source);
     // Accepts UTF-8 JSON with a maximum container nesting depth of 128.
-    // Numbers are represented as double; out-of-range values throw ParseException.
+    // Integers use int64_t/uint64_t; fractions/exponents use double.
+    // Out-of-range literals throw ParseException, never silently fall back to double.
     static Json parse(const std::string& source);
 
 private:

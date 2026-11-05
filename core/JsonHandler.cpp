@@ -4,6 +4,37 @@
 #include "TypeException.hpp"
 #include "AccessException.hpp"
 #include "JsonSerializer.hpp"
+#include "OperationException.hpp"
+#include <cmath>
+#include <limits>
+
+namespace {
+template<class Number>
+int compare(Number a, Number b) { return (a > b) - (a < b); }
+
+// Check exact power-of-two bounds BEFORE floating-to-integer conversion.
+// Unlike casting both arguments to double (or MSVC's long double), these
+// comparisons distinguish adjacent integers above 2^53 without overflow/UB.
+int compareIntegerDouble(std::int64_t integer, double floating)
+{
+    if (floating < -0x1p63) return 1;
+    if (floating >= 0x1p63) return -1;
+    const auto truncated = static_cast<std::int64_t>(floating);
+    const int order = compare(integer, truncated);
+    if (order != 0 || floating == std::trunc(floating)) return order;
+    return floating > 0 ? -1 : 1;
+}
+
+int compareIntegerDouble(std::uint64_t integer, double floating)
+{
+    if (floating < 0) return 1;
+    if (floating >= 0x1p64) return -1;
+    const auto truncated = static_cast<std::uint64_t>(floating);
+    const int order = compare(integer, truncated);
+    if (order != 0 || floating == std::trunc(floating)) return order;
+    return -1;
+}
+}
 
 Json::Json(std::string&& s)
     : value(std::move(s)) {}
@@ -24,13 +55,19 @@ Json::Json(const std::string& s) : value(s) {}
 Json::Json(const JsonObject& obj) : value(obj) {}
 Json::Json(const JsonArray& arr) : value(arr) {}
 Json::Json(const char* s) : value(std::string(s)) {}
-Json::Json(int i) : value(static_cast<double>(i)) {}
+Json::Json(int i) : value(static_cast<std::int64_t>(i)) {}
+Json::Json(std::int64_t i) : value(i) {}
+Json::Json(std::uint64_t i) : value(i) {}
 
 // Type checks
 
 bool Json::isNull() const { return std::holds_alternative<std::nullptr_t>(value); }
 bool Json::isBool() const { return std::holds_alternative<bool>(value); }
-bool Json::isNumber() const { return std::holds_alternative<double>(value); }
+bool Json::isNumber() const { return isInteger() || isFloatingPoint(); }
+bool Json::isInteger() const { return isSignedInteger() || isUnsignedInteger(); }
+bool Json::isSignedInteger() const { return std::holds_alternative<std::int64_t>(value); }
+bool Json::isUnsignedInteger() const { return std::holds_alternative<std::uint64_t>(value); }
+bool Json::isFloatingPoint() const { return std::holds_alternative<double>(value); }
 bool Json::isString() const { return std::holds_alternative<std::string>(value); }
 bool Json::isObject() const { return std::holds_alternative<JsonObject>(value); }
 bool Json::isArray() const { return std::holds_alternative<JsonArray>(value); }
@@ -101,15 +138,57 @@ bool Json::asBool() const {
 }
 
 /**
- * @brief Retrieves the JSON value as a number (double).
+ * @brief Converts any numeric value to double. Large integers may round.
  * @return Double value.
  * @throws TypeException if the value is not a number.
  */
 double Json::asNumber() const {
+    if (isSignedInteger()) return static_cast<double>(std::get<std::int64_t>(value));
+    if (isUnsignedInteger()) return static_cast<double>(std::get<std::uint64_t>(value));
     if (!isNumber()) throw TypeException(
         "Expected number but got " + typeName()
     );
     return std::get<double>(value);
+}
+
+std::int64_t Json::asInt64() const {
+    if (isSignedInteger()) return std::get<std::int64_t>(value);
+    if (isUnsignedInteger() && std::get<std::uint64_t>(value) <=
+        static_cast<std::uint64_t>((std::numeric_limits<std::int64_t>::max)()))
+        return static_cast<std::int64_t>(std::get<std::uint64_t>(value));
+    throw TypeException("Expected a stored integer fitting int64_t");
+}
+
+std::uint64_t Json::asUInt64() const {
+    if (isUnsignedInteger()) return std::get<std::uint64_t>(value);
+    if (isSignedInteger() && std::get<std::int64_t>(value) >= 0)
+        return static_cast<std::uint64_t>(std::get<std::int64_t>(value));
+    throw TypeException("Expected a stored integer fitting uint64_t");
+}
+
+int Json::compareNumbers(const Json& other) const {
+    if (!isNumber() || !other.isNumber())
+        throw TypeException("Numeric comparison requires two numbers");
+    if ((isFloatingPoint() && std::isnan(asNumber())) ||
+        (other.isFloatingPoint() && std::isnan(other.asNumber())))
+        throw OperationException("NaN cannot be ordered");
+    if (isFloatingPoint()) {
+        if (other.isFloatingPoint()) return compare(asNumber(), other.asNumber());
+        return -other.compareNumbers(*this);
+    }
+    if (other.isFloatingPoint()) {
+        if (isSignedInteger()) return compareIntegerDouble(asInt64(), other.asNumber());
+        return compareIntegerDouble(asUInt64(), other.asNumber());
+    }
+    if (isSignedInteger() && other.isSignedInteger())
+        return compare(asInt64(), other.asInt64());
+    if (isUnsignedInteger() && other.isUnsignedInteger())
+        return compare(asUInt64(), other.asUInt64());
+    if (isSignedInteger()) {
+        if (asInt64() < 0) return -1;
+        return compare(static_cast<std::uint64_t>(asInt64()), other.asUInt64());
+    }
+    return -other.compareNumbers(*this);
 }
 
 /**
@@ -372,6 +451,11 @@ std::vector<std::string> Json::keys() const {
  * @return True if the values are equal, false otherwise.
  */
 bool Json::operator==(const Json& other) const {
+    if (isNumber() && other.isNumber()) {
+        if ((isFloatingPoint() && std::isnan(asNumber())) ||
+            (other.isFloatingPoint() && std::isnan(other.asNumber()))) return false;
+        return compareNumbers(other) == 0;
+    }
     if (value.index() != other.value.index()) return false;
     if (isArray()) return asArray() == other.asArray();
     if (isObject()) return asObject() == other.asObject();

@@ -4,6 +4,12 @@
 
 ### Correctness
 
+- Store signed and unsigned 64-bit integers exactly through construction, parsing,
+  serialization, nested equality, and numeric sorting.
+- Compare integers and doubles without converting large integers to rounded double
+  values. Add independently generated rational comparison fixtures.
+- Reject integer literal overflow rather than silently falling back to double.
+- Preserve floating storage for whole-valued doubles and retain negative zero.
 - Complete the source-range token migration and record token start locations.
 - Keep digit-only strings quoted instead of treating them as big numbers.
 - Preserve finite double values during serialization, independent of locale.
@@ -20,6 +26,12 @@
 
 ### API compatibility
 
+- Add integer type checks, checked asInt64()/asUInt64(), and compareNumbers().
+  asNumber() remains a potentially rounded double conversion for compatibility.
+- Numeric equality compares values across signed/unsigned/double storage. All
+  numeric variants still report typeName() == "number".
+- The Json variant layout changes; rebuild the library and its C++ consumers.
+  Whole-valued doubles now serialize with .0 when no exponent is present.
 - Add mutable and const at(key) / at(index).
 - Mutable operator[] converts only null to a container. Using it on a conflicting
   type now throws TypeException instead of silently destroying the old value.
@@ -48,5 +60,5 @@
 
 ### Remaining limits
 
-Numbers still use double. Arbitrary-precision numeric storage, atomic file
-replacement and streaming parsing are future work.
+Decimal/exponent literals still use double. Arbitrary-precision numeric storage,
+atomic file replacement and streaming parsing are future work.

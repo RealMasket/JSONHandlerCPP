@@ -134,6 +134,7 @@ if(BUILD_TESTING)
         "examples of tests/JsonRoundTripTests.cpp"
         "examples of tests/JsonSerializerTests.cpp"
         "examples of tests/JsonRegressionTests.cpp"
+        "examples of tests/JsonNumberTests.cpp"
     )
     target_link_libraries(JsonHandlerTests PRIVATE JsonHandlerCPP GTest::gtest_main)
     include(GoogleTest)

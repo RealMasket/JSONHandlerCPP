@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string_view>
 #include <system_error>
+#include <limits>
 
 namespace {
 class DepthGuard {
@@ -134,6 +135,27 @@ Json JsonParser::parseValue()
     if (token.type == Parser::TokenType::Number) {
         const char* begin = source.data() + token.start;
         const char* end = begin + token.length;
+        const std::string_view spelling(begin, token.length);
+        if (spelling.find_first_of(".eE") == std::string_view::npos) {
+            // Preserve the sign of JSON's negative zero, as for floating -0.0.
+            if (spelling == "-0") { ++current; return Json(-0.0); }
+            if (*begin == '-') {
+                std::int64_t integer;
+                const auto result = std::from_chars(begin, end, integer);
+                if (result.ec != std::errc{} || result.ptr != end)
+                    fail("Integer is outside the supported int64_t range");
+                ++current;
+                return integer;
+            }
+            std::uint64_t integer;
+            const auto result = std::from_chars(begin, end, integer);
+            if (result.ec != std::errc{} || result.ptr != end)
+                fail("Integer is outside the supported uint64_t range");
+            ++current;
+            if (integer <= static_cast<std::uint64_t>((std::numeric_limits<std::int64_t>::max)()))
+                return Json(static_cast<std::int64_t>(integer));
+            return Json(integer);
+        }
         double number;
         const auto result = std::from_chars(begin, end, number, std::chars_format::general);
         if (result.ec != std::errc{} || result.ptr != end)

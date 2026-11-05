@@ -1,5 +1,9 @@
 # Local Release benchmark
 
+Historical baseline: measured before exact integer storage, at source commit
+[fd56159](https://github.com/RealMasket/JSONHandlerCPP/commit/fd56159e594f5726927da1f7ea7fdf6b5618824b).
+These timings do not describe later revisions of the numeric representation.
+
 Measured on 2026-11-05 on Windows x64, Intel Core i5-12600KF.
 Compiler: MSVC 19.51 (1951), Release; JSONHandler and Boost.JSON built as static
 libraries in the same CMake build. Qt Core is the prebuilt MSVC 2022 x64 kit.

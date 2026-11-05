@@ -91,7 +91,8 @@ differences limit conclusions; CI smoke tests check functionality, not speed.
 ## Local results
 
 See [results/windows-msvc1951.md](results/windows-msvc1951.md) and its raw CSV
-for the measured local Release run.
+for the historical local Release run at commit `fd56159`, before exact integer
+storage was introduced. Rerun the harness to measure the current revision.
 
 ## References
 

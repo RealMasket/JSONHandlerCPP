@@ -12,15 +12,24 @@ std::string JsonSerializer::serialize(const Json& json, bool pretty, int indentL
     if (json.isNull()) return "null";
     if (json.isBool()) return json.asBool() ? "true" : "false";
     if (json.isNumber()) {
-        const double value = json.asNumber();
-        if (!std::isfinite(value))
-            throw OperationException("Cannot serialize NaN or infinity as JSON");
         char buffer[128];
-        const auto result = std::to_chars(buffer, buffer + sizeof(buffer), value,
-            std::chars_format::general);
+        std::to_chars_result result;
+        if (json.isSignedInteger())
+            result = std::to_chars(buffer, buffer + sizeof(buffer), json.asInt64());
+        else if (json.isUnsignedInteger())
+            result = std::to_chars(buffer, buffer + sizeof(buffer), json.asUInt64());
+        else {
+            const double value = json.asNumber();
+            if (!std::isfinite(value))
+                throw OperationException("Cannot serialize NaN or infinity as JSON");
+            result = std::to_chars(buffer, buffer + sizeof(buffer), value, std::chars_format::general);
+        }
         if (result.ec != std::errc{})
             throw OperationException("Unable to serialize number");
-        return std::string(buffer, result.ptr);
+        std::string text(buffer, result.ptr);
+        if (json.isFloatingPoint() && text.find_first_of(".eE") == std::string::npos)
+            text += ".0";
+        return text;
     }
     if (json.isString()) return "\"" + escapeString(json.asString()) + "\"";
     if (indentLevel >= 128)

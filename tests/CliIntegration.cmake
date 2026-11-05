@@ -76,3 +76,16 @@ execute_process(COMMAND "${CLI}" check -- -leading.json
 if(NOT result EQUAL 0)
     message(FATAL_ERROR "Option terminator failed")
 endif()
+
+file(WRITE "${TEST_ROOT}/integers.json"
+    "[9007199254740993,-9223372036854775808,18446744073709551615]")
+run(0 format --compact "${TEST_ROOT}/integers.json")
+if(NOT stdout STREQUAL "[9007199254740993,-9223372036854775808,18446744073709551615]\n")
+    message(FATAL_ERROR "CLI rounded an integer: ${stdout}")
+endif()
+file(WRITE "${TEST_ROOT}/overflow.json" "18446744073709551616")
+run(1 format -o "${output}" "${TEST_ROOT}/overflow.json")
+file(READ "${output}" after)
+if(NOT after STREQUAL pretty)
+    message(FATAL_ERROR "Integer overflow overwrote an existing output file")
+endif()

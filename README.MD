@@ -6,7 +6,8 @@ demonstrates tokenization, recursive descent parsing, a value tree based on
 
 ## Features
 
-- Objects, arrays, strings, numbers, booleans, and null.
+- Objects, arrays, strings, exact signed/unsigned 64-bit integers, floating-point
+  numbers, booleans, and null.
 - Tokens store source ranges instead of allocating a string per token.
 - UTF-8 validation, JSON escapes, and UTF-16 surrogate-pair decoding.
 - Source line, column, and contextual error messages.
@@ -146,12 +147,45 @@ are opt-in and use your local installations. See
 
 `JsonParser::parse()` parses text; file operations belong to `JsonFile`.
 
+## Numbers
+
+```cpp
+const Json id = JsonParser::parse("9007199254740993");
+std::int64_t exactId = id.asInt64();
+const Json largest = JsonParser::parse("18446744073709551615");
+std::uint64_t exactUnsigned = largest.asUInt64();
+```
+
+All numeric variants satisfy `isNumber()` and have `typeName() == "number"`.
+Use `isInteger()`, `isSignedInteger()`, `isUnsignedInteger()`, and
+`isFloatingPoint()` to inspect storage. Standard C++ integral constructors keep
+their signedness; `bool` remains a separate JSON type.
+
+`asInt64()` and `asUInt64()` accept either stored integer variant if the value
+fits the requested range. They throw `TypeException` for negative-to-unsigned,
+oversized unsigned-to-signed, or floating-point conversions, including `1.0`.
+The existing `asNumber()` converts any numeric variant to `double` and **may
+round large integers**; use the exact accessors for IDs and counters.
+
+`operator==` and `compareNumbers()` compare numeric values across storage types
+without rounding integers to double. For example, integer `1` equals `1.0`,
+but integer `9007199254740993` does not equal double `9007199254740992.0`.
+`compareNumbers()` returns -1, 0, or 1; it rejects non-numbers and unordered NaN.
+Infinity is ordered by comparison but cannot be serialized. `sortByPath()` uses
+the same numeric ordering. Booleans and strings are never equal to numbers.
+
 ## Behavior and limits
 
-- All numbers are stored as `double`. Serialization preserves the stored finite
-  value, but parsing large integers or high-precision decimals may round them.
-  Preserve exact identifiers as strings. Arbitrary-precision numbers are not
-  implemented.
+- Integer literals without a decimal point or exponent are stored exactly:
+  negative values must fit `int64_t`, and nonnegative values must fit `uint64_t`.
+  Nonnegative parsed values up to `INT64_MAX` use signed storage. Larger values
+  use unsigned storage. Out-of-range integer literals throw `ParseException`
+  instead of falling back to double. Arbitrary-precision integers are not supported.
+- Decimal/exponent literals use `double` and may round high-precision decimal
+  input. Finite stored doubles round-trip; whole-valued doubles include `.0`
+  when needed to retain floating storage. Negative zero (`-0`, `-0.0`) keeps its
+  sign and serializes as `-0.0`. Integer signedness is not encoded by JSON, so
+  a small unsigned integer may parse back into signed storage with the same value.
 - Strings containing digits remain strings, including `"001"`. The legacy
   `isBigNumber()` helper is deprecated and does not affect serialization.
 - NaN and infinity cannot be serialized. Out-of-range input numbers are rejected
@@ -187,8 +221,8 @@ Windows and Linux, in Debug and Release.
 
 ## Future work
 
-Exact integer types, atomic file replacement, fuzz testing, streaming/SAX
-parsing, and memory profiling.
+Atomic file replacement, fuzz testing, streaming/SAX parsing, arbitrary-precision
+numbers, and memory profiling.
 
 ## License
 
