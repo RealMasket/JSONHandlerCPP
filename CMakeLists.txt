@@ -6,7 +6,7 @@ endif()
 
 project(
     JsonHandlerCPP
-    VERSION 1.0
+    VERSION 1.0.0
     DESCRIPTION "Modern modular JSON library for C++"
     LANGUAGES CXX
 )
@@ -33,6 +33,10 @@ option(JSONHANDLER_BUILD_BENCHMARKS "Build benchmarks (requires external input d
 option(JSONHANDLER_ENABLE_SANITIZERS "Enable ASan and UBSan (Linux GCC/Clang)" OFF)
 option(JSONHANDLER_BUILD_FUZZERS "Build libFuzzer target (Linux Clang, static, sanitizers)" OFF)
 option(JSONHANDLER_BUILD_FUZZ_REPLAY "Build portable corpus replay without unit tests" OFF)
+option(JSONHANDLER_ENABLE_PACKAGING "Generate release archives with CPack" OFF)
+
+configure_file(utils/Version.hpp.in
+    "${CMAKE_CURRENT_BINARY_DIR}/include/JsonHandlerCPP/Version.hpp" @ONLY)
 
 add_library(JsonHandlerCPP)
 add_library(JsonHandlerCPP::JsonHandlerCPP ALIAS JsonHandlerCPP)
@@ -100,6 +104,7 @@ target_include_directories(JsonHandlerCPP
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/parser>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/serializer>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/utils>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP>
 )
@@ -162,7 +167,7 @@ if(BUILD_TESTING)
     target_link_libraries(JsonHandlerTests PRIVATE JsonHandlerCPP GTest::gtest_main)
     include(GoogleTest)
     gtest_discover_tests(JsonHandlerTests)
-    add_test(NAME Package.InstalledConsumer COMMAND "${CMAKE_COMMAND}"
+    set(jsonhandler_consumer_test_args
         "-DPRODUCER_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
         "-DPRODUCER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
         "-DCONSUMER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/tests/installed-consumer"
@@ -180,12 +185,16 @@ if(BUILD_TESTING)
         "-DCLI_ENABLED=${JSONHANDLER_BUILD_CLI}"
         "-DEXECUTABLE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
         "-DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
+        "-DEXPECTED_VERSION=${PROJECT_VERSION}")
+    add_test(NAME Package.InstalledConsumer COMMAND "${CMAKE_COMMAND}"
+        ${jsonhandler_consumer_test_args}
         -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/InstalledPackage.cmake")
     set_tests_properties(Package.InstalledConsumer PROPERTIES TIMEOUT 180)
     if(JSONHANDLER_BUILD_CLI)
         add_test(NAME JsonCli.Integration COMMAND ${CMAKE_COMMAND}
             "-DCLI=$<TARGET_FILE:jsonhandler>"
             "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/cli-integration"
+            "-DEXPECTED_VERSION=${PROJECT_VERSION}"
             -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/CliIntegration.cmake")
     endif()
     if(JSONHANDLER_BUILD_BENCHMARKS)
@@ -234,6 +243,7 @@ install(FILES
     errors/LexerException.hpp errors/OperationException.hpp errors/ParseException.hpp
     errors/TypeException.hpp
     utils/Api.hpp utils/JsonAlgorithms.hpp
+    "${CMAKE_CURRENT_BINARY_DIR}/include/JsonHandlerCPP/Version.hpp"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP
 )
 set(jsonhandler_package_dir ${CMAKE_INSTALL_LIBDIR}/cmake/JsonHandlerCPP)
@@ -254,4 +264,9 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfigVersion.cmake"
     DESTINATION ${jsonhandler_package_dir}
 )
-install(FILES README.MD CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES README.MD CHANGELOG.md LICENSE RELEASE_NOTES.md RELEASING.md
+    DESTINATION ${CMAKE_INSTALL_DOCDIR})
+
+if(JSONHANDLER_ENABLE_PACKAGING)
+    include(cmake/Packaging.cmake)
+endif()

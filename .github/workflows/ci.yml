@@ -20,11 +20,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DJSONHANDLER_BUILD_BENCHMARKS=ON -DJSONHANDLER_BUILD_PROFILER=${{ matrix.shared == 'OFF' && 'ON' || 'OFF' }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DJSONHANDLER_BUILD_BENCHMARKS=ON -DJSONHANDLER_BUILD_PROFILER=${{ matrix.shared == 'OFF' && 'ON' || 'OFF' }} -DJSONHANDLER_ENABLE_PACKAGING=${{ matrix.config == 'Release' && 'ON' || 'OFF' }}
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel 2
       - name: Test
         run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
+      - name: Preserve tested release archives
+        if: matrix.config == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.os }}-shared-${{ matrix.shared }}
+          path: |
+            build/packages/*.zip
+            build/packages/*.tar.gz
+            build/packages/*.sha256
+          if-no-files-found: error
+          retention-days: 14
 
   sanitizers:
     runs-on: ubuntu-latest

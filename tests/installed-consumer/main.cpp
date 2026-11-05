@@ -10,6 +10,7 @@
 #include <JsonHandlerCPP/OperationException.hpp>
 #include <JsonHandlerCPP/ParseException.hpp>
 #include <JsonHandlerCPP/TypeException.hpp>
+#include <JsonHandlerCPP/Version.hpp>
 #include <filesystem>
 #include <iostream>
 #include <limits>
@@ -35,6 +36,10 @@ int main()
 {
     try {
         require(legacyHeadersWork(), "Legacy include paths failed");
+        const auto headerVersion = std::to_string(JSONHANDLER_VERSION_MAJOR) + "." +
+            std::to_string(JSONHANDLER_VERSION_MINOR) + "." + std::to_string(JSONHANDLER_VERSION_PATCH);
+        require(headerVersion == JSONHANDLER_VERSION_STRING && headerVersion == CONSUMER_EXPECT_VERSION,
+            "Installed version header and CMake package disagree");
         const auto value = JsonParser::parse(R"({"id":18446744073709551615,"text":"001","emoji":"\uD83D\uDE00"})");
         require(value.at("id").asUInt64() == (std::numeric_limits<std::uint64_t>::max)(),
             "Exact integer API failed");

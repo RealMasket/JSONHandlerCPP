@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 1.0.0
+
 ### Correctness
 
 - Precompute array capacity hints in one token pass and reserve after the first
@@ -46,6 +50,13 @@
 
 ### Build and verification
 
+- Add the MIT license with RealMasket attribution and include it in installation
+  and release packages.
+- Define version 1.0.0 once and expose it through the generated Version.hpp,
+  CLI --version, CMake package configuration, and archive names.
+- Add opt-in CPack ZIP/tar.gz archives and SHA-256 checksums, with an independent
+  extracted-archive consumer test and Release CI artifacts.
+- Prepare release notes and a repeatable source/binary release procedure.
 - Install a relocatable CMake package with version configuration and the imported
   JsonHandlerCPP::JsonHandlerCPP target, public headers, libraries, CLI, and docs.
 - Preserve short installed includes and add the JsonHandlerCPP/ header prefix;

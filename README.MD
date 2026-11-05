@@ -1,5 +1,7 @@
 # JsonHandlerC++
 
+Version **1.0.0** (first release candidate). Licensed under [MIT](LICENSE).
+
 A modular C++17 JSON library originally developed for college practice. It
 demonstrates tokenization, recursive descent parsing, a value tree based on
 `std::variant`, serialization, and contextual diagnostics.
@@ -53,6 +55,7 @@ directory with `-DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=/path/to/googletest`.
 | `JSONHANDLER_ENABLE_SANITIZERS` | `OFF` | ASan/UBSan on Linux GCC/Clang |
 | `JSONHANDLER_BUILD_FUZZERS` | `OFF` | Linux Clang libFuzzer; static + sanitizers required |
 | `JSONHANDLER_BUILD_FUZZ_REPLAY` | `OFF` | Build corpus replay without unit tests |
+| `JSONHANDLER_ENABLE_PACKAGING` | `OFF` | Generate CPack release archives and SHA-256 checksums |
 
 With a multi-configuration generator such as Visual Studio, select the same
 configuration for build and CTest. With a single-configuration generator, set
@@ -123,6 +126,9 @@ consumers with compatible MSVC toolset and runtime settings; a stable C ABI
 across unrelated compiler versions is not provided. The legacy Visual Studio
 build can report C4251/C4275 warnings for this interface.
 
+The generated `<JsonHandlerCPP/Version.hpp>` provides `JSONHANDLER_VERSION_STRING`
+and `JSONHANDLER_VERSION_MAJOR`, `_MINOR`, and `_PATCH` macros.
+
 ## Example
 
 ```cpp
@@ -153,6 +159,7 @@ jsonhandler check examples/data/student.json
 jsonhandler format examples/data/student.json
 jsonhandler format --compact -o compact.json examples/data/student.json
 jsonhandler format --compact -
+jsonhandler --version
 ```
 
 The last command reads stdin, so it also accepts input from a pipe or redirected
@@ -190,6 +197,10 @@ containing spaces, and builds/runs a separate `find_package` consumer. It checks
 each public header independently, both include styles, exported compile settings,
 exception and file APIs, and the relocated CLI when enabled. This check runs in
 the Windows/Linux, Debug/Release, shared/static CI matrix and with sanitizers.
+When `JSONHANDLER_ENABLE_PACKAGING=ON`, `Package.ArchiveConsumer` additionally
+checks the generated archive and checksum, then builds/runs from its extracted
+contents. See [RELEASING.md](RELEASING.md) for packaging commands and
+[RELEASE_NOTES.md](RELEASE_NOTES.md) for the 1.0.0 release notes.
 
 ## Access and errors
 
@@ -289,5 +300,4 @@ arbitrary-precision numbers, and memory profiling.
 
 ## License
 
-The original project describes educational and research use. No standard
-open-source license has been selected yet.
+MIT License. Copyright (c) 2026 RealMasket. See [LICENSE](LICENSE).

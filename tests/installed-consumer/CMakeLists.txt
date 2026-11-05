@@ -36,6 +36,7 @@ endif()
 add_executable(installed_consumer main.cpp legacy_headers.cpp)
 target_link_libraries(installed_consumer PRIVATE JsonHandlerCPP::JsonHandlerCPP)
 target_compile_definitions(installed_consumer PRIVATE
+    CONSUMER_EXPECT_VERSION="${JsonHandlerCPP_VERSION}"
     CONSUMER_EXPECT_SHARED=$<STREQUAL:${library_type},SHARED_LIBRARY>)
 if(WIN32 AND library_type STREQUAL "SHARED_LIBRARY")
     add_custom_command(TARGET installed_consumer POST_BUILD COMMAND "${CMAKE_COMMAND}" -E
@@ -46,7 +47,7 @@ endif()
 # Compile each installed header on its own; do not inherit a producer PCH.
 set(public_headers Api JsonHandler JsonLexer JsonParser Token JsonSerializer JsonFile
     JsonException AccessException FileException LexerException OperationException
-    ParseException TypeException JsonAlgorithms)
+    ParseException TypeException JsonAlgorithms Version)
 foreach(header IN LISTS public_headers)
     set(source "${CMAKE_CURRENT_BINARY_DIR}/header-${header}.cpp")
     file(WRITE "${source}" "#include <JsonHandlerCPP/${header}.hpp>\n")

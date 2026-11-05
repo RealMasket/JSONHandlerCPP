@@ -4,6 +4,7 @@
 #include "LexerException.hpp"
 #include "ParseException.hpp"
 #include "FileException.hpp"
+#include <JsonHandlerCPP/Version.hpp>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -20,6 +21,7 @@ constexpr const char* usage =
     "  jsonhandler check INPUT\n"
     "  jsonhandler format [--compact] [--output FILE] INPUT\n"
     "  jsonhandler --help\n"
+    "  jsonhandler --version\n"
     "\nINPUT is a file path or '-' for standard input.\n"
     "Format writes to standard output unless --output (or -o) is given.\n"
     "Use '--' before a file name beginning with '-'.\n"
@@ -98,6 +100,10 @@ void writeOutput(const std::string& path, const std::string& text)
 
 int main(int argc, char** argv)
 {
+    if (argc == 2 && std::string(argv[1]) == "--version") {
+        std::cout << "jsonhandler " << JSONHANDLER_VERSION_STRING << '\n';
+        return std::cout ? 0 : 3;
+    }
     if (argc == 2 && std::string(argv[1]) == "--help") {
         std::cout << usage;
         return std::cout ? 0 : 3;
