@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <variant>
+#include <utility>
 #include "Api.hpp"
 
 class JSON_API Json {
@@ -32,6 +33,7 @@ public:
     bool isString() const;
     bool isObject() const;
     bool isArray() const;
+    [[deprecated("Digit-only strings are strings, not numeric values")]]
     bool isBigNumber() const;
     bool isEmpty() const;
 
@@ -98,14 +100,14 @@ public:
 
     /**
      * @brief Indexing operator for accessing or creating a value in a JSON object (non-const version).
-     * If the JSON value is not an object, it will be set as a new empty object.
+     * A null value becomes an object; other non-object types throw TypeException.
      * @param key to access in the JSON object.
      * @return A reference to the corresponding value in the JSON object.
      */
     Json& operator[](const std::string& key);
     /**
      * @brief Indexing operator for accessing or creating a value in a JSON array (non-const version).
-     * If the JSON value is not an array, it will be set as a new empty array.
+     * A null value becomes an array; other non-array types throw TypeException.
      * Expands the array if the given index is out of range.
      * @param index The index to access in the JSON array.
      * @return A reference to the corresponding value in the JSON array.
@@ -127,6 +129,12 @@ public:
      * @throws AccessException if the index is out of range.
      */
     const Json& operator[](size_t index) const;
+
+    // Strict access: never inserts, resizes, or changes the stored type.
+    Json& at(const std::string& key);
+    const Json& at(const std::string& key) const;
+    Json& at(size_t index);
+    const Json& at(size_t index) const;
     /**
      * @brief Adds a new element to a JSON array.
      * (Only works if the current value is an array.)
@@ -135,7 +143,11 @@ public:
      */
     void push_back(const Json& json);
     template<typename... Args>
-    void push_back(const Json& json, Args... args);
+    void push_back(const Json& json, const Args&... args)
+    {
+        push_back(json);
+        (push_back(args), ...);
+    }
 
     /**
      * @brief Retrieves the size of a JSON array.

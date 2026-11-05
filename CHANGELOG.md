@@ -1,0 +1,52 @@
+# Changelog
+
+## Unreleased
+
+### Correctness
+
+- Complete the source-range token migration and record token start locations.
+- Keep digit-only strings quoted instead of treating them as big numbers.
+- Preserve finite double values during serialization, independent of locale.
+- Reject non-finite output and report input range errors as ParseException.
+- Correctly escape every control character U+0000 through U+001F.
+- Accept only JSON whitespace; reject raw control characters in strings.
+- Validate UTF-8 and decode UTF-16 surrogate pairs; reject unpaired surrogates.
+- Balance parser nesting depth for empty and nonempty containers with RAII.
+- Make compact output compact and remove the initial pretty-object newline.
+- Serialize before opening an output file and report I/O failures.
+- Fix variadic push_back visibility and array self-merge.
+- Export exception classes from the Windows DLL and implement ParseException
+  location getters.
+
+### API compatibility
+
+- Add mutable and const at(key) / at(index).
+- Mutable operator[] converts only null to a container. Using it on a conflicting
+  type now throws TypeException instead of silently destroying the old value.
+- Deprecate isBigNumber(); it remains available for source compatibility.
+- Non-finite numbers, invalid UTF-8 strings, and excessively deep value trees
+  now throw OperationException during serialization.
+- Normalize pretty formatting; applications should not depend on old whitespace.
+
+### Build and verification
+
+- Add shared/static CMake options and the JsonHandlerCPP::JsonHandlerCPP alias.
+- Integrate Google Test and CTest, with a pinned, checksummed dependency.
+- Add regression tests for the failure cases above.
+- Compile all examples and update them to the actual public API.
+- Remove unconditional Windows header inclusion on other platforms.
+- Align all legacy Visual Studio configurations with C++17 and common include
+  paths; disable inconsistent precompiled-header settings.
+- Add a Windows/Linux, shared/static, Debug/Release CI matrix.
+- Add the jsonhandler CLI: file/stdin validation, pretty/compact output,
+  output files, source diagnostics, and documented exit codes.
+- Add CLI integration checks and a bundled example document.
+- Replace the interactive benchmark with deterministic dataset generation,
+  separate parse/serialize measurements, warm-up, sample medians, and CSV export.
+- Add optional Boost.JSON source and Qt6 Core comparison backends, plus CI
+  generation and benchmark smoke checks.
+
+### Remaining limits
+
+Numbers still use double. Arbitrary-precision numeric storage, atomic file
+replacement and streaming parsing are future work.

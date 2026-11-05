@@ -30,6 +30,9 @@
     <ClInclude Include="utils\JsonAlgorithms.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="utils\Utf8.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="serializer\JsonSerializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

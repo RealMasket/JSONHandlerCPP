@@ -2,7 +2,7 @@
 
 #include "JsonException.hpp"
 
-class FileException : public JsonException
+class JSON_API FileException : public JsonException
 {
 public:
     explicit FileException(

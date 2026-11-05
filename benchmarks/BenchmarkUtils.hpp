@@ -1,20 +1,40 @@
 #pragma once
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+#include <vector>
 
-#include <functional>
-#include <string>
+struct BenchmarkMeasurement {
+    double medianUs;
+    double minUs;
+    double maxUs;
+};
 
-class BenchmarkUtils
-{
+class BenchmarkUtils {
 public:
-    static double measureExecutionTime(
-        const std::function<void()>& function,
-        size_t iterations = 1
-    );
+    static void consume(std::uint64_t value);
+    static BenchmarkMeasurement summarize(std::vector<double> samples);
 
-    static void printResult(
-        const std::string& name,
-        double milliseconds,
-        size_t iterations,
-		std::string fileName = ""
-    );
+    // Each operation creates and destroys its result before returning a checksum.
+    // Warm-up, clock reads, and the final volatile write are outside each loop.
+    template<class Operation>
+    static BenchmarkMeasurement measure(Operation operation, size_t iterations, size_t samples)
+    {
+        using Clock = std::chrono::steady_clock;
+        for (int i = 0; i < 5; ++i) consume(operation());
+        std::vector<double> times;
+        times.reserve(samples);
+        for (size_t sample = 0; sample < samples; ++sample) {
+            std::uint64_t checksum = 0;
+            const auto start = Clock::now();
+            for (size_t i = 0; i < iterations; ++i) checksum += operation();
+            const auto end = Clock::now();
+            consume(checksum);
+            times.push_back(std::chrono::duration<double, std::micro>(end - start).count()
+                / static_cast<double>(iterations));
+        }
+        return summarize(std::move(times));
+    }
 };

@@ -1,5 +1,5 @@
-#include "ParseException.hpp"
 #include "pch.h"
+#include "ParseException.hpp"
 
 ParseException::ParseException(
     const std::string& message,
@@ -17,3 +17,5 @@ ParseException::ParseException(
     column(column)
 {
 }
+size_t ParseException::getLine() const { return line; }
+size_t ParseException::getColumn() const { return column; }

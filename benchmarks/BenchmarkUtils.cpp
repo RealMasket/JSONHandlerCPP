@@ -1,38 +1,16 @@
 #include "BenchmarkUtils.hpp"
+#include <stdexcept>
 
-#include <iostream>
-#include <chrono>
+namespace { volatile std::uint64_t benchmarkSink = 0; }
 
-double BenchmarkUtils::measureExecutionTime(
-    const std::function<void()>& function,
-    size_t iterations)
+void BenchmarkUtils::consume(std::uint64_t value) { benchmarkSink = value; }
+
+BenchmarkMeasurement BenchmarkUtils::summarize(std::vector<double> samples)
 {
-    using namespace std::chrono;
-
-    auto start = high_resolution_clock::now();
-
-    for (size_t i = 0; i < iterations; ++i)
-    {
-        function();
-    }
-
-    auto end = high_resolution_clock::now();
-
-    return duration<double, std::milli>(end - start).count();
-}
-
-void BenchmarkUtils::printResult(
-    const std::string& name,
-    double milliseconds,
-    size_t iterations,
-    std::string fileName)
-{
-    std::cout
-        << name
-        << "\nIterations: " << iterations
-        << "\nTotal time: " << milliseconds << " ms"
-        << "\nAverage time: "
-        << (milliseconds / iterations)
-        << " ms"
-        << "\nFile name: " << fileName << "\n\n";
+    if (samples.empty()) throw std::invalid_argument("No benchmark samples");
+    std::sort(samples.begin(), samples.end());
+    const auto middle = samples.size() / 2;
+    const double median = samples.size() % 2 ? samples[middle]
+        : (samples[middle - 1] + samples[middle]) / 2.0;
+    return {median, samples.front(), samples.back()};
 }

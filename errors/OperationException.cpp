@@ -1,5 +1,5 @@
-#include "OperationException.hpp"
 #include "pch.h"
+#include "OperationException.hpp"
 
 OperationException::OperationException(
     const std::string& message

@@ -1,9 +1,9 @@
+#include "pch.h"
 #include "JsonAlgorithms.hpp"
 #include "TypeException.hpp"
 #include "AccessException.hpp"
 #include "OperationException.hpp"
 #include "JsonHandler.hpp"
-#include "pch.h"
 
 /**
  * @brief Merges another JSON object into the current object.
@@ -33,6 +33,11 @@ void JsonAlgorithms::mergeArray(Json& target, const Json& other) {
     if (!target.isArray()) throw TypeException("Expected JSON array but got " + target.typeName());
     auto& arr = target.asArray();
     const auto& otherArr = other.asArray();
+    if (&target == &other) {
+        const auto copy = otherArr;
+        arr.insert(arr.end(), copy.begin(), copy.end());
+        return;
+    }
     std::copy(otherArr.cbegin(), otherArr.cend(), std::back_inserter(arr));
 }
 

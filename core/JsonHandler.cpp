@@ -186,30 +186,33 @@ Json::JsonArray& Json::asArray() {
 
 /**
  * @brief Indexing operator for accessing or creating a value in a JSON object (non-const version).
- * If the JSON value is not an object, it will be set as a new empty object.
+ * A null value becomes an object; other non-object types throw TypeException.
  * @param key to access in the JSON object.
  * @return A reference to the corresponding value in the JSON object.
  */
 Json& Json::operator[](const std::string& key) {
-    if (!isObject()) {
+    if (isNull()) {
         value = JsonObject{}; // Ensure the value is a JsonObject
     }
+    if (!isObject()) throw TypeException("Expected JSON object but got " + typeName());
     auto& obj = std::get<JsonObject>(value);
     return obj[key]; // Create default Json if key doesn't exist
 }
 
 /**
  * @brief Indexing operator for accessing or creating a value in a JSON array (non-const version).
- * If the JSON value is not an array, it will be set as a new empty array.
+ * A null value becomes an array; other non-array types throw TypeException.
  * Expands the array if the given index is out of range.
  * @param index The index to access in the JSON array.
  * @return A reference to the corresponding value in the JSON array.
  */
 Json& Json::operator[](size_t index) {
-    if (!isArray()) {
+    if (isNull()) {
         value = JsonArray{}; // Ensure the value is a JsonArray
     }
+    if (!isArray()) throw TypeException("Expected JSON array but got " + typeName());
     auto& arr = std::get<JsonArray>(value);
+    if (index >= arr.max_size()) throw AccessException("Array index is too large");
     if (index >= arr.size()) {
         arr.resize(index + 1); // Expand array size if index is out of range
     }
@@ -269,11 +272,15 @@ void Json::push_back(const Json& json) {
     if (!isArray()) throw TypeException("Expected JSON array but got " + typeName());
     std::get<JsonArray>(value).push_back(json);
 }
-template<typename... Args>
-void Json::push_back(const Json& json, Args... args) {
-    push_back(json);
-    push_back(args...);
+
+Json& Json::at(const std::string& key) {
+    return const_cast<Json&>(std::as_const(*this)[key]);
 }
+const Json& Json::at(const std::string& key) const { return (*this)[key]; }
+Json& Json::at(size_t index) {
+    return const_cast<Json&>(std::as_const(*this)[index]);
+}
+const Json& Json::at(size_t index) const { return (*this)[index]; }
 
 /**
  * @brief Retrieves the size of a JSON array.

@@ -13,7 +13,7 @@ public:
     * @brief Constructs a JsonLexer with the given source string.
     * @param source The JSON string to tokenize.
     */
-    explicit JsonLexer(const std::string& source);
+    explicit JsonLexer(std::string source);
 
     /*
     * @brief Tokenizes the input JSON string into a vector of tokens.
@@ -28,6 +28,9 @@ private:
     size_t position = 0;
     size_t line = 1;
     size_t column = 1;
+    size_t tokenPosition = 0;
+    size_t tokenLine = 1;
+    size_t tokenColumn = 1;
 
 private:
     /*
@@ -82,20 +85,21 @@ private:
     Token keyword();
 
     /*
-    * @brief Creates a token with the given type and lexeme, including position information.
+    * @brief Creates a token with its source range and starting position.
     * @param type The type of the token.
-    * @param lexeme The string representation of the token.
-    * @return A Token object with the specified type, lexeme, and position information.
+    * @param start Start of the raw token content in the source.
+    * @param length Length of the raw token content.
+    * @return A Token object with the specified type, source range, and starting position.
     */
     Token makeToken(
         Parser::TokenType type,
-        const std::string& lexeme
+        size_t start = 0,
+        size_t length = 0
     );
 
     /*
-    * @brief Parses a unicode escape sequence in a JSON string and returns the corresponding UTF-8 encoded string.
-    * @return A UTF-8 encoded string representing the parsed unicode character.
+    * @brief Validates and consumes four hexadecimal digits of a Unicode escape.
     * @throws LexerException if the unicode escape sequence is invalid.
     */
-    std::string parseUnicodeEscape();
+    void parseUnicodeEscape();
 };

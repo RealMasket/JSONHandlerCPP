@@ -1,406 +1,196 @@
 # JsonHandlerC++
 
-Modern modular JSON parsing and serialization library for C++17.
+A modular C++17 JSON library originally developed for college practice. It
+demonstrates tokenization, recursive descent parsing, a value tree based on
+`std::variant`, serialization, and contextual diagnostics.
 
-JsonHandlerC++ is a custom JSON processing library developed as an educational and research-oriented software engineering project.  
-The library implements a complete JSON pipeline including lexical analysis, parsing, serialization, diagnostics, exception handling, and automated testing.
+## Features
 
-The project focuses on:
-- modular architecture,
-- RFC-oriented validation,
-- parser reliability,
-- detailed diagnostics,
-- extensibility,
-- and modern C++ development practices.
+- Objects, arrays, strings, numbers, booleans, and null.
+- Tokens store source ranges instead of allocating a string per token.
+- UTF-8 validation, JSON escapes, and UTF-16 surrogate-pair decoding.
+- Source line, column, and contextual error messages.
+- Compact and pretty output with locale-independent number conversion.
+- Checked access, object/array helpers, and file I/O.
+- A command-line validator and formatter with stdin/stdout support.
+- Google Test tests integrated with CTest.
 
----
+## Build and test
 
-# Features
+Requirements: CMake 3.20+, and a C++17 compiler/standard library implementing
+floating-point `std::from_chars` and `std::to_chars`.
 
-## Core JSON Support
-- JSON object support
-- JSON array support
-- String, number, boolean, and null types
-- Dynamic JSON value system using `std::variant`
-
-## Lexer & Parser
-- Recursive descent parser architecture
-- Token-based lexer system
-- Detailed token metadata:
-  - line
-  - column
-  - source position
-- Strict JSON validation
-- EOF validation
-- Safe token access
-- Malformed JSON detection
-
-## Unicode & Escaping
-- Escape sequence support:
-  - `\n`
-  - `\t`
-  - `\\`
-  - `\"`
-- Unicode escape support:
-  - `\uXXXX`
-- UTF-8 conversion support
-
-## Serialization
-- Compact JSON serialization
-- Pretty-print JSON serialization
-- Recursive object/array serialization
-- String escaping system
-
-## Diagnostics & Error Handling
-- Detailed parser diagnostics
-- Line and column error reporting
-- Specialized exception hierarchy:
-  - `LexerException`
-  - `ParseException`
-  - `TypeException`
-  - `FileException`
-  - `OperationException`
-  - `AccessException`
-
-Example diagnostic:
-
-```text
-Parse error at line 4, column 15:
-Expected ',' between array elements
-````
-
----
-
-## Robustness & Safety
-
-* Maximum nesting depth protection
-* Invalid number rejection
-* Invalid escape sequence detection
-* Defensive parser validation
-* Safe recursive parsing
-
----
-
-## Testing
-
-The project uses Google Test for automated testing.
-
-Current test coverage includes:
-
-* Lexer validation
-* Parser validation
-* Serialization tests
-* Round-trip tests
-* Unicode handling
-* Invalid JSON rejection
-* Escape sequence validation
-* Deep nesting protection
-
----
-
-# Architecture
-
-The library is divided into independent modules.
-
-## Core Layer
-
-Responsible for storing and manipulating JSON values.
-
-Modules:
-
-* `JsonHandler`
-
-## Lexer Layer
-
-Converts raw JSON text into token stream.
-
-Module:
-
-* `JsonLexer`
-* `Token`
-
-Responsibilities:
-
-* token generation
-* number validation
-* keyword parsing
-* escape sequence handling
-* unicode parsing
-
-## Parser Layer
-
-Builds JSON structures from tokens.
-
-Module:
-
-* `JsonParser`
-
-Responsibilities:
-
-* recursive descent parsing
-* object parsing
-* array parsing
-* syntax validation
-* nesting depth protection
-
-## Serializer Layer
-
-Converts JSON structures back into text in JSON form.
-
-Module:
-
-* `JsonSerializer`
-
-Responsibilities:
-
-* compact serialization
-* pretty serialization
-* string escaping
-
-## Diagnostics Layer
-
-Provides contextual error formatting and debugging information.
-
-Module:
-
-* `DiagnosticFormatter`
-
-## Exception Layer
-
-Provides specialized exception hierarchy.
-
-Modules:
-
-* `LexerException`
-* `ParseException`
-* `TypeException`
-* `AccessException`
-* `FileException`
-* `OperationException`
-
----
-
-# Project Structure
-
-```text
-JsonHandlerC++/
-│
-├── core/
-│   └── JsonHandler
-│
-├── diagnostics/
-│   └── DiagnosticFormatter
-│
-├── errors/
-│   ├── AccessException
-│   ├── FileException
-│   ├── LexerException
-│   ├── OperationException
-│   ├── ParseException
-│   ├── TypeException
-│   └── JsonException (base class)
-│
-├── examples/
-│   ├── ArrayExample
-│   ├── BasicJsonExample
-│   └── ParsingExample
-│
-├── examples of tests/
-│   ├── JsonLexerTests
-│   ├── JsonParserTests
-│   ├── JsonRoundTripTests
-│   └── JsonSerializerTests
-│
-├── io/
-│   └── JsonFile
-│
-├── parser/
-│   ├── JsonParser
-│   ├── JsonLexer
-│   └── Token
-│
-├── serializer/
-│   └── JsonSerializer
-│
-└── utils/
-    ├── Api
-    ├── dllmain
-    ├── framework
-    └── JsonAlgorithms
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
 ```
 
----
+The library, command-line tool, and three examples are built by default. Tests use an installed
+Google Test package when available, otherwise CMake downloads Google Test
+1.15.2 and verifies its SHA-256 checksum. The first download needs internet.
 
-# Usage
+For an offline library-only build:
 
-## Basic Example
+```sh
+cmake -S . -B build -DBUILD_TESTING=OFF
+cmake --build build --config Release
+```
+
+For offline tests, provide an installed `GTest_DIR` or a local Google Test source
+directory with `-DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=/path/to/googletest`.
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `BUILD_SHARED_LIBS` | `ON` | Use `OFF` for a static library |
+| `BUILD_TESTING` | `ON` | Build and discover Google Test tests |
+| `JSONHANDLER_BUILD_EXAMPLES` | `ON` | Build usage examples |
+| `JSONHANDLER_BUILD_CLI` | `ON` | Build the validator/formatter |
+| `JSONHANDLER_BUILD_BENCHMARKS` | `OFF` | Build the parser benchmark |
+
+With a multi-configuration generator such as Visual Studio, select the same
+configuration for build and CTest. With a single-configuration generator, set
+`CMAKE_BUILD_TYPE` during configuration.
+
+The existing `.sln` / `.vcxproj` files build the DLL directly with the v145
+toolset. CMake is the common entry point for the library, examples, and tests.
+
+## Use from another CMake project
+
+```cmake
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(JSONHANDLER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(path/to/JsonHandlerCPP)
+target_link_libraries(my_app PRIVATE JsonHandlerCPP::JsonHandlerCPP)
+```
+
+CMake propagates include directories, C++17 requirements, and the static-library
+definition. When linking a static build manually on Windows, define
+`JSONHANDLER_STATIC` for the consumer.
+
+The Windows DLL exposes standard-library types in its C++ interface. Build DLL
+consumers with compatible MSVC toolset and runtime settings; a stable C ABI
+across unrelated compiler versions is not provided. The legacy Visual Studio
+build can report C4251/C4275 warnings for this interface.
+
+## Example
 
 ```cpp
 #include "JsonHandler.hpp"
+#include "JsonParser.hpp"
+#include "JsonFile.hpp"
 #include <iostream>
 
 int main()
 {
-    Json obj(Json::JsonObject{});
-
-    obj["name"] = "Adam";
-    obj["age"] = 21.0;
-    obj["student"] = true;
-
-    std::cout << obj.serialize(true, 0);
-
-    return 0;
+    Json value = JsonParser::parse(R"({"id":"001","scores":[5,4,5]})");
+    std::cout << value.at("id").asString() << '\n';
+    value.at("scores").push_back(3);
+    std::cout << value.serialize(false) << '\n';
+    JsonFile::write("result.json", value);
+    Json restored = JsonFile::read("result.json");
+    return restored == value ? 0 : 1;
 }
 ```
 
-## Parsing JSON
+## Command-line tool
 
-```cpp
-#include "JsonHandler.hpp"
+With Visual Studio, the executable is in `build/Debug/` or `build/Release/`.
+For single-configuration generators it is in `build/`.
 
-int main()
-{
-    std::string jsonText =
-        R"({
-            "name": "Alice",
-            "age": 25
-        })";
-
-    Json json = Json::parse(jsonText);
-
-    std::cout << json["name"].asString();
-
-    return 0;
-}
+```sh
+jsonhandler check examples/data/student.json
+jsonhandler format examples/data/student.json
+jsonhandler format --compact -o compact.json examples/data/student.json
+jsonhandler format --compact -
 ```
 
-## Arrays
+The last command reads stdin, so it also accepts input from a pipe or redirected
+file. `check` prints `Valid JSON` on success. `format` prints JSON followed by a
+newline, or writes it to the specified output file. Diagnostics go to stderr.
+Use `--` before filenames beginning with `-`.
 
-```cpp
-Json::JsonArray arr =
-{
-    Json(1.0),
-    Json(2.0),
-    Json("hello"),
-    Json(true)
-};
+| Exit code | Meaning |
+| --- | --- |
+| 0 | Success |
+| 1 | Invalid JSON |
+| 2 | Invalid command-line arguments |
+| 3 | File or stream I/O failure |
+| 4 | Other processing failure |
 
-Json json = arr;
+Input is parsed and formatted before opening an output file. An output write
+failure can still leave a partial file; the CLI does not promise atomic writes.
 
-json.push_back("new value");
+## Performance comparison
 
-std::cout << json.serialize(true, 0);
-```
+The optional benchmark generates reproducible datasets, times parsing and
+serialization separately, and exports CSV. Boost.JSON and Qt6 Core comparisons
+are opt-in and use your local installations. See
+[benchmarks/README.md](benchmarks/README.md) for commands and methodology.
 
----
+## Access and errors
 
-# Example of Diagnostics
+- `at(key)` / `at(index)` are strict: no insertion, resizing, or type conversion.
+  Missing keys and out-of-range indices throw `AccessException`.
+- Mutable `operator[]` creates a container from `null`, inserts missing object
+  keys, and expands arrays. Access through a conflicting type throws
+  `TypeException` and preserves the value.
+- Const `operator[]` behaves like `at()`.
+- `LexerException` reports malformed tokens and invalid UTF-8.
+- `ParseException` reports structural errors, unpaired surrogates, excessive
+  nesting, and numbers outside the supported range.
+- `OperationException` reports unsupported serialization operations, including
+  non-finite numbers and invalid UTF-8.
+- `FileException` reports file open/read/write/flush/close failures. File parsing
+  preserves the original `LexerException` or `ParseException`.
 
-Input:
+`JsonParser::parse()` parses text; file operations belong to `JsonFile`.
 
-```json
-{
-    "name": "John"
-    "age": 25
-}
-```
+## Behavior and limits
 
-Diagnostic:
+- All numbers are stored as `double`. Serialization preserves the stored finite
+  value, but parsing large integers or high-precision decimals may round them.
+  Preserve exact identifiers as strings. Arbitrary-precision numbers are not
+  implemented.
+- Strings containing digits remain strings, including `"001"`. The legacy
+  `isBigNumber()` helper is deprecated and does not affect serialization.
+- NaN and infinity cannot be serialized. Out-of-range input numbers are rejected
+  rather than silently converted to infinity or zero.
+- Input and output strings must be valid UTF-8. Unpaired UTF-16 surrogates are
+  rejected. This library does not normalize Unicode.
+- Parsing and serialization allow up to 128 nested containers. A nonzero initial
+  serialization indentation level counts toward that limit.
+- Objects use `std::map`, so keys are ordered lexicographically. For duplicate
+  keys during parsing, the first value wins.
+- Pretty output uses two spaces. Compact output adds no formatting whitespace.
+- File writing serializes before opening the destination and checks I/O errors.
+  It is **not atomic**: an I/O failure during writing can leave a partial file.
+- Benchmark datasets can be generated with `ParseBenchmark --generate DIR`.
 
-```text
-Parse error at line 3, column 5:
-Expected ',' between key-value pairs
-```
+## Architecture
 
----
+| Module | Responsibility |
+| --- | --- |
+| `core` | JSON value storage and public access API |
+| `parser` | Source-range tokens, lexer, recursive descent parser |
+| `serializer` | Escaping, number conversion, compact/pretty formatting |
+| `diagnostics` | Source snippets and error pointers |
+| `errors` | Public exception hierarchy |
+| `io` | File reading and writing |
+| `utils` | JSON algorithms, UTF-8 validation, export definitions |
+| `examples of tests` | Unit and regression tests |
+| `tools` / `tests` | Command-line application and its integration checks |
 
-# Build Requirements
+See [CHANGELOG.md](CHANGELOG.md) for the fixes and compatibility changes.
+GitHub Actions is configured to build and test shared and static variants on
+Windows and Linux, in Debug and Release.
 
-## Requirements
+## Future work
 
-* CMake 3.20 or newer (if using CMake)
-* C++17 or newer
-* Google Test (if you want to run tests. But it's better to do in a separate project with compiled and linked Google Test libraries and this library)
+Exact integer types, atomic file replacement, fuzz testing, streaming/SAX
+parsing, and memory profiling.
 
----
+## License
 
-## Supported Compilers
-
-* MSVC
-* GCC
-* Clang
-
-(Basically any C++ compiler modern enough to support C++17)
-
----
-
-# Building
-
-## Visual Studio
-
-1. Open the solution file.
-2. Build the project.
-3. Build test project separately if needed.
-
----
-
-## CMake
-
-1.Clone the Repository
-
-```bash
-git clone https://github.com/RealMasket/JSONHandlerCPP.git
-cd JSONHandlerCPP
-````
-
-2. Configure Project
-
-```bash
-cmake -S . -B build
-```
-
-3. Build Project
-
-```bash
-cmake --build build
-```
-
----
-
-# Future Improvements
-
-Planned future improvements include:
-
-* Streaming JSON parser
-* SAX-style parser API
-* Full UTF-16 surrogate pair support
-* Continuous Integration (CI)
-* Fuzz testing
-* Custom memory allocators
-* Improved performance optimizations
-* Iterator support
-* JSON schema validation
-
----
-
-# Engineering Goals
-
-This project was created to explore:
-
-* parser architecture,
-* compiler-inspired design,
-* defensive programming,
-* diagnostics systems,
-* modular C++ development,
-* and automated software testing.
-
-The project is intended as both:
-
-* a practical JSON library,
-* and a software engineering research/educational project.
-
----
-
-# License
-
-This project is provided for educational and research purposes.
+The original project describes educational and research use. No standard
+open-source license has been selected yet.

@@ -1,9 +1,32 @@
-add_executable(ParseBenchmark
-    ParseBenchmark.cpp
-    BenchmarkUtils.cpp
-)
+option(JSONHANDLER_BENCHMARK_BOOST "Compare with Boost.JSON built from local sources" OFF)
+option(JSONHANDLER_BENCHMARK_QT "Compare with the installed Qt6 Core JSON implementation" OFF)
+set(JSONHANDLER_BOOST_ROOT "" CACHE PATH "Boost source tree containing boost/json/src.hpp")
 
-target_link_libraries(ParseBenchmark
-    PRIVATE
-    JsonHandlerCPP
-)
+add_executable(ParseBenchmark ParseBenchmark.cpp BenchmarkUtils.cpp)
+target_link_libraries(ParseBenchmark PRIVATE JsonHandlerCPP)
+target_compile_definitions(ParseBenchmark PRIVATE
+    JSONHANDLER_BENCHMARK_BUILD_TYPE="$<CONFIG>")
+if(WIN32 AND BUILD_SHARED_LIBS)
+    add_custom_command(TARGET ParseBenchmark POST_BUILD COMMAND "${CMAKE_COMMAND}" -E
+        copy_if_different "$<TARGET_FILE:JsonHandlerCPP>" "$<TARGET_FILE_DIR:ParseBenchmark>")
+endif()
+
+if(JSONHANDLER_BENCHMARK_BOOST)
+    find_path(JSONHANDLER_BOOST_INCLUDE_DIR boost/json/src.hpp
+        HINTS "${JSONHANDLER_BOOST_ROOT}" "${BOOST_ROOT}" REQUIRED)
+    add_library(JsonHandlerBenchmarkBoost STATIC BoostJson.cpp)
+    target_include_directories(JsonHandlerBenchmarkBoost PUBLIC "${JSONHANDLER_BOOST_INCLUDE_DIR}")
+    target_compile_definitions(JsonHandlerBenchmarkBoost PUBLIC BOOST_ALL_NO_LIB BOOST_JSON_NO_LIB)
+    target_link_libraries(ParseBenchmark PRIVATE JsonHandlerBenchmarkBoost)
+    target_compile_definitions(ParseBenchmark PRIVATE JSONHANDLER_HAS_BOOST)
+endif()
+
+if(JSONHANDLER_BENCHMARK_QT)
+    find_package(Qt6 REQUIRED COMPONENTS Core)
+    target_link_libraries(ParseBenchmark PRIVATE Qt6::Core)
+    target_compile_definitions(ParseBenchmark PRIVATE JSONHANDLER_HAS_QT)
+    if(WIN32)
+        add_custom_command(TARGET ParseBenchmark POST_BUILD COMMAND "${CMAKE_COMMAND}" -E
+            copy_if_different "$<TARGET_FILE:Qt6::Core>" "$<TARGET_FILE_DIR:ParseBenchmark>")
+    endif()
+endif()

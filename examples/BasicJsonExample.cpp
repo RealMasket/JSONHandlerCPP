@@ -22,10 +22,10 @@ int main()
 	std::cout << "\n\n" << obj.serialize(true, 0);
 
 	obj["marks"]["ScienceMark"] = 92.0;
-	obj.save("student.json");
+	JsonFile::write("student.json", obj);
 	obj.clear();
 
-	obj.load("student.json");
+	obj = JsonFile::read("student.json");
 	std::cout << "\n\n" << obj.serialize(true, 0);
 
 	obj["marks"].remove("EnglishMark");

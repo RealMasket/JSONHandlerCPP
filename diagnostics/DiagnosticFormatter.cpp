@@ -1,5 +1,5 @@
-#include "DiagnosticFormatter.hpp"
 #include "pch.h"
+#include "DiagnosticFormatter.hpp"
 #include <sstream>
 
 std::string DiagnosticFormatter::format(
@@ -13,13 +13,7 @@ std::string DiagnosticFormatter::format(
 
     std::string lineText = getLine(source, line);
 
-    oss << "Error at line "
-        << line
-        << ", column "
-        << column
-        << "\n\n";
-
-    oss << lineText << "\n";
+    oss << "\n" << lineText << "\n";
 
     for (size_t i = 1; i < column; ++i)
     {

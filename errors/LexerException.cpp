@@ -1,5 +1,5 @@
-#include "LexerException.hpp"
 #include "pch.h"
+#include "LexerException.hpp"
 
 LexerException::LexerException(
     const std::string& message,

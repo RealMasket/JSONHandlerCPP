@@ -2,12 +2,20 @@
 #include "JsonLexer.hpp"
 #include "LexerException.hpp"
 #include "DiagnosticFormatter.hpp"
+#include "Utf8.hpp"
+#include <string_view>
+
+namespace {
+    bool isDigit(char c) { return c >= '0' && c <= '9'; }
+    bool isAlpha(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
+    bool isHex(char c) { return isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'); }
+}
 
 /*
 * @brief Constructs a JsonLexer with the given source string.
 * @param source The JSON string to tokenize.
 */
-JsonLexer::JsonLexer(const std::string& source) : source(source) { }
+JsonLexer::JsonLexer(std::string source) : source(std::move(source)) { }
 
 /*
 * @brief Checks if the lexer has reached the end of the input.
@@ -82,29 +90,34 @@ char JsonLexer::advance()
 */
 void JsonLexer::skipWhitespace()
 {
-    while (!isAtEnd() && std::isspace(peek()))
+    while (!isAtEnd() && (peek() == ' ' || peek() == '\t' || peek() == '\n' || peek() == '\r'))
     {
         advance();
     }
 }
 
 /*
-* @brief Creates a token with the given type and lexeme, including position information.
+* @brief Creates a token with its source range and starting position.
 * @param type The type of the token.
-* @param lexeme The string representation of the token.
-* @return A Token object with the specified type, lexeme, and position information.
+* @param start Start of the raw token content in the source.
+* @param length Length of the raw token content.
+* @return A Token object with the specified type, source range, and starting position.
 */
 Token JsonLexer::makeToken(
     Parser::TokenType type,
-    const std::string& lexeme)
+    size_t start,
+    size_t length)
 {
-    return {
+    Token t = {
         type,
-        lexeme,
-        position,
-        line,
-        column
+        tokenPosition,
+        tokenLine,
+        tokenColumn,
+        start,
+        length
     };
+
+    return t;
 }
 
 /*
@@ -115,11 +128,12 @@ Token JsonLexer::makeToken(
 Token JsonLexer::string()
 {
     advance(); // opening quote
-
-    std::string value;
+    const size_t contentStart = position;
 
     while (!isAtEnd() && peek() != '"')
     {
+        const size_t characterLine = line;
+        const size_t characterColumn = column;
         char c = advance();
 
         if (c == '\\')
@@ -142,17 +156,19 @@ Token JsonLexer::string()
 
             switch (escaped)
             {
-            case 'n': value += '\n'; break;
-            case 't': value += '\t'; break;
-            case '"': value += '"'; break;
-            case '\\': value += '\\'; break;
-            case 'r': value += '\r'; break;
-            case 'b': value += '\b'; break;
-            case 'f': value += '\f'; break;
-            case '/': value += '/'; break;
+            case 'n': break;
+            case 't': break;
+            case '"': break;
+            case '\\': break;
+            case 'r': break;
+            case 'b': break;
+            case 'f': break;
+            case '/': break;
             case 'u':
-                value += parseUnicodeEscape();
+            {
+                parseUnicodeEscape();
                 break;
+            }
 
             default:
                 throw LexerException(
@@ -169,7 +185,12 @@ Token JsonLexer::string()
         }
         else
         {
-            value += c;
+            if (static_cast<unsigned char>(c) < 0x20)
+            {
+                throw LexerException(
+                    DiagnosticFormatter::format(source, characterLine, characterColumn,
+                        "Unescaped control character in string"), characterLine, characterColumn);
+            }
         }
     }
 
@@ -189,7 +210,10 @@ Token JsonLexer::string()
 
     advance(); // closing quote
 
-    return makeToken(Parser::TokenType::String, value);
+    size_t contentLen = (position - 1) - contentStart; // exclude closing quote
+    if (!JsonDetail::isValidUtf8(std::string_view(source).substr(contentStart, contentLen)))
+        throw LexerException("Invalid UTF-8 in string", tokenLine, tokenColumn);
+    return makeToken(Parser::TokenType::String, contentStart, contentLen);
 }
 
 /*
@@ -213,7 +237,7 @@ Token JsonLexer::number()
         advance();
 
         // leading zero check
-        if (isdigit(peek()))
+        if (isDigit(peek()))
         {
             throw LexerException(
                 DiagnosticFormatter::format(
@@ -227,9 +251,9 @@ Token JsonLexer::number()
             );
         }
     }
-    else if (isdigit(peek()))
+    else if (isDigit(peek()))
     {
-        while (isdigit(peek()))
+        while (isDigit(peek()))
         {
             advance();
         }
@@ -253,7 +277,7 @@ Token JsonLexer::number()
     {
         advance();
 
-        if (!isdigit(peek()))
+        if (!isDigit(peek()))
         {
             throw LexerException(
                 DiagnosticFormatter::format(
@@ -267,7 +291,7 @@ Token JsonLexer::number()
             );
         }
 
-        while (isdigit(peek()))
+        while (isDigit(peek()))
         {
             advance();
         }
@@ -283,7 +307,7 @@ Token JsonLexer::number()
             advance();
         }
 
-        if (!isdigit(peek()))
+        if (!isDigit(peek()))
         {
             throw LexerException(
                 DiagnosticFormatter::format(
@@ -297,19 +321,14 @@ Token JsonLexer::number()
             );
         }
 
-        while (isdigit(peek()))
+        while (isDigit(peek()))
         {
             advance();
         }
     }
 
-    std::string value =
-        source.substr(start, position - start);
-
-    return makeToken(
-        Parser::TokenType::Number,
-        value
-    );
+    // For numbers we avoid allocating the lexeme by storing range
+    return makeToken(Parser::TokenType::Number, start, position - start);
 }
 
 /*
@@ -321,29 +340,24 @@ Token JsonLexer::keyword()
 {
     size_t start = position;
 
-    while (!isAtEnd() && std::isalpha(peek()))
+    while (!isAtEnd() && isAlpha(peek()))
     {
         advance();
     }
 
-    std::string value =
-        source.substr(start, position - start);
+    size_t len = position - start;
+    std::string_view sv(source.c_str() + start, len);
 
-    if (value == "true")
-        return makeToken(Parser::TokenType::True, value);
-
-    if (value == "false")
-        return makeToken(Parser::TokenType::False, value);
-
-    if (value == "null")
-        return makeToken(Parser::TokenType::Null, value);
+    if (sv == "true") return makeToken(Parser::TokenType::True, start, len);
+    if (sv == "false") return makeToken(Parser::TokenType::False, start, len);
+    if (sv == "null") return makeToken(Parser::TokenType::Null, start, len);
 
     throw LexerException(
         DiagnosticFormatter::format(
             source,
             line,
             column,
-            "Unexpected keyword: " + value
+            std::string("Unexpected keyword: ") + std::string(sv)
         ),
         line,
         column
@@ -367,6 +381,9 @@ std::vector<Token> JsonLexer::tokenize()
         if (isAtEnd())
             break;
 
+        tokenPosition = position;
+        tokenLine = line;
+        tokenColumn = column;
         char c = peek();
 
         switch (c)
@@ -374,37 +391,37 @@ std::vector<Token> JsonLexer::tokenize()
         case '{':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::LeftBrace, "{"));
+                makeToken(Parser::TokenType::LeftBrace, position - 1, 1));
             break;
 
         case '}':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::RightBrace, "}"));
+                makeToken(Parser::TokenType::RightBrace, position - 1, 1));
             break;
 
         case '[':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::LeftBracket, "["));
+                makeToken(Parser::TokenType::LeftBracket, position - 1, 1));
             break;
 
         case ']':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::RightBracket, "]"));
+                makeToken(Parser::TokenType::RightBracket, position - 1, 1));
             break;
 
         case ':':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::Colon, ":"));
+                makeToken(Parser::TokenType::Colon, position - 1, 1));
             break;
 
         case ',':
             advance();
             tokens.push_back(
-                makeToken(Parser::TokenType::Comma, ","));
+                makeToken(Parser::TokenType::Comma, position - 1, 1));
             break;
 
         case '"':
@@ -412,11 +429,11 @@ std::vector<Token> JsonLexer::tokenize()
             break;
 
         default:
-            if (isdigit(c) || c == '-')
+            if (isDigit(c) || c == '-')
             {
                 tokens.push_back(number());
             }
-            else if (std::isalpha(c))
+            else if (isAlpha(c))
             {
                 tokens.push_back(keyword());
             }
@@ -436,24 +453,24 @@ std::vector<Token> JsonLexer::tokenize()
         }
     }
 
+    tokenPosition = position;
+    tokenLine = line;
+    tokenColumn = column;
     tokens.push_back(
-        makeToken(Parser::TokenType::EndOfFile, ""));
+        makeToken(Parser::TokenType::EndOfFile, position, 0));
 
     return tokens;
 }
 
 /*
-* @brief Parses a unicode escape sequence in a JSON string and returns the corresponding UTF-8 encoded string.
-* @return A UTF-8 encoded string representing the parsed unicode character.
+* @brief Validates and consumes four hexadecimal digits of a Unicode escape.
 * @throws LexerException if the unicode escape sequence is invalid.
 */
-std::string JsonLexer::parseUnicodeEscape()
+void JsonLexer::parseUnicodeEscape()
 {
-    std::string hex;
-
     for (int i = 0; i < 4; ++i)
     {
-        if (isAtEnd() || !std::isxdigit(peek()))
+        if (isAtEnd() || !isHex(peek()))
         {
             throw LexerException(
                 DiagnosticFormatter::format(
@@ -467,37 +484,6 @@ std::string JsonLexer::parseUnicodeEscape()
             );
         }
 
-        hex += advance();
+        advance(); // consume hex digit
     }
-
-    unsigned int codepoint =
-        std::stoul(hex, nullptr, 16);
-
-    std::string utf8;
-
-    if (codepoint <= 0x7F)
-    {
-        utf8 += static_cast<char>(codepoint);
-    }
-    else if (codepoint <= 0x7FF)
-    {
-        utf8 += static_cast<char>(
-            0xC0 | ((codepoint >> 6) & 0x1F));
-
-        utf8 += static_cast<char>(
-            0x80 | (codepoint & 0x3F));
-    }
-    else
-    {
-        utf8 += static_cast<char>(
-            0xE0 | ((codepoint >> 12) & 0x0F));
-
-        utf8 += static_cast<char>(
-            0x80 | ((codepoint >> 6) & 0x3F));
-
-        utf8 += static_cast<char>(
-            0x80 | (codepoint & 0x3F));
-    }
-
-    return utf8;
 }

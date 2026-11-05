@@ -1,42 +1,31 @@
-#include "JsonFile.hpp"
 #include "pch.h"
+#include "JsonFile.hpp"
 #include "JsonParser.hpp"
 #include "JsonSerializer.hpp"
 #include "FileException.hpp"
+#include <fstream>
 
-/**
- * @brief Loads JSON data from a file and replaces the current value.
- * @param filename The name of the file to load from.
- * @throws FileException if the file cannot be opened or contains invalid JSON.
- */
 Json JsonFile::read(const std::string& filename)
 {
-    std::ifstream file(filename);
-
-    if (!file.is_open())
-    {
-        throw FileException(
-            "Unable to open file: " + filename);
-    }
-
-    std::ostringstream buffer;
-    buffer << file.rdbuf();
-	file.close();
-
-    return JsonParser::parse(buffer.str());
+    std::ifstream file(filename, std::ios::binary);
+    if (!file) throw FileException("Unable to open file: " + filename);
+    std::string text;
+    char buffer[4096];
+    while (file.read(buffer, sizeof(buffer))) text.append(buffer, sizeof(buffer));
+    text.append(buffer, static_cast<size_t>(file.gcount()));
+    if (file.bad() || !file.eof()) throw FileException("Unable to read file: " + filename);
+    return JsonParser::parse(text);
 }
 
-/**
- * @brief Saves the JSON value to a file.
- * @param filename The name of the file to save to.
- * @throws FileException if the file cannot be opened.
- */
-void JsonFile::write(const std::string& filename, const Json& json) 
+void JsonFile::write(const std::string& filename, const Json& json)
 {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        throw FileException("Unable to open file: " + filename);
-    }
-    file << JsonSerializer::serialize(json);
+    // Serialization failure must not truncate an existing file.
+    const std::string text = JsonSerializer::serialize(json);
+    std::ofstream file(filename, std::ios::binary | std::ios::trunc);
+    if (!file) throw FileException("Unable to open file: " + filename);
+    file << text;
+    file.flush();
+    if (!file) throw FileException("Unable to write file: " + filename);
     file.close();
+    if (file.fail()) throw FileException("Unable to close file: " + filename);
 }

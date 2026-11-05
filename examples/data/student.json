@@ -1,0 +1,7 @@
+{
+  "id": "001",
+  "name": "Ada",
+  "active": true,
+  "scores": [5, 4.5, null],
+  "message": "Hello\nJSON \uD83D\uDE00"
+}

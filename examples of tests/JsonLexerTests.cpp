@@ -1,181 +1,65 @@
-#include "pch.h"
+#include <gtest/gtest.h>
 #include "JsonLexer.hpp"
+#include "JsonParser.hpp"
 #include "LexerException.hpp"
 
-TEST(JsonLexerTests, StringToken)
+TEST(JsonLexerTests, RawStringRange)
 {
-    JsonLexer lexer("\"hello\"");
-
-    auto tokens = lexer.tokenize();
-
-    ASSERT_EQ(tokens.size(), 2);
-
-    EXPECT_EQ(
-        tokens[0].type,
-        Parser::TokenType::String
-    );
-
-    EXPECT_EQ(
-        tokens[0].lexeme,
-        "hello"
-    );
-
-    EXPECT_EQ(
-        tokens[1].type,
-        Parser::TokenType::EndOfFile
-    );
+    const std::string source = "\"hello\\nworld\"";
+    auto tokens = JsonLexer(source).tokenize();
+    ASSERT_EQ(tokens.size(), 2u);
+    EXPECT_EQ(tokens[0].type, Parser::TokenType::String);
+    EXPECT_EQ(source.substr(tokens[0].start, tokens[0].length), "hello\\nworld");
+    EXPECT_EQ(tokens[0].position, 0u);
+    EXPECT_EQ(tokens[0].line, 1u);
+    EXPECT_EQ(tokens[0].column, 1u);
+    EXPECT_EQ(tokens[1].type, Parser::TokenType::EndOfFile);
 }
 
-TEST(JsonLexerTests, NumberToken)
+TEST(JsonLexerTests, NumberRangeAndStartLocation)
 {
-    JsonLexer lexer("123.45");
-
-    auto tokens = lexer.tokenize();
-
-    ASSERT_EQ(tokens.size(), 2);
-
-    EXPECT_EQ(
-        tokens[0].type,
-        Parser::TokenType::Number
-    );
-
-    EXPECT_EQ(
-        tokens[0].lexeme,
-        "123.45"
-    );
+    const std::string source = "\n  123.45";
+    const auto tokens = JsonLexer(source).tokenize();
+    EXPECT_EQ(tokens[0].type, Parser::TokenType::Number);
+    EXPECT_EQ(source.substr(tokens[0].start, tokens[0].length), "123.45");
+    EXPECT_EQ(tokens[0].position, 3u);
+    EXPECT_EQ(tokens[0].line, 2u);
+    EXPECT_EQ(tokens[0].column, 3u);
+    EXPECT_EQ(tokens.back().column, 9u);
 }
 
-TEST(JsonLexerTests, TrueKeyword)
+TEST(JsonLexerTests, PunctuationAndKeywordLocations)
 {
-    JsonLexer lexer("true");
-
-    auto tokens = lexer.tokenize();
-
-    EXPECT_EQ(
-        tokens[0].type,
-        Parser::TokenType::True
-    );
+    const auto tokens = JsonLexer("[true,\n false]").tokenize();
+    EXPECT_EQ(tokens[0].column, 1u);
+    EXPECT_EQ(tokens[1].type, Parser::TokenType::True);
+    EXPECT_EQ(tokens[1].column, 2u);
+    EXPECT_EQ(tokens[2].column, 6u);
+    EXPECT_EQ(tokens[3].type, Parser::TokenType::False);
+    EXPECT_EQ(tokens[3].line, 2u);
+    EXPECT_EQ(tokens[3].column, 2u);
 }
 
-TEST(JsonLexerTests, InvalidKeywordThrows)
+class InvalidLexemeTests : public testing::TestWithParam<const char*> {};
+TEST_P(InvalidLexemeTests, RejectsInvalidInput)
 {
-    JsonLexer lexer("tru");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
+    EXPECT_THROW(JsonLexer(GetParam()).tokenize(), LexerException);
 }
+INSTANTIATE_TEST_SUITE_P(StrictJson, InvalidLexemeTests, testing::Values(
+    "tru", "@", "01", "1e", "1.2.3", "-", "1.", "+1", "1e+",
+    "\"\\uZZZZ\"", "\"\\u123\"", "\"\\q\"", "\"unterminated",
+    "\"a\nb\"", "\"a\tb\"", "\vnull", "\fnull"
+));
 
-TEST(JsonLexerTests, InvalidCharacterThrows)
+TEST(JsonLexerTests, ExceptionContainsLocationAndContext)
 {
-    JsonLexer lexer("@");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
-}
-
-TEST(JsonLexerTests, ExceptionContainsMessage)
-{
-    JsonLexer lexer("@");
-
-    try
-    {
-        lexer.tokenize();
-
+    try {
+        JsonLexer("\n@").tokenize();
         FAIL();
+    } catch (const LexerException& ex) {
+        EXPECT_EQ(ex.getLine(), 2u);
+        EXPECT_EQ(ex.getColumn(), 1u);
+        EXPECT_NE(std::string(ex.what()).find("Unexpected character"), std::string::npos);
+        EXPECT_NE(std::string(ex.what()).find("^"), std::string::npos);
     }
-    catch (const LexerException& ex)
-    {
-        std::string message = ex.what();
-
-        EXPECT_NE(
-            message.find("Unexpected character"),
-            std::string::npos
-        );
-    }
-}
-
-TEST(JsonLexerTests, EscapedString)
-{
-    JsonLexer lexer("\"hello\\nworld\"");
-
-    auto tokens = lexer.tokenize();
-
-    EXPECT_EQ(
-        tokens[0].lexeme,
-        "hello\nworld"
-    );
-}
-
-TEST(JsonLexerTests, RejectLeadingZero)
-{
-    JsonLexer lexer("01");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
-}
-
-TEST(JsonLexerTests, RejectInvalidExponent)
-{
-    JsonLexer lexer("1e");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
-}
-
-TEST(JsonLexerTests, RejectDoubleDecimal)
-{
-    JsonLexer lexer("1.2.3");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
-}
-
-TEST(JsonLexerTests, EscapedCarriageReturn)
-{
-    JsonLexer lexer("\"hello\\rworld\"");
-
-    auto tokens = lexer.tokenize();
-
-    EXPECT_EQ(
-        tokens[0].lexeme,
-        "hello\rworld"
-    );
-}
-
-TEST(JsonLexerTests, UnicodeEscape)
-{
-    JsonLexer lexer("\"\\u0041\"");
-
-    auto tokens = lexer.tokenize();
-
-    EXPECT_EQ(tokens[0].lexeme, "A");
-}
-
-TEST(JsonLexerTests, UnicodeCyrillic)
-{
-    JsonLexer lexer("\"\\u041F\"");
-
-    auto tokens = lexer.tokenize();
-
-    EXPECT_FALSE(tokens[0].lexeme.empty());
-}
-
-TEST(JsonLexerTests, InvalidUnicodeEscape)
-{
-    JsonLexer lexer("\"\\uZZZZ\"");
-
-    EXPECT_THROW(
-        lexer.tokenize(),
-        LexerException
-    );
 }

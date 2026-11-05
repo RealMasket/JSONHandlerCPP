@@ -2,8 +2,9 @@
 
 #include <stdexcept>
 #include <string>
+#include "Api.hpp"
 
-class JsonException : public std::runtime_error
+class JSON_API JsonException : public std::runtime_error
 {
 public:
     explicit JsonException(

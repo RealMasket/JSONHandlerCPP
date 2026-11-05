@@ -2,7 +2,7 @@
 
 #include "JsonException.hpp"
 
-class ParseException : public JsonException
+class JSON_API ParseException : public JsonException
 {
 public:
     ParseException(
