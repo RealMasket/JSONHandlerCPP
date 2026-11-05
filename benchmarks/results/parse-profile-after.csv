@@ -1,0 +1,4 @@
+stage,median_us,min_us,max_us,new_calls,new_bytes
+whole_parse,18936.115,17626.380,21020.695,98331,25122219
+lex_only,5047.680,4526.685,6693.930,2,14774174
+input_copy,283.830,268.115,1047.875,1,1136519

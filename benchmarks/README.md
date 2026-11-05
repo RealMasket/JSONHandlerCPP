@@ -90,9 +90,45 @@ differences limit conclusions; CI smoke tests check functionality, not speed.
 
 ## Local results
 
+See [the array parsing optimization report](results/parse-optimization.md) for
+paired before/after measurements on the current integer-capable parser.
+
 See [results/windows-msvc1951.md](results/windows-msvc1951.md) and its raw CSV
 for the historical local Release run at commit `fd56159`, before exact integer
 storage was introduced. Rerun the harness to measure the current revision.
+
+## Allocation and stage profiling
+
+`JSONHANDLER_BUILD_PROFILER=ON` adds `ParserProfile` to a static, unsanitized
+benchmark build. Run `ParserProfile INPUT [ITERATIONS]` to measure whole parsing,
+lexing with token destruction, and source copying. It reports a nine-sample
+timing summary and one-operation counts of ordinary C++ `new`/`new[]` calls and
+cumulative requested bytes. Its replacement allocation operators are confined
+to that executable; production and comparison benchmark targets do not link them.
+
+This is manual stage/allocation instrumentation, not a sampled CPU call-stack
+profile. Counts exclude aligned allocations and direct CRT `malloc` calls.
+Cumulative requested bytes are not peak or retained memory. Instrumented timings
+are diagnostic and must not be mixed with the ordinary comparison CSVs.
+
+## Comparing two builds on Windows
+
+Keep baseline and candidate executables in separate build directories. Build
+both as Release with the same compiler, static-library setting, external library
+versions, and dataset generator. Disable sanitizers and instrumentation.
+
+`CompareBuilds.ps1` pins its process to one logical CPU before starting children,
+which inherit that affinity. It alternates before/after order across rounds and
+saves individual CSVs, binary/input hashes, and run settings. Supply a fresh
+output directory to avoid mixing incomplete runs with earlier results.
+
+```powershell
+.\benchmarks\CompareBuilds.ps1 -BeforeExe .\build-before\benchmarks\Release\ParseBenchmark.exe -AfterExe .\build-after\benchmarks\Release\ParseBenchmark.exe -Inputs @("benchmark-data/tiny.json","benchmark-data/small.json","benchmark-data/medium.json","benchmark-data/large.json","benchmark-data/nested.json") -OutputDirectory comparison-results -BeforeRevision BASE_COMMIT -AfterRevision CANDIDATE_COMMIT -Rounds 3 -Iterations 20 -Samples 9 -Cpu 0
+```
+
+Keep the machine idle during comparison. Affinity controls CPU placement, not
+frequency or background activity. Boost/Qt rows act as unchanged controls; use
+their variation and the per-sample ranges to judge small apparent differences.
 
 ## References
 

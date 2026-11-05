@@ -4,6 +4,10 @@
 
 ### Correctness
 
+- Precompute array capacity hints in one token pass and reserve after the first
+  value parses, avoiding repeated vector growth and deep copies. Skip capacity
+  metadata when there are no commas, and preserve ordinary diagnostics for
+  malformed or over-depth input.
 - Store signed and unsigned 64-bit integers exactly through construction, parsing,
   serialization, nested equality, and numeric sorting.
 - Compare integers and doubles without converting large integers to rounded double
@@ -42,6 +46,10 @@
 
 ### Build and verification
 
+- Add optional static-build stage/allocation profiling and an affinity-controlled
+  Windows before/after runner, with raw measurements and an optimization report.
+- Add wide/nested/duplicate-key array regressions and a static-build profiler
+  smoke check; keep performance thresholds out of CI.
 - Add Linux ASan/UBSan configuration with fail-fast undefined-behavior checks.
 - Add a dedicated coverage-instrumented libFuzzer parser/round-trip target.
 - Add portable corpus replay and deterministic byte/dictionary mutations,

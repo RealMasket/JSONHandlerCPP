@@ -8,8 +8,39 @@
 #include <string_view>
 #include <system_error>
 #include <limits>
+#include <array>
 
 namespace {
+std::vector<std::pair<size_t, size_t>> findArrayReservations(const std::vector<Token>& tokens)
+{
+    using Type = Parser::TokenType;
+    struct Frame { Type type; size_t reservation; };
+    std::array<Frame, 128> stack{};
+    size_t depth = 0;
+    std::vector<std::pair<size_t, size_t>> reservations;
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        const auto type = tokens[i].type;
+        if (type == Type::LeftBracket || type == Type::LeftBrace) {
+            // Leave malformed/deep input to the ordinary parser and diagnostics.
+            if (depth == stack.size()) return {};
+            const size_t entry = reservations.size();
+            if (type == Type::LeftBracket) {
+                const bool empty = i + 1 < tokens.size() && tokens[i + 1].type == Type::RightBracket;
+                reservations.emplace_back(i, empty ? 0 : 1);
+            }
+            stack[depth++] = {type, entry};
+        } else if (type == Type::Comma && depth && stack[depth - 1].type == Type::LeftBracket) {
+            ++reservations[stack[depth - 1].reservation].second;
+        } else if (type == Type::RightBracket || type == Type::RightBrace) {
+            const auto expected = type == Type::RightBracket ? Type::LeftBracket : Type::LeftBrace;
+            if (!depth || stack[depth - 1].type != expected) return {};
+            --depth;
+        }
+    }
+    if (depth) return {};
+    return reservations;
+}
+
 class DepthGuard {
 public:
     explicit DepthGuard(size_t& depth) : depth(depth) { ++depth; }
@@ -96,6 +127,11 @@ JsonParser::JsonParser(const std::vector<Token>& tokens, const std::string& sour
 {
     if (tokens.empty() || tokens.back().type != Parser::TokenType::EndOfFile)
         throw ParseException("Token stream must end with EOF", 1, 1);
+    // Every multi-element array needs a literal comma in the source. A raw
+    // string search is cheaper than scanning strided Token records for deeply
+    // nested singleton containers. Commas inside strings only cause extra work.
+    if (source.find(',') != std::string::npos)
+        arrayReservations = findArrayReservations(tokens);
 }
 
 bool JsonParser::isAtEnd() const { return peek().type == Parser::TokenType::EndOfFile; }
@@ -191,9 +227,16 @@ Json JsonParser::parseArray()
     if (currentDepth >= MAX_DEPTH) fail("Maximum nesting depth exceeded");
     DepthGuard depth(currentDepth);
     Json::JsonArray array;
+    size_t capacity = 0;
+    if (nextArrayReservation < arrayReservations.size() &&
+        arrayReservations[nextArrayReservation].first == current - 1)
+        capacity = arrayReservations[nextArrayReservation++].second;
     if (match(Parser::TokenType::RightBracket)) return array;
     while (true) {
-        array.emplace_back(parseValue());
+        Json element = parseValue();
+        // Don't allocate the hinted DOM capacity before the first value parses.
+        if (array.empty() && capacity) array.reserve(capacity);
+        array.emplace_back(std::move(element));
         if (match(Parser::TokenType::RightBracket)) return array;
         if (!match(Parser::TokenType::Comma)) fail("Expected ',' between array elements");
     }

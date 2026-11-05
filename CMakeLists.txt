@@ -158,6 +158,11 @@ if(BUILD_TESTING)
             --csv "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/results.csv"
             "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/tiny.json")
         set_tests_properties(Benchmark.Smoke PROPERTIES FIXTURES_REQUIRED benchmark_data)
+        if(TARGET ParserProfile)
+            add_test(NAME Benchmark.ParserProfileSmoke COMMAND ParserProfile
+                "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/tiny.json" 2)
+            set_tests_properties(Benchmark.ParserProfileSmoke PROPERTIES FIXTURES_REQUIRED benchmark_data)
+        endif()
     endif()
 endif()
 

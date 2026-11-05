@@ -121,6 +121,29 @@ TEST(JsonRegressionTests, DuplicateKeysKeepFirstValue)
     EXPECT_EQ(JsonParser::parse(R"({"a":1,"a":2})").at("a").asNumber(), 1);
 }
 
+TEST(JsonRegressionTests, NestedArraysObjectsAndDuplicateKeysKeepTheirContents)
+{
+    const auto value = JsonParser::parse(
+        R"({"x":[1,2],"x":[3,[4,5]],"y":[[],{"comma,]":{"a":1,"b":[6,7]}},[8]]})");
+    EXPECT_EQ(value.at("x"), Json(Json::JsonArray{1, 2}));
+    EXPECT_EQ(value.at("y").size(), 3u);
+    EXPECT_TRUE(value.at("y").at(0).asArray().empty());
+    EXPECT_EQ(value.at("y").at(1).at("comma,]").at("b"), Json(Json::JsonArray{6, 7}));
+    EXPECT_EQ(value.at("y").at(2), Json(Json::JsonArray{8}));
+    EXPECT_EQ(JsonParser::parse(value.serialize(false)), value);
+}
+
+TEST(JsonRegressionTests, WideArrayOfNestedObjectsRoundTrips)
+{
+    Json::JsonArray expected;
+    for (int i = 0; i < 1000; ++i)
+        expected.emplace_back(Json::JsonObject{{"id", i},
+            {"children", Json::JsonArray{Json::JsonArray{}, i, Json::JsonObject{{"v", ",[]{}"}}}}});
+    const Json original(std::move(expected));
+    EXPECT_EQ(JsonParser::parse(original.serialize(false)), original);
+    EXPECT_EQ(JsonParser::parse(original.serialize(true)), original);
+}
+
 TEST(JsonRegressionTests, RejectsInvalidUtf8OnInputAndOutput)
 {
     const std::string invalid[] = {

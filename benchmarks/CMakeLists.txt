@@ -1,11 +1,19 @@
 option(JSONHANDLER_BENCHMARK_BOOST "Compare with Boost.JSON built from local sources" OFF)
 option(JSONHANDLER_BENCHMARK_QT "Compare with the installed Qt6 Core JSON implementation" OFF)
 set(JSONHANDLER_BOOST_ROOT "" CACHE PATH "Boost source tree containing boost/json/src.hpp")
+option(JSONHANDLER_BUILD_PROFILER "Build standalone parser allocation/stage profiler (static, unsanitized)" OFF)
 
 add_executable(ParseBenchmark ParseBenchmark.cpp BenchmarkUtils.cpp)
 target_link_libraries(ParseBenchmark PRIVATE JsonHandlerCPP)
 target_compile_definitions(ParseBenchmark PRIVATE
     JSONHANDLER_BENCHMARK_BUILD_TYPE="$<CONFIG>")
+if(JSONHANDLER_BUILD_PROFILER)
+    if(BUILD_SHARED_LIBS OR JSONHANDLER_ENABLE_SANITIZERS)
+        message(FATAL_ERROR "ParserProfile requires a static build without sanitizers")
+    endif()
+    add_executable(ParserProfile ParserProfile.cpp BenchmarkUtils.cpp)
+    target_link_libraries(ParserProfile PRIVATE JsonHandlerCPP)
+endif()
 if(WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET ParseBenchmark POST_BUILD COMMAND "${CMAKE_COMMAND}" -E
         copy_if_different "$<TARGET_FILE:JsonHandlerCPP>" "$<TARGET_FILE_DIR:ParseBenchmark>")

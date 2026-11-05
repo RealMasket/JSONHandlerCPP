@@ -1,0 +1,39 @@
+{
+  "before_revision": "d21853c",
+  "after_revision": "working-tree",
+  "before_binary_sha256": "22DC269092F719E422D42666218BE4223970F562E21172F6EB4F41793F7508A9",
+  "after_binary_sha256": "733C88550E625B30DF089DE6FF277DEA983A49DBE3BADB4808813B14B45F5B08",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+  "logical_cpu": 0,
+  "os": "Microsoft Windows NT 10.0.19045.0",
+  "rounds": 3,
+  "iterations": 20,
+  "samples": 9,
+  "inputs": [
+    {
+      "name": "tiny.json",
+      "bytes": 61,
+      "sha256": "96BD9F6F42267801C9387520052E7DE85A46B310910AD00E224B41DDAEE4283E"
+    },
+    {
+      "name": "small.json",
+      "bytes": 8621,
+      "sha256": "0890E549E6B388A22FBD94B4D3F6FEF97DC71190AA9369BF93A5CDAC281CD5AB"
+    },
+    {
+      "name": "medium.json",
+      "bytes": 140117,
+      "sha256": "AF0B5E4DD2681EBFCB964B4856066AC1DE267510C93D4DE6C9D911389312EC58"
+    },
+    {
+      "name": "large.json",
+      "bytes": 1136469,
+      "sha256": "2627149EFE1D4A03E990386168A141F210A5B6287EF6301CE055776B08944739"
+    },
+    {
+      "name": "nested.json",
+      "bytes": 833,
+      "sha256": "34B635DEDF3ACCCEBA69519A6F04E0912F953CE802C4123E6B62802AC5788E94"
+    }
+  ]
+}
