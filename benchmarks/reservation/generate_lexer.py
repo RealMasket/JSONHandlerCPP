@@ -24,6 +24,17 @@ policies = {
     "adaptive4": original.replace("limit / 64 ? limit : capacity * 64", "limit / 4 ? limit : capacity * 4"),
     "adaptive64": original,
 }
+start_bounds = original.index("            const size_t capacity = tokens.capacity();")
+end_bounds = original.index("            const double estimate", start_bounds)
+for name, denominator in (("low25", 4), ("low50", 2), ("low100", 1)):
+    bounds = f'''            const size_t capacity = tokens.capacity();
+            const size_t limit = tokens.max_size();
+            const size_t minimum = (std::max)(capacity / 8, size_t{{1}});
+            const size_t lower = capacity + (std::min)(minimum, limit - capacity);
+            const size_t spare = (std::max)(capacity / {denominator}, size_t{{256}});
+            const size_t upper = capacity + (std::min)(spare, limit - capacity);
+'''
+    policies[name] = original[:start_bounds] + bounds + original[end_bounds:]
 destination.mkdir(parents=True, exist_ok=True)
 for name, block in policies.items():
     # Counter code exists only in instrumented profiles, never ordinary timings.

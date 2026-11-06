@@ -1,0 +1,30 @@
+{
+  "training_inputs": 47,
+  "candidates": {
+    "low25": {"spare_fraction": "1/4"},
+    "low50": {"spare_fraction": "1/2"},
+    "low100": {"spare_fraction": "1"}
+  },
+  "shared_rules": {
+    "initial_slots": 256,
+    "small_buffer_spare_slots": 256,
+    "minimum_growth_fraction": "1/8",
+    "upper_request": "capacity + max(256, capacity * spare_fraction), clamped to max_size",
+    "estimate": "input_bytes * (tokens_already_seen + 1) / max(consumed_bytes, 1) + 1",
+    "minimum_request": "capacity + max(capacity/8, 1), clamped to max_size"
+  },
+  "selection": [
+    "Require at least 75% captured peak reduction on whitespace-trailing-16384 versus current.",
+    "Require long-ascii-4096 captured peak no more than 20% above current.",
+    "Among eligible candidates compare equal-weight geometric mean parse times over all training inputs.",
+    "Treat differences within 5% of the best geometric mean as ties; break ties by lower total logical token relocation bytes.",
+    "Record every input's regressions; the preset is not a promise of lower total peak on every document."
+  ],
+  "holdout": {
+    "generator": "generate_holdout.py",
+    "inputs": 12,
+    "seed": 20261106,
+    "generation": "Only after candidate selection has been recorded.",
+    "policy": "Evaluate the selected candidate only; do not retune on this split."
+  }
+}

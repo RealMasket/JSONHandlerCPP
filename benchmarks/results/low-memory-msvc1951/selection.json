@@ -1,0 +1,42 @@
+{
+  "chosen": "low100",
+  "frozen_utc": "2026-11-06T16:31:35.185315+00:00",
+  "scores": {
+    "low25": {
+      "eligible": true,
+      "geomean_parse_time_ratio": 1.35364470366372,
+      "total_copied_token_bytes": 932569008,
+      "tail_peak_bytes": 5271749,
+      "long_ascii_peak_bytes": 9050453
+    },
+    "low50": {
+      "eligible": true,
+      "geomean_parse_time_ratio": 1.2529817192342456,
+      "total_copied_token_bytes": 673382880,
+      "tail_peak_bytes": 5672933,
+      "long_ascii_peak_bytes": 9031925
+    },
+    "low100": {
+      "eligible": true,
+      "geomean_parse_time_ratio": 1.2553224294160463,
+      "total_copied_token_bytes": 547550544,
+      "tail_peak_bytes": 6848645,
+      "long_ascii_peak_bytes": 9080981
+    }
+  },
+  "within_five_percent": [
+    "low50",
+    "low100"
+  ],
+  "rules": [
+    "Require at least 75% captured peak reduction on whitespace-trailing-16384 versus current.",
+    "Require long-ascii-4096 captured peak no more than 20% above current.",
+    "Among eligible candidates compare equal-weight geometric mean parse times over all training inputs.",
+    "Treat differences within 5% of the best geometric mean as ties; break ties by lower total logical token relocation bytes.",
+    "Record every input's regressions; the preset is not a promise of lower total peak on every document."
+  ],
+  "plan_sha256": "b373e5d97cec74a063223cd9834f51b8e6a143a60349554157ea405ba0f99e88",
+  "training_metadata_sha256": "d74e37d39dbf837c5befce3d385db864841cbb797d9fa9154c3bc271c15cb5cf",
+  "holdout_generator_sha256": "274538c233afa5af9910c7c9708bafc0cebc65c461ab0dab25d0a2d9fb29ae42",
+  "training_base_revision": "74b629431520bac9b203e8a891ec73bd14a1a325"
+}

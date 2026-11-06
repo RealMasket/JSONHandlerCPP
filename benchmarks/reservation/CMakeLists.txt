@@ -29,7 +29,12 @@ add_executable(ReservationTimeCurrent Timing.cpp ../BenchmarkUtils.cpp)
 target_link_libraries(ReservationTimeCurrent PRIVATE MasketJSON)
 target_compile_definitions(ReservationTimeCurrent PRIVATE MATRIX_CONFIGURATION="$<CONFIG>")
 
-foreach(policy byte-quarter geometric adaptive4 adaptive64)
+set(reservation_policies byte-quarter geometric adaptive4 adaptive64)
+option(MASKETJSON_BUILD_LOWMEMORY_EXPERIMENT "Build additional bounded-reserve candidates" OFF)
+if(MASKETJSON_BUILD_LOWMEMORY_EXPERIMENT)
+    list(APPEND reservation_policies low25 low50 low100)
+endif()
+foreach(policy IN LISTS reservation_policies)
     foreach(mode time profile)
         set(library "Reservation-${policy}-${mode}")
         add_library(${library} STATIC "${generated}/${policy}.cpp"

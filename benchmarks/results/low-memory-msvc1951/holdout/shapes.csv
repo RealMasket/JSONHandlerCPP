@@ -1,0 +1,13 @@
+dataset,input_bytes,token_count,whitespace_bytes,string_tokens,raw_string_bytes,max_raw_string_bytes,escape_sequences,number_tokens,max_depth,max_array_width,max_object_width,first_4k_tokens,last_4k_tokens,token_fingerprint,dom_fingerprint
+"held-empty-mix-257.json",5655,3086,0,0,0,0,0,0,2,1285,0,2236,2233,339c423d025f9592,edafd3ba10f43615
+"held-empty-mix-4099.json",90179,49190,0,0,0,0,0,0,2,20495,0,2236,2233,e14d486ec5a98cd4,a85f9567566ab0d5
+"held-escape-transition-257.json",39929,518,0,1,39007,39007,10265,257,1,258,0,2,515,f8f668edd8496ca4,9ebff88dd4516bb7
+"held-escape-transition-4099.json",58396,8202,0,1,39007,39007,10265,4099,1,4100,0,2,1639,8133cd8883077b3f,aac7b7df3e9d4f16
+"held-front-nested-257.json",211035,5656,197376,1028,4002,8,0,257,4,257,2,0,1668,fdbcf2112518b6ab,37c7ed7509f97b83
+"held-front-nested-4099.json",3375357,90180,3148032,16396,68573,8,0,4099,4,4099,2,0,1610,125b326e6c48bb46,2c1430c27d712ce5
+"held-long-keys-257.json",15626,62,0,15,15545,1037,0,15,1,0,15,14,15,88fd1080de72cf24,22b084af00b082a3
+"held-long-keys-4099.json",251626,966,0,241,250048,1038,0,241,1,0,241,14,15,3178d337da49c30e,db0e595f29360c3f
+"held-sawtooth-257.json",121149,516,0,257,120377,8191,0,0,1,257,0,2,19,7c6aca0d9a3c4eab,bea1869c27753552
+"held-sawtooth-4099.json",1872940,8200,0,4099,1860642,8191,0,0,1,4099,0,2,27,ad39227468b47fe8,9ea38fac7cbf27df
+"held-tail-records-257.json",211035,5656,197376,1028,4002,8,0,257,4,257,2,1743,0,0bba99a824cdc4ed,37c7ed7509f97b83
+"held-tail-records-4099.json",3375357,90180,3148032,16396,68573,8,0,4099,4,4099,2,1743,0,91d2a1dcfd0a1ef9,2c1430c27d712ce5
