@@ -4,6 +4,9 @@
 
 ### Planned for 1.1.0
 
+- Add an opt-in, isolated four-strategy reservation experiment with 47 input
+  shapes, token-relocation counters, rotating timing order, Windows/Linux smoke
+  checks, raw measurements and a design proposal for future parser presets.
 - Bound the lexer's initial token reservation and adapt subsequent growth to
   observed token density. Reduce unused token storage for long strings and
   whitespace; preserve token ranges, diagnostics and public APIs. Record paired

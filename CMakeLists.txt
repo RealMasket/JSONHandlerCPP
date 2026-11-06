@@ -204,6 +204,15 @@ if(BUILD_TESTING)
             -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/CliIntegration.cmake")
     endif()
     if(MASKETJSON_BUILD_BENCHMARKS)
+        if(MASKETJSON_BUILD_RESERVATION_MATRIX)
+            find_package(Python3 REQUIRED COMPONENTS Interpreter)
+            add_test(NAME Benchmark.ReservationMatrix COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/reservation/check_matrix.py"
+                --bin "$<TARGET_FILE_DIR:ReservationInspectCurrent>"
+                --reference-bin "$<TARGET_FILE_DIR:ParseBenchmark>"
+                --output "${CMAKE_CURRENT_BINARY_DIR}/reservation-smoke")
+            set_tests_properties(Benchmark.ReservationMatrix PROPERTIES TIMEOUT 180)
+        endif()
         add_test(NAME Benchmark.Generate COMMAND ParseBenchmark --generate
             "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke")
         set_tests_properties(Benchmark.Generate PROPERTIES FIXTURES_SETUP benchmark_data)

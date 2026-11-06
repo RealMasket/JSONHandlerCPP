@@ -2,6 +2,9 @@
 #include "JsonLexer.hpp"
 #include "ParseException.hpp"
 #include "MemoryTracker.hpp"
+#ifdef MASKETJSON_RESERVATION_STATS
+#include "ReservationStats.hpp"
+#endif
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -21,6 +24,9 @@ struct Row {
     std::array<std::uint64_t, static_cast<size_t>(Category::Count)> categories{};
     Inventory dom{};
     size_t tokens=0, tokenCapacity=0;
+#ifdef MASKETJSON_RESERVATION_STATS
+    ReservationStats::Counters reservation{};
+#endif
 };
 void inspect(const Json& value, MemoryTracker::LiveSet& blocks, Inventory& data) {
     ++data.nodes;
@@ -47,6 +53,9 @@ void inspect(const Json& value, MemoryTracker::LiveSet& blocks, Inventory& data)
 }
 Row profile(const std::string& source, unsigned stage) {
     Row row{stage==0 ? "whole_parse" : stage==1 ? "lex_only" : "input_copy"};
+#ifdef MASKETJSON_RESERVATION_STATS
+    ReservationStats::Scope reservationScope(row.reservation);
+#endif
     MemoryTracker::Session session;
     if (stage==0) {
         const auto value = JsonParser::parse(source);
@@ -101,7 +110,11 @@ int main(int argc,char** argv) {
         std::cout<<"dataset,input_bytes,stage,new_calls,new_bytes,aligned_calls,peak_live_bytes,peak_live_blocks,"
             "retained_bytes,retained_blocks,after_destroy_bytes,after_destroy_blocks,other_bytes,string_bytes,"
             "array_bytes,map_node_bytes,token_bytes,input_copy_bytes,dom_nodes,object_members,array_elements,"
-            "array_capacity,string_values,string_chars,string_capacity_chars,token_count,token_capacity,token_size,json_size\n";
+            "array_capacity,string_values,string_chars,string_capacity_chars,token_count,token_capacity,token_size,json_size";
+#ifdef MASKETJSON_RESERVATION_STATS
+        std::cout<<",initial_token_capacity,token_buffer_allocations,token_growth_events,copied_token_bytes";
+#endif
+        std::cout<<'\n';
         for(int i=1;i<argc;++i) {
             const std::filesystem::path path(argv[i]);
             std::ifstream file(path,std::ios::binary);
@@ -119,7 +132,12 @@ int main(int argc,char** argv) {
                     <<','<<row.after.liveBytes<<','<<row.after.liveBlocks;
                 for(auto bytes:row.categories) std::cout<<','<<bytes;
                 std::cout<<','<<d.nodes<<','<<d.members<<','<<d.elements<<','<<d.capacity<<','<<d.strings<<','<<d.chars
-                    <<','<<d.stringCapacity<<','<<rows[1].tokens<<','<<rows[1].tokenCapacity<<','<<sizeof(Token)<<','<<sizeof(Json)<<'\n';
+                    <<','<<d.stringCapacity<<','<<rows[1].tokens<<','<<rows[1].tokenCapacity<<','<<sizeof(Token)<<','<<sizeof(Json);
+#ifdef MASKETJSON_RESERVATION_STATS
+                const auto& r=row.reservation;
+                std::cout<<','<<r.initialCapacity<<','<<r.bufferAllocations<<','<<r.growthEvents<<','<<r.copiedTokens*sizeof(Token);
+#endif
+                std::cout<<'\n';
             }
         }
         return std::cout?0:1;

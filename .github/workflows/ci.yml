@@ -9,6 +9,21 @@ permissions:
   contents: read
 
 jobs:
+  reservation-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure experimental reservation matrix
+        run: cmake -S . -B build-matrix -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_RESERVATION_MATRIX=ON
+      - name: Build
+        run: cmake --build build-matrix --config Release --parallel 2
+      - name: Check all strategies against production
+        run: ctest --test-dir build-matrix -C Release -R Benchmark.ReservationMatrix --output-on-failure
+
   test:
     strategy:
       fail-fast: false

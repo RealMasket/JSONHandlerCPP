@@ -1,0 +1,51 @@
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+if(BUILD_SHARED_LIBS OR MASKETJSON_ENABLE_SANITIZERS OR NOT TARGET ParserProfile)
+    message(FATAL_ERROR "Reservation matrix requires a static, unsanitized build with ParserProfile")
+endif()
+set(generated "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<IF:$<BOOL:${CMAKE_CONFIGURATION_TYPES}>,$<CONFIG>/,>build-info-$<CONFIG>.txt"
+    CONTENT "compiler=${CMAKE_CXX_COMPILER_ID}\ncompiler_version=${CMAKE_CXX_COMPILER_VERSION}\nconfiguration=$<CONFIG>\ncxx_standard=${CMAKE_CXX_STANDARD}\nflags=${CMAKE_CXX_FLAGS}\nconfig_flags=$<$<CONFIG:Release>:${CMAKE_CXX_FLAGS_RELEASE}>$<$<CONFIG:Debug>:${CMAKE_CXX_FLAGS_DEBUG}>\nlto=${CMAKE_INTERPROCEDURAL_OPTIMIZATION}\n")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/parser/JsonLexer.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/generate_lexer.py")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/generate_lexer.py"
+    "${PROJECT_SOURCE_DIR}/parser/JsonLexer.cpp" "${generated}" COMMAND_ERROR_IS_FATAL ANY)
+
+# Reuse all non-parser implementation objects. Experimental lexers have a private
+# class name so source/header declarations stay identical without editing production.
+get_target_property(common_sources MasketJSON SOURCES)
+list(REMOVE_ITEM common_sources parser/JsonLexer.cpp parser/JsonParser.cpp)
+list(TRANSFORM common_sources PREPEND "${PROJECT_SOURCE_DIR}/")
+get_target_property(public_includes MasketJSON INCLUDE_DIRECTORIES)
+add_library(ReservationCommon OBJECT ${common_sources})
+target_include_directories(ReservationCommon PUBLIC ${public_includes})
+target_compile_definitions(ReservationCommon PUBLIC MASKETJSON_STATIC)
+add_library(ReservationParser OBJECT "${PROJECT_SOURCE_DIR}/parser/JsonParser.cpp")
+target_link_libraries(ReservationParser PRIVATE ReservationCommon)
+target_compile_definitions(ReservationParser PRIVATE JsonLexer=ReservationLexer)
+
+add_executable(ReservationInspectCurrent Inspect.cpp)
+target_link_libraries(ReservationInspectCurrent PRIVATE MasketJSON)
+add_executable(ReservationTimeCurrent Timing.cpp ../BenchmarkUtils.cpp)
+target_link_libraries(ReservationTimeCurrent PRIVATE MasketJSON)
+target_compile_definitions(ReservationTimeCurrent PRIVATE MATRIX_CONFIGURATION="$<CONFIG>")
+
+foreach(policy byte-quarter geometric adaptive4 adaptive64)
+    foreach(mode time profile)
+        set(library "Reservation-${policy}-${mode}")
+        add_library(${library} STATIC "${generated}/${policy}.cpp"
+            $<TARGET_OBJECTS:ReservationCommon> $<TARGET_OBJECTS:ReservationParser>)
+        target_include_directories(${library} PUBLIC ${public_includes} "${CMAKE_CURRENT_SOURCE_DIR}")
+        target_compile_definitions(${library} PUBLIC MASKETJSON_STATIC JsonLexer=ReservationLexer)
+        if(mode STREQUAL "profile")
+            target_compile_definitions(${library} PUBLIC MASKETJSON_RESERVATION_STATS)
+            add_executable(ReservationProfile-${policy} ../ParserProfile.cpp ../MemoryTracker.cpp)
+            target_link_libraries(ReservationProfile-${policy} PRIVATE ${library} Threads::Threads)
+        else()
+            add_executable(ReservationTime-${policy} Timing.cpp ../BenchmarkUtils.cpp)
+            target_link_libraries(ReservationTime-${policy} PRIVATE ${library})
+            target_compile_definitions(ReservationTime-${policy} PRIVATE MATRIX_CONFIGURATION="$<CONFIG>")
+            add_executable(ReservationInspect-${policy} Inspect.cpp)
+            target_link_libraries(ReservationInspect-${policy} PRIVATE ${library})
+        endif()
+    endforeach()
+endforeach()

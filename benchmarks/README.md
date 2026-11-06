@@ -194,6 +194,39 @@ Keep the machine idle during comparison. Affinity controls CPU placement, not
 frequency or background activity. Boost/Qt rows act as unchanged controls; use
 their variation and the per-sample ranges to judge small apparent differences.
 
+## Reservation strategy matrix
+
+An optional experiment compares four token-allocation policies without changing
+the production lexer or public API. It requires Python 3 and a static,
+unsanitized build with the profiler. Experimental lexer sources are generated
+from the production source; only the allocation block differs. Timing executables
+have no counter hooks; separate profiles count expansions and logical token bytes
+relocated. Ordinary STL growth is implementation-specific.
+
+```powershell
+cmake -S . -B build-matrix -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_RESERVATION_MATRIX=ON
+cmake --build build-matrix --config Release --parallel 2
+ctest --test-dir build-matrix -C Release -R Benchmark.ReservationMatrix --output-on-failure
+python benchmarks/reservation/run_matrix.py --bin build-matrix/benchmarks/reservation/Release --reference-bin build-matrix/benchmarks/Release --output matrix-results --base-revision BASE_COMMIT --cpu 0
+python benchmarks/reservation/summarize_matrix.py matrix-results matrix-report.md
+```
+
+For single-configuration generators set `-DCMAKE_BUILD_TYPE=Release` and omit the
+`Release` path component. The runner supports Windows/Linux affinity; choose a CPU
+allowed for the current process and a fresh output directory. Four rotating rounds
+put each strategy in each position once; an unmodified production timing control
+brackets alternating rounds. Defaults are 7 samples and 5 iterations, plus warm-up.
+The runner validates cross-strategy token/DOM/diagnostic fingerprints before timing,
+saves memory/shape/timing CSVs, source/binary/input hashes, and compiler/flags.
+Do not build or run other benchmarks concurrently with measurements.
+
+The 47 inputs combine the previous 23 fixtures with 24 whitespace, flat-object,
+dense/sparse-transition and alternating-block cases. CI uses smaller generated
+fixtures and checks semantics/counters; it imposes no timing thresholds.
+See [the matrix report](results/reservation-matrix.md) and
+[the preset design proposal](../docs/parser-presets.md). Generated files and logs
+remain in the ignored output directory; publish the small CSV/metadata files only.
+
 ## References
 
 - [Boost.JSON 1.88 documentation](https://www.boost.org/doc/libs/1_88_0/libs/json/doc/html/index.html)
