@@ -8,7 +8,8 @@ param(
     [ValidateRange(1,9)][int]$Rounds = 3,
     [ValidateRange(1,1000000)][int]$Iterations = 20,
     [ValidateRange(1,101)][int]$Samples = 9,
-    [ValidateRange(0,62)][int]$Cpu = 0
+    [ValidateRange(0,62)][int]$Cpu = 0,
+    [switch]$Stages
 )
 $ErrorActionPreference = "Stop"
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
@@ -42,6 +43,7 @@ $metadata = [ordered]@{
     rounds = $Rounds
     iterations = $Iterations
     samples = $Samples
+    stages = [bool]$Stages
     inputs = @($inputPaths | ForEach-Object {
         [ordered]@{ name = [IO.Path]::GetFileName($_); bytes = (Get-Item -LiteralPath $_).Length; sha256 = (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash }
     })
@@ -57,6 +59,7 @@ try {
             $exe = if ($variant -eq "before") { $beforePath } else { $afterPath }
             $csv = Join-Path $outPath "$variant-$round.csv"
             $nativeArgs = @("--iterations", "$Iterations", "--samples", "$Samples", "--csv", $csv) + $inputPaths
+            if ($Stages) { $nativeArgs = @('--stages') + $nativeArgs }
             Write-Output "Round $round/$Rounds : $variant"
             & $exe @nativeArgs > (Join-Path $logPath "$variant-$round.log") 2> (Join-Path $logPath "$variant-$round.stderr")
             if ($LASTEXITCODE -ne 0) { throw "$variant benchmark failed with exit code $LASTEXITCODE" }

@@ -63,3 +63,96 @@ TEST(JsonLexerTests, ExceptionContainsLocationAndContext)
         EXPECT_NE(std::string(ex.what()).find("^"), std::string::npos);
     }
 }
+
+TEST(JsonLexerTests, LongStringDoesNotReserveTokensForEveryInputByte)
+{
+    const std::string source = "\"" + std::string(2 * 1024 * 1024, 'x') + "\"";
+    const auto tokens = JsonLexer(source).tokenize();
+    ASSERT_EQ(tokens.size(), 2u);
+    EXPECT_EQ(tokens.front().type, Parser::TokenType::String);
+    EXPECT_EQ(tokens.front().start, 1u);
+    EXPECT_EQ(tokens.front().length, source.size() - 2);
+    EXPECT_EQ(tokens.back().position, source.size());
+    // Guard against input-sized over-reservation, without fixing a growth factor.
+    EXPECT_LT(tokens.capacity() * sizeof(Token), source.size());
+}
+
+TEST(JsonLexerTests, WhitespaceOnlyInputHasOneCorrectlyLocatedEof)
+{
+    const std::string source = std::string(2 * 1024 * 1024, ' ') + "\n\t";
+    const auto tokens = JsonLexer(source).tokenize();
+    ASSERT_EQ(tokens.size(), 1u);
+    EXPECT_EQ(tokens.front().type, Parser::TokenType::EndOfFile);
+    EXPECT_EQ(tokens.front().position, source.size());
+    EXPECT_EQ(tokens.front().start, source.size());
+    EXPECT_EQ(tokens.front().length, 0u);
+    EXPECT_EQ(tokens.front().line, 2u);
+    EXPECT_EQ(tokens.front().column, 2u);
+    EXPECT_LT(tokens.capacity() * sizeof(Token), source.size());
+}
+
+TEST(JsonLexerTests, EmptyInputHasEof)
+{
+    const auto tokens = JsonLexer("").tokenize();
+    ASSERT_EQ(tokens.size(), 1u);
+    EXPECT_EQ(tokens.front().type, Parser::TokenType::EndOfFile);
+    EXPECT_EQ(tokens.front().position, 0u);
+    EXPECT_EQ(tokens.front().line, 1u);
+    EXPECT_EQ(tokens.front().column, 1u);
+}
+
+TEST(JsonLexerTests, DensityChangesPreserveEveryTokenRange)
+{
+    const size_t count = 512;
+    const std::string longString = "\"" + std::string(2 * 1024 * 1024, 's') + "\\n\"";
+    for (bool stringFirst : {false, true})
+    {
+        SCOPED_TRACE(stringFirst);
+        std::string source = "[";
+        if (stringFirst) source += longString + ",";
+        for (size_t i = 0; i < count; ++i)
+            source += i + 1 == count && stringFirst ? "0" : "0,";
+        if (!stringFirst) source += longString;
+        source += "]";
+        const auto tokens = JsonLexer(source).tokenize();
+        ASSERT_EQ(tokens.size(), 2 * count + 4);
+        EXPECT_LT(tokens.capacity() * sizeof(Token), source.size());
+        EXPECT_EQ(tokens.front().type, Parser::TokenType::LeftBracket);
+        EXPECT_EQ(tokens[tokens.size() - 2].type, Parser::TokenType::RightBracket);
+        EXPECT_EQ(tokens.back().type, Parser::TokenType::EndOfFile);
+        size_t numbers = 0, strings = 0;
+        for (const auto& token : tokens)
+        {
+            EXPECT_EQ(token.line, 1u);
+            EXPECT_EQ(token.column, token.position + 1);
+            if (token.type == Parser::TokenType::Number)
+            {
+                ++numbers;
+                EXPECT_EQ(source.substr(token.start, token.length), "0");
+            }
+            if (token.type == Parser::TokenType::String)
+            {
+                ++strings;
+                EXPECT_EQ(source.substr(token.start, token.length), longString.substr(1, longString.size() - 2));
+            }
+        }
+        EXPECT_EQ(numbers, count);
+        EXPECT_EQ(strings, 1u);
+        EXPECT_EQ(tokens.back().position, source.size());
+    }
+}
+
+TEST(JsonLexerTests, ErrorLocationSurvivesTokenBufferGrowth)
+{
+    std::string source = "[";
+    for (size_t i = 0; i < 2048; ++i) source += "0,";
+    source += "\n false,@]";
+    try {
+        JsonLexer(source).tokenize();
+        FAIL();
+    } catch (const LexerException& ex) {
+        EXPECT_EQ(ex.getLine(), 2u);
+        EXPECT_EQ(ex.getColumn(), 8u);
+        EXPECT_NE(std::string(ex.what()).find("Unexpected character: @"), std::string::npos);
+    }
+}

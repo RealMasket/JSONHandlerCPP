@@ -4,6 +4,10 @@
 
 ### Planned for 1.1.0
 
+- Bound the lexer's initial token reservation and adapt subsequent growth to
+  observed token density. Reduce unused token storage for long strings and
+  whitespace; preserve token ranges, diagnostics and public APIs. Record paired
+  memory/timing measurements and add density-transition regressions.
 - Add captured heap peak/retained accounting, retained block attribution and DOM
   inventory, dedicated tracker self-tests, scalable fixtures, and a reproducible
   memory baseline runner. Move stage timings into the uninstrumented benchmark.

@@ -95,6 +95,9 @@ differences limit conclusions; CI smoke tests check functionality, not speed.
 
 ## Local results
 
+See [the adaptive token reservation report](results/token-reserve-optimization.md)
+for paired captured-heap and uninstrumented timing measurements on 23 inputs.
+
 See [the array parsing optimization report](results/parse-optimization.md) for
 paired before/after measurements on the current integer-capable parser.
 
@@ -181,6 +184,7 @@ versions, and dataset generator. Disable sanitizers and instrumentation.
 which inherit that affinity. It alternates before/after order across rounds and
 saves individual CSVs, binary/input hashes, and run settings. Supply a fresh
 output directory to avoid mixing incomplete runs with earlier results.
+Add `-Stages` to include uninstrumented lexer and input-copy timings.
 
 ```powershell
 .\benchmarks\CompareBuilds.ps1 -BeforeExe .\build-before\benchmarks\Release\ParseBenchmark.exe -AfterExe .\build-after\benchmarks\Release\ParseBenchmark.exe -Inputs @("benchmark-data/tiny.json","benchmark-data/small.json","benchmark-data/medium.json","benchmark-data/large.json","benchmark-data/nested.json") -OutputDirectory comparison-results -BeforeRevision BASE_COMMIT -AfterRevision CANDIDATE_COMMIT -Rounds 3 -Iterations 20 -Samples 9 -Cpu 0

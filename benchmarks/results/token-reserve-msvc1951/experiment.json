@@ -1,0 +1,75 @@
+{
+  "base_revision": "07cbd8a5f7ed997e0753cd8d859c327f31e91d3f",
+  "source_hash_format": "UTF-8 without BOM, LF line endings",
+  "before_lexer_sha256": "345b91f9804686fafcc08134cebd18b9f4e7f7810b446395ff337fd1f5da8e2b",
+  "before_profile_sha256": "2af5fcfc2b4bd1af8d68f4b57e21a67fb7126c821047efd9eebf743caabedb85",
+  "after_profile_sha256": "13dbde1bdec5d3ab15bac88c4f73e503f50daba78ac1166baaae90bb3b84902b",
+  "qt_dll_before_sha256": "37fde8ebd11b474b806a1cf8d4564780dc51afdad3ac3611cd0aa92982f73687",
+  "qt_dll_after_sha256": "37fde8ebd11b474b806a1cf8d4564780dc51afdad3ac3611cd0aa92982f73687",
+  "configuration": {
+    "generator": "Visual Studio 18 2026",
+    "compiler": "MSVC 19.51.36257.0",
+    "configuration": "Release",
+    "cxx_standard": 17,
+    "shared": false,
+    "sanitizers": false,
+    "lto": false,
+    "boost": "1.88.0 (source-built)",
+    "qt": "6.11.0 (msvc2022_64)",
+    "profile_base": 256
+  },
+  "after_sources": [
+    {
+      "file": "parser/JsonLexer.cpp",
+      "sha256": "b6d77dbe541532ae7f1986285d6a237d0cc28ca8458c7ce893f7233a9e52fc88"
+    },
+    {
+      "file": "parser/JsonParser.cpp",
+      "sha256": "7ccbfd4119f3e4ec2caa8201f9028e3ed4a5e8256429b3776cea95cff2f7a549"
+    },
+    {
+      "file": "parser/Token.hpp",
+      "sha256": "c8985f42148273ccdcd4010a1fd6d2c4688a6e56bd42799fbe95a229e5bf5534"
+    },
+    {
+      "file": "core/JsonHandler.hpp",
+      "sha256": "90d55357181117325604909077d9829336f7b0bade07f4cfe06f35f0df233468"
+    },
+    {
+      "file": "benchmarks/ParseBenchmark.cpp",
+      "sha256": "5b1f31c295a9a3b4bf1585c1e28b2d7b2a011dac9bce0b86578b937cbd8e88b9"
+    },
+    {
+      "file": "benchmarks/ParserProfile.cpp",
+      "sha256": "1bf44c5b177d36c995fabdc286b054de77cb16fd051ad3e8ac9704cd22932bbf"
+    },
+    {
+      "file": "benchmarks/MemoryTracker.cpp",
+      "sha256": "1bfb5af48e0750f24d588369ac7f7237e4180b3b39f273cf281973d96472616f"
+    },
+    {
+      "file": "benchmarks/MemoryTracker.hpp",
+      "sha256": "9cefa14171a8ab2255524d5cf4e19783bce98f5afd03119e9828ad4bf8695ca3"
+    },
+    {
+      "file": "benchmarks/BenchmarkUtils.cpp",
+      "sha256": "db230a04070829d9140bb260761e3d78349371a3ebb65c00724695d458a9593a"
+    },
+    {
+      "file": "benchmarks/BenchmarkUtils.hpp",
+      "sha256": "c8d14e94b775950fb12445e01b0109014ca30cf109150d53f4181f4618530236"
+    },
+    {
+      "file": "benchmarks/CMakeLists.txt",
+      "sha256": "b7346daa06554110265edf411fb7ef3f0248efb72d26739b5b2d5676e650b73a"
+    },
+    {
+      "file": "CMakeLists.txt",
+      "sha256": "c5bbaf4bd4f5a61afedb6b2a8315b57bd1baf798b1c4695352a5c47037df7816"
+    },
+    {
+      "file": "benchmarks/CompareBuilds.ps1",
+      "sha256": "d8406f27c72966d987c5416d1af3cdd83910ceb3d60c26e478000b3bb3d91c78"
+    }
+  ]
+}

@@ -372,7 +372,31 @@ Token JsonLexer::keyword()
 std::vector<Token> JsonLexer::tokenize()
 {
     std::vector<Token> tokens;
-    tokens.reserve(source.size() / 4);
+    // Input bytes alone are a poor token-count estimate for long strings or
+    // whitespace. Start small and learn the density from consumed input.
+    tokens.reserve((std::min)(source.size() / 4, size_t{256}));
+
+    auto append = [&](Token token) {
+        if (tokens.size() == tokens.capacity() && tokens.size() < tokens.max_size())
+        {
+            const size_t capacity = tokens.capacity();
+            const size_t limit = tokens.max_size();
+            const size_t increment = (std::max)(capacity / 2, size_t{1});
+            const size_t lower = capacity + (std::min)(increment, limit - capacity);
+            // Bound extrapolation when a dense prefix precedes a long string.
+            // A generous upper step avoids repeatedly copying large token arrays.
+            const size_t upper = capacity == 0 ? size_t{1}
+                : capacity > limit / 64 ? limit : capacity * 64;
+            // Include the pending token and EOF; this is only an allocation hint.
+            const double estimate = static_cast<double>(source.size())
+                * static_cast<double>(tokens.size() + 1)
+                / static_cast<double>((std::max)(position, size_t{1})) + 1;
+            const size_t desired = estimate >= static_cast<double>(upper)
+                ? upper : (std::min)(upper, (std::max)(lower, static_cast<size_t>(estimate)));
+            tokens.reserve(desired);
+        }
+        tokens.push_back(token);
+    };
 
     while (!isAtEnd())
     {
@@ -390,52 +414,52 @@ std::vector<Token> JsonLexer::tokenize()
         {
         case '{':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::LeftBrace, position - 1, 1));
             break;
 
         case '}':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::RightBrace, position - 1, 1));
             break;
 
         case '[':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::LeftBracket, position - 1, 1));
             break;
 
         case ']':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::RightBracket, position - 1, 1));
             break;
 
         case ':':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::Colon, position - 1, 1));
             break;
 
         case ',':
             advance();
-            tokens.push_back(
+            append(
                 makeToken(Parser::TokenType::Comma, position - 1, 1));
             break;
 
         case '"':
-            tokens.push_back(string());
+            append(string());
             break;
 
         default:
             if (isDigit(c) || c == '-')
             {
-                tokens.push_back(number());
+                append(number());
             }
             else if (isAlpha(c))
             {
-                tokens.push_back(keyword());
+                append(keyword());
             }
             else
             {
@@ -456,7 +480,7 @@ std::vector<Token> JsonLexer::tokenize()
     tokenPosition = position;
     tokenLine = line;
     tokenColumn = column;
-    tokens.push_back(
+    append(
         makeToken(Parser::TokenType::EndOfFile, position, 0));
 
     return tokens;

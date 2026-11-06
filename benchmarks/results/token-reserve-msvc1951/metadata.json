@@ -1,0 +1,130 @@
+{
+  "before_revision": "07cbd8a5f7ed997e0753cd8d859c327f31e91d3f",
+  "after_revision": "07cbd8a + adaptive-token-reserve (source hashes in experiment.json)",
+  "before_binary_sha256": "08FA513AA88EA3E123E277A4A1C985B0B14E0EC9FA80B38DF4146323BB82B190",
+  "after_binary_sha256": "141DF27DAB73F045CF052949AE75C6952CFBBE205369985D18C72F121ED59D60",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+  "logical_cpu": 0,
+  "os": "Microsoft Windows NT 10.0.19045.0",
+  "rounds": 3,
+  "iterations": 10,
+  "samples": 9,
+  "stages": true,
+  "inputs": [
+    {
+      "name": "deep-128.json",
+      "bytes": 257,
+      "sha256": "A87F12D34D179C4DD058F06D205B96585BD84797EAB5360FE32BC414D56028BA"
+    },
+    {
+      "name": "deep-64.json",
+      "bytes": 129,
+      "sha256": "F0244AE1938270F711155B0A26A4307CDE7050495140DD858A88A1CFC378CF40"
+    },
+    {
+      "name": "deep-8.json",
+      "bytes": 17,
+      "sha256": "C68A1F8A52ADDE034F599F300CE94E4F30714D6766C7AE39021CBC52C70324AD"
+    },
+    {
+      "name": "escaped-4096.json",
+      "bytes": 4292609,
+      "sha256": "FDAD5CA1137E6675D99EB49F6A1380E890C0B98D15CA56600BC341031F28FC6F"
+    },
+    {
+      "name": "escaped-512.json",
+      "bytes": 536577,
+      "sha256": "C4C20C2BBAE9B59ADD32D340A6F75E6FB6F5FCF289BFD9D000E0AA8DB56E4039"
+    },
+    {
+      "name": "escaped-64.json",
+      "bytes": 67073,
+      "sha256": "A04FF44F1DCAAB41DD5A2D41D45FDA4824BE2EB503EB0BB0E07395A9FD458BDF"
+    },
+    {
+      "name": "large.json",
+      "bytes": 1136469,
+      "sha256": "2627149EFE1D4A03E990386168A141F210A5B6287EF6301CE055776B08944739"
+    },
+    {
+      "name": "long-ascii-4096.json",
+      "bytes": 4214785,
+      "sha256": "AAAE4AA62691B37A810E476151A7CBC4782BEF767DD5476E3A22E6777D10DE32"
+    },
+    {
+      "name": "long-ascii-512.json",
+      "bytes": 526849,
+      "sha256": "F8050936472DAE4E310559F618A772D8EB0D1F8AEB92C3B96B6ADB9149DCFBF1"
+    },
+    {
+      "name": "long-ascii-64.json",
+      "bytes": 65857,
+      "sha256": "20D939B435B88A68E4603B5834357BF60BD66565807E0E12C152C1AF5C45AD01"
+    },
+    {
+      "name": "medium.json",
+      "bytes": 140117,
+      "sha256": "AF0B5E4DD2681EBFCB964B4856066AC1DE267510C93D4DE6C9D911389312EC58"
+    },
+    {
+      "name": "nested.json",
+      "bytes": 833,
+      "sha256": "34B635DEDF3ACCCEBA69519A6F04E0912F953CE802C4123E6B62802AC5788E94"
+    },
+    {
+      "name": "small.json",
+      "bytes": 8621,
+      "sha256": "0890E549E6B388A22FBD94B4D3F6FEF97DC71190AA9369BF93A5CDAC281CD5AB"
+    },
+    {
+      "name": "tiny.json",
+      "bytes": 61,
+      "sha256": "96BD9F6F42267801C9387520052E7DE85A46B310910AD00E224B41DDAEE4283E"
+    },
+    {
+      "name": "unicode-4096.json",
+      "bytes": 4239361,
+      "sha256": "4AE2274E2AAE4AEC110283B5C320148046A20EB5759BC6C16AD2BC956F881B65"
+    },
+    {
+      "name": "unicode-512.json",
+      "bytes": 529921,
+      "sha256": "B878F110CB4B8D898B20FF243F3BF7D3E464541907464F1DD3A1D0BCE9B897A4"
+    },
+    {
+      "name": "unicode-64.json",
+      "bytes": 66241,
+      "sha256": "ED4353F467741D3DB9409129A22C530E7F7C92C2058458C093E679B16EBFFFB8"
+    },
+    {
+      "name": "wide-numbers-262144.json",
+      "bytes": 1779453,
+      "sha256": "A489CE1D35F126ACB197007C5D0CFD6AB5623F2B3B74DAF387AC18C3A93AD396"
+    },
+    {
+      "name": "wide-numbers-32768.json",
+      "bytes": 207437,
+      "sha256": "61BE66E0610B667AD6EADBD64BFC72999077381B83CDE19D71043140C5B9712A"
+    },
+    {
+      "name": "wide-numbers-4096.json",
+      "bytes": 24021,
+      "sha256": "4021A66759365E075EF7648269C2BF4284F6294493FD0BA5EE8D9C825B01B367"
+    },
+    {
+      "name": "wide-objects-16384.json",
+      "bytes": 2287925,
+      "sha256": "7FA807A9A1AA86B441BE4EDC4ED99E1EDB51CDDC227017A6415BD1C33FFD8EDC"
+    },
+    {
+      "name": "wide-objects-2048.json",
+      "bytes": 282453,
+      "sha256": "A10595A91F465E8F7FE9A451917346BD9533AE442E1CC36F3F7F0E932D8C61F2"
+    },
+    {
+      "name": "wide-objects-256.json",
+      "bytes": 34853,
+      "sha256": "2D23CCD5A1FCA12F44F95490A298EDED3E81C19631577A7397878B464BA14EC4"
+    }
+  ]
+}
