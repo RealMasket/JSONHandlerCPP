@@ -14,6 +14,9 @@ under development; the latest published release remains 1.0.0.
 - Failure coverage includes partial writes, flush/close/commit errors, locked or
   unwritable destinations, cleanup, Unicode paths, and exported DLL consumers.
 - Existing basic POSIX mode bits are retained; new POSIX files use mode 0600.
+- Developer tools now capture heap peak/retained allocations and DOM storage
+  categories, with scalable fixtures, separate uninstrumented stage timings,
+  and a reproducible baseline report.
 
 ## Getting started
 

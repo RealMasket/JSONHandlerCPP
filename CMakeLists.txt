@@ -211,10 +211,22 @@ if(BUILD_TESTING)
             --csv "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/results.csv"
             "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/tiny.json")
         set_tests_properties(Benchmark.Smoke PROPERTIES FIXTURES_REQUIRED benchmark_data)
+        add_test(NAME Benchmark.GenerateProfile COMMAND ParseBenchmark --generate-profile
+            "${CMAKE_CURRENT_BINARY_DIR}/profile-smoke" 4)
+        set_tests_properties(Benchmark.GenerateProfile PROPERTIES FIXTURES_SETUP profile_data)
+        set(profile_test_args "-DBENCHMARK=$<TARGET_FILE:ParseBenchmark>"
+            "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/profile-smoke")
+        if(TARGET ParserProfile)
+            list(APPEND profile_test_args "-DPROFILE=$<TARGET_FILE:ParserProfile>")
+        endif()
+        add_test(NAME Benchmark.ProfileDatasetsSmoke COMMAND "${CMAKE_COMMAND}" ${profile_test_args}
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/ParserProfileSmoke.cmake")
+        set_tests_properties(Benchmark.ProfileDatasetsSmoke PROPERTIES FIXTURES_REQUIRED profile_data TIMEOUT 120)
         if(TARGET ParserProfile)
             add_test(NAME Benchmark.ParserProfileSmoke COMMAND ParserProfile
-                "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/tiny.json" 2)
+                "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke/tiny.json")
             set_tests_properties(Benchmark.ParserProfileSmoke PROPERTIES FIXTURES_REQUIRED benchmark_data)
+            add_test(NAME Benchmark.MemoryTrackerSelfTest COMMAND ParserProfile --self-test)
         endif()
     endif()
 endif()

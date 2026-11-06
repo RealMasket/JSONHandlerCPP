@@ -15,6 +15,8 @@ struct BenchmarkMeasurement {
 class BenchmarkUtils {
 public:
     static void consume(std::uint64_t value);
+    // Defined out of line so the copy-stage buffer escapes the optimizer.
+    static void escape(const void* pointer);
     static BenchmarkMeasurement summarize(std::vector<double> samples);
 
     // Each operation creates and destroys its result before returning a checksum.

@@ -6,7 +6,8 @@ as MasketJSON and use the configured project version.
 
 The benchmark measures this library and optional local installations of
 Boost.JSON and Qt6 Core. It is a comparison harness, not a claim of universal
-performance. It does not download Boost or Qt and does not measure peak memory.
+performance. It does not download Boost or Qt. The ordinary comparison measures
+time; the separate ParserProfile executable measures MasketJSON's captured C++ heap.
 
 ## Build
 
@@ -104,16 +105,71 @@ storage was introduced. Rerun the harness to measure the current revision.
 ## Allocation and stage profiling
 
 `MASKETJSON_BUILD_PROFILER=ON` adds `ParserProfile` to a static, unsanitized
-benchmark build. Run `ParserProfile INPUT [ITERATIONS]` to measure whole parsing,
-lexing with token destruction, and source copying. It reports a nine-sample
-timing summary and one-operation counts of ordinary C++ `new`/`new[]` calls and
-cumulative requested bytes. Its replacement allocation operators are confined
-to that executable; production and comparison benchmark targets do not link them.
+build. It links replacement ordinary/aligned, array/scalar, throwing/nothrow
+allocation/deallocation operators. Production and ParseBenchmark never link these.
 
-This is manual stage/allocation instrumentation, not a sampled CPU call-stack
-profile. Counts exclude aligned allocations and direct CRT `malloc` calls.
-Cumulative requested bytes are not peak or retained memory. Instrumented timings
-are diagnostic and must not be mixed with the ordinary comparison CSVs.
+```powershell
+.\build-bench\benchmarks\Release\ParserProfile.exe --self-test
+.\build-bench\benchmarks\Release\ParserProfile.exe benchmark-data/large.json > memory.csv
+.\build-bench\benchmarks\Release\ParseBenchmark.exe --stages --csv timing.csv benchmark-data/large.json
+.\build-bench\benchmarks\Release\ParseBenchmark.exe --generate-profile profile-data 256
+```
+
+ParserProfile emits **memory only**, once per input and stage: whole_parse,
+lex_only, input_copy. The old optional ITERATIONS argument and timed CSV schema
+are replaced. `ParseBenchmark --stages` supplies uninstrumented lexer/copy timings
+in addition to ordinary parse/serialize comparisons. Stage times and peaks are
+not additive; do not subtract them to claim an isolated DOM construction cost.
+Use the default non-LTO build: the copy buffer escapes through an out-of-line
+consumer so the compiler cannot replace a full copy with a size/first-byte read.
+
+- `new_calls`/`new_bytes` are cumulative successful requests during the window.
+  `peak_live_bytes` is the maximum simultaneous requested bytes, not cumulative volume.
+  `retained_bytes` is sampled while the returned DOM/tokens/copy remain alive.
+  `after_destroy_bytes` and `after_destroy_blocks` must both be zero.
+- Input reading and a validation round-trip happen before capture. The caller's
+  original input, root Json stack object, stack, allocator rounding/metadata,
+  direct malloc calls, shared-runtime internals, and tracker bookkeeping are excluded.
+  These numbers are **not RSS/working set or total process memory**. Tracking and
+  live-block indexing use direct malloc, so their overhead cannot inflate counters.
+- The captured owner thread allocates; frees from any thread are recognized.
+  Pointers born before/after a window are safely ignored. Only one window is allowed.
+  This matches the current single-threaded parser; it is not a background-thread
+  allocation profiler. CTest self-tests cover resizing/tombstones, short-lived and
+  surviving windows, cross-thread frees, zero-size, aligned/nothrow allocations,
+  exception unwinding, and STL interior-aligned buffers.
+- Retained blocks are labeled using public container data/entry addresses:
+  strings (keys and values), array storage, map nodes, tokens, input copies, other.
+  Container ownership wins over in-place SSO strings. Interior pointers are supported
+  for MSVC's manually aligned large allocations. Block labels are implementation
+  attribution, not portable STL node sizes; other includes unclassified bookkeeping.
+  Categories partition retained bytes, not peak bytes. String capacity counts
+  include SSO capacity and are character counts, not allocated heap bytes.
+- The profiler measures only MasketJSON. Boost/Qt use different allocators and DLL
+  paths; global new interception would not provide comparable memory coverage.
+  Their uninstrumented timing comparisons validate semantics before measuring.
+
+`--generate-profile DIR [BASE=256]` generates 18 deterministic fixtures: three
+sizes each of wide objects, mixed numbers (within the common exact range), long
+ASCII strings, JSON-escaped strings, raw UTF-8 strings, plus depth 8/64/128 arrays.
+The original five `--generate` fixtures retain their original bytes. CI uses base 4
+and checks generated input semantics and every memory CSV accounting invariant.
+
+On Windows, `RunMemoryBaseline.ps1` generates both suites, pins children to one
+logical CPU, captures memory once, and runs separate timing rounds. It saves
+binary/input/tool-source hashes, CPU/OS, raw CSVs, and logs to a fresh directory:
+Tool-source hashes normalize UTF-8 BOM and CRLF to UTF-8/LF for checkout portability;
+binary and input hashes cover the actual measured bytes.
+
+```powershell
+.\benchmarks\RunMemoryBaseline.ps1 -BenchmarkExe .\build-bench\benchmarks\Release\ParseBenchmark.exe -ProfileExe .\build-bench\benchmarks\Release\ParserProfile.exe -OutputDirectory baseline -Iterations 10 -Samples 9 -Rounds 3 -Cpu 0
+```
+
+Optionally render a Markdown report using Python 3's standard library:
+`python benchmarks/summarize_memory_baseline.py baseline report.md`.
+See [the captured baseline](results/parser-memory-baseline.md) for raw memory,
+three ordinary timing rounds, metadata, and findings. Generated JSON files and
+transient logs are reproducible and are not checked into the repository.
 
 ## Comparing two builds on Windows
 

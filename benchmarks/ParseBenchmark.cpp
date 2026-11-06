@@ -1,7 +1,9 @@
 #include "JsonHandler.hpp"
 #include "JsonParser.hpp"
+#include "JsonLexer.hpp"
 #include "BenchmarkUtils.hpp"
 #include <charconv>
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -36,11 +38,13 @@ namespace {
 constexpr const char* usage =
     "Usage:\n"
     "  ParseBenchmark --generate DIRECTORY\n"
-    "  ParseBenchmark [--iterations N] [--samples N] [--csv FILE] INPUT...\n"
+    "  ParseBenchmark --generate-profile DIRECTORY [BASE=256]\n"
+    "  ParseBenchmark [--stages] [--iterations N] [--samples N] [--csv FILE] INPUT...\n"
     "\nDefault: 100 iterations per sample, 7 samples, 5 warm-up calls per operation.\n"
     "Use Release builds. File reading and correctness checks are not timed.\n";
 
 struct Options {
+    bool stages = false;
     size_t iterations = 100;
     size_t samples = 7;
     std::string csv;
@@ -71,6 +75,7 @@ Options parseOptions(int argc, char** argv)
     bool positionalOnly = false;
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
+        if (!positionalOnly && arg == "--stages") { options.stages = true; continue; }
         if (!positionalOnly && arg == "--") { positionalOnly = true; continue; }
         if (!positionalOnly && (arg == "--iterations" || arg == "--samples" || arg == "--csv")) {
             if (++i >= argc) throw std::invalid_argument("Missing value after " + arg);
@@ -138,6 +143,53 @@ void generate(const std::filesystem::path& directory)
     writeDataset("nested.json", nested);
 }
 
+void generateProfile(const std::filesystem::path& directory, size_t base)
+{
+    std::filesystem::create_directories(directory);
+    const auto save = [&](const std::string& name, const std::string& text) {
+        writeFile(directory / (name + ".json"), text);
+        std::cout << name << ": " << text.size() << " bytes\n";
+    };
+    for (size_t scale : {size_t{1}, size_t{8}, size_t{64}}) {
+        const size_t rows = base * scale;
+        save("wide-objects-" + std::to_string(rows), records(rows));
+        const size_t count = rows * 16;
+        std::string numbers = "[";
+        for (size_t i = 0; i < count; ++i) {
+            if (i) numbers += ',';
+            switch (i % 4) {
+            case 0: numbers += std::to_string(i); break;
+            case 1: numbers += '-' + std::to_string(i); break;
+            case 2: numbers += "0.125"; break;
+            default: numbers += "1.25e3"; break;
+            }
+        }
+        save("wide-numbers-" + std::to_string(count), numbers + ']');
+        const size_t strings = (std::max)(size_t{1}, base / 4) * scale;
+        const std::array<std::pair<const char*, std::string>, 3> patterns{{
+            {"long-ascii", "abcdefgh0123456789"},
+            {"escaped", R"(line\ntext\tquote\"backslash\\unicode\u041F\uD83D\uDE00)"},
+            {"unicode", "\xD0\x9F\xD1\x80\xD0\xB8\xD0\xB2\xD0\xB5\xD1\x82-\xE4\xB8\x96\xE7\x95\x8C-\xF0\x9F\x98\x80"}
+        }};
+        for (const auto& pattern : patterns) {
+            std::string payload;
+            while (payload.size() < 1024) payload += pattern.second;
+            std::string text = "[";
+            for (size_t i = 0; i < strings; ++i) {
+                if (i) text += ',';
+                text += '"' + payload + '"';
+            }
+            save(std::string(pattern.first) + '-' + std::to_string(strings), text + ']');
+        }
+    }
+    for (size_t depth : {size_t{8}, size_t{64}, size_t{128}}) {
+        std::string text(depth, '[');
+        text += '0';
+        text.append(depth, ']');
+        save("deep-" + std::to_string(depth), text);
+    }
+}
+
 std::string compilerName()
 {
 #if defined(__clang__)
@@ -192,6 +244,16 @@ void benchmarkFile(const std::filesystem::path& path, const Options& options, st
     measure(rows, options, name, text.size(), "MasketJSON", MASKETJSON_BENCHMARK_VERSION, "serialize", [&] {
         return original.serialize(false).size();
     });
+    if (options.stages) {
+        measure(rows, options, name, text.size(), "MasketJSON", MASKETJSON_BENCHMARK_VERSION, "lex_only", [&] {
+            return JsonLexer(text).tokenize().size();
+        });
+        measure(rows, options, name, text.size(), "MasketJSON", MASKETJSON_BENCHMARK_VERSION, "input_copy", [&] {
+            const auto copy = text;
+            BenchmarkUtils::escape(copy.data());
+            return copy.size() + (copy.empty() ? 0 : static_cast<unsigned char>(copy.front()));
+        });
+    }
 
 #ifdef MASKETJSON_HAS_BOOST
     boost::json::parse_options boostOptions;
@@ -261,6 +323,10 @@ int main(int argc, char** argv)
         std::cout.imbue(std::locale::classic());
         if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << usage; return 0; }
         if (argc == 3 && std::string(argv[1]) == "--generate") { generate(argv[2]); return 0; }
+        if ((argc == 3 || argc == 4) && std::string(argv[1]) == "--generate-profile") {
+            generateProfile(argv[2], argc == 4 ? positiveCount(argv[3], 4096) : 256);
+            return 0;
+        }
         const auto options = parseOptions(argc, argv);
 #ifndef NDEBUG
         std::cerr << "Warning: use a Release build for performance results.\n";

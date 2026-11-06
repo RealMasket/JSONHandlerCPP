@@ -2,8 +2,10 @@
 #include <stdexcept>
 
 namespace { volatile std::uint64_t benchmarkSink = 0; }
+namespace { const void* volatile pointerSink = nullptr; }
 
 void BenchmarkUtils::consume(std::uint64_t value) { benchmarkSink = value; }
+void BenchmarkUtils::escape(const void* pointer) { pointerSink = pointer; }
 
 BenchmarkMeasurement BenchmarkUtils::summarize(std::vector<double> samples)
 {

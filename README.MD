@@ -350,7 +350,8 @@ Windows and Linux, in Debug and Release.
 ## Future work
 
 Longer fuzz campaigns, streaming/SAX parsing,
-arbitrary-precision numbers, and memory profiling.
+arbitrary-precision numbers, and sampled CPU profiling. Captured heap baselines
+and stage timing tools are described in [benchmarks/README.md](benchmarks/README.md).
 
 ## License
 

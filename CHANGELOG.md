@@ -4,6 +4,9 @@
 
 ### Planned for 1.1.0
 
+- Add captured heap peak/retained accounting, retained block attribution and DOM
+  inventory, dedicated tracker self-tests, scalable fixtures, and a reproducible
+  memory baseline runner. Move stage timings into the uninstrumented benchmark.
 - Add JsonFile::writeAtomic(filename, json, pretty=true), using an exclusively
   created sibling temporary file, complete writes, flush/close checks, and one
   native same-filesystem replacement with cleanup on failure.
