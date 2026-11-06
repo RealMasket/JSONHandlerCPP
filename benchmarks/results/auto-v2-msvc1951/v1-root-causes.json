@@ -1,0 +1,72 @@
+{
+  "source_revision": "5689e9cf1cd5458741523faa7b90996e05520100",
+  "findings": [
+    {
+      "goal": "speed",
+      "dataset": "held-tail-records-4099.json",
+      "last_growth": {
+        "dataset": "held-tail-records-4099.json",
+        "stage": "lex_only",
+        "event": "4",
+        "reason": "stable",
+        "position": "217801",
+        "tokens": "86434",
+        "old_capacity": "86434",
+        "request": "1383202",
+        "actual_capacity": "1383202",
+        "lower": "129651",
+        "upper": "1383202",
+        "moved_tokens": "93358",
+        "stable_streak": "3",
+        "global_density": "0.396853090665",
+        "recent_density": "0.395753781849",
+        "prediction": "1423241.97365",
+        "clamped": "1",
+        "floored": "0",
+        "status": "accepted",
+        "error_fingerprint": "cbf29ce484222325"
+      },
+      "final_tokens": 90180,
+      "final_capacity": 1383202,
+      "requested_peak_bytes": 73918005,
+      "input_bytes": 3375357,
+      "logical_token_overlap_bytes": 70542528,
+      "unused_final_token_bytes": 62065056,
+      "inferred_cause": "Dense prefix extrapolated across unseen whitespace tail; relative ceiling still allowed a huge reserve."
+    },
+    {
+      "goal": "memory",
+      "dataset": "dense-zeros-32768.json",
+      "last_growth": {
+        "dataset": "dense-zeros-32768.json",
+        "stage": "lex_only",
+        "event": "8",
+        "reason": "stable",
+        "position": "65535",
+        "tokens": "65534",
+        "old_capacity": "65534",
+        "request": "81917",
+        "actual_capacity": "81917",
+        "lower": "81917",
+        "upper": "131326",
+        "moved_tokens": "129006",
+        "stable_streak": "7",
+        "global_density": "1",
+        "recent_density": "1",
+        "prediction": "65538",
+        "clamped": "0",
+        "floored": "1",
+        "status": "accepted",
+        "error_fingerprint": "cbf29ce484222325"
+      },
+      "final_tokens": 65538,
+      "final_capacity": 81917,
+      "requested_peak_bytes": 7143317,
+      "input_bytes": 65537,
+      "logical_token_overlap_bytes": 7077648,
+      "unused_final_token_bytes": 786192,
+      "inferred_cause": "Forecast 65538 was clipped to 65534; next ordinary floor 81917 forced a late overlapping allocation."
+    }
+  ],
+  "pressure_observation": "Speed emitted zero copy_pressure events. For full initial 256 and 1.5x floor, 2*c-next moved remains positive over the representable growth count; >2*n is not a useful speed trigger."
+}

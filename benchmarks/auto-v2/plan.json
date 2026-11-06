@@ -1,0 +1,30 @@
+{
+  "base_revision": "5689e9cf1cd5458741523faa7b90996e05520100",
+  "scope": "Private Auto v2 experiment; preserve the public library and v1 observations.",
+  "root_causes": [
+    "Speed extrapolation requested 1383202 slots after 86434 tokens; final count was 90180.",
+    "Memory clipped a 65538 forecast to 65534; the next growth applied a 81917 floor near EOF.",
+    "V1 speed copy-pressure threshold >2*n cannot activate with its 1.5x floor and initial 256 slots over the representable vector range. V2 uses >1.5*n."
+  ],
+  "changes": [
+    "Byte ceiling counts speculative slots beyond the scanned pending token, rounded down by sizeof(Token).",
+    "The geometric floor overrides too-small byte ceilings; record actual overrides rather than promise a hard total-memory cap.",
+    "Remaining source bytes provide a proven upper bound on remaining non-EOF tokens. Clamping to that bound guarantees no further growth and safely bypasses the floor once."
+  ],
+  "candidates": {
+    "tight": {"speed_bytes": 1048576, "memory_bytes": 262144},
+    "medium": {"speed_bytes": 4194304, "memory_bytes": 524288},
+    "relaxed": {"speed_bytes": 8388608, "memory_bytes": 1048576}
+  },
+  "known_inputs": 75,
+  "selection": "Calibration: one timing round, 3 samples x 2 iterations; exploratory only. Per goal select candidates satisfying known non-tiny memory gates, compare geometric-mean time ratios, treat within 10% of fastest as ties and choose the lowest worst peak/oracle. If none satisfy memory gates, select lowest normalized worst peak and mark unqualified.",
+  "final_measurement": "Selected pair plus both fixed modes and both frozen v1 modes: 6 rotating rounds x 5 samples x 3 iterations, separately on 75 known and 16 newly generated inputs.",
+  "joint_targets": {
+    "non_tiny": "Production Balanced median parse >=1ms. Report every input regardless.",
+    "speed": {"max_time_oracle": 1.5, "max_peak_oracle": 2.0, "max_peak_balanced": 1.5},
+    "memory": {"max_time_balanced": 2.0, "max_peak_oracle": 1.5},
+    "meaning": "Empirical targets on the measured machine, not wall-clock/allocator guarantees. No target weakening after results."
+  },
+  "holdout": {"inputs": 16, "seed": 20261108, "generation": "Only after selected byte budgets, controller source and executable hashes are frozen. Do not retune afterward."},
+  "structural": {"speed_moved_tokens": "<=5*final_tokens+4096", "memory_moved_tokens": "<=8*final_tokens+4096", "tail": "No further growth after a proven tail-bound reservation", "journal": "512 fixed stack records; zero dropped events"}
+}

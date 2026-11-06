@@ -1,0 +1,72 @@
+{
+  "frozen_utc": "2026-11-06T18:34:43.924161+00:00",
+  "chosen": {
+    "speed": {
+      "candidate": "medium",
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.045624000656669,
+      "worst_peak_oracle": 1.4266644145985266,
+      "worst_peak_balanced": 1.2886547050700783,
+      "budget_bytes": 4194304
+    },
+    "memory": {
+      "candidate": "relaxed",
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.2024447954589048,
+      "worst_peak_oracle": 1.3566544274998311,
+      "worst_peak_balanced": 1.3566544274998311,
+      "budget_bytes": 1048576
+    }
+  },
+  "scores": {
+    "tight/speed": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.0734437420003173,
+      "worst_peak_oracle": 1.4277183607982318,
+      "worst_peak_balanced": 1.4277183607982318,
+      "budget_bytes": 1048576
+    },
+    "tight/memory": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.1983928074662689,
+      "worst_peak_oracle": 1.4079112887462046,
+      "worst_peak_balanced": 1.4079112887462046,
+      "budget_bytes": 262144
+    },
+    "medium/speed": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.045624000656669,
+      "worst_peak_oracle": 1.4266644145985266,
+      "worst_peak_balanced": 1.2886547050700783,
+      "budget_bytes": 4194304
+    },
+    "medium/memory": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.200300285412226,
+      "worst_peak_oracle": 1.3864288010061916,
+      "worst_peak_balanced": 1.3864288010061916,
+      "budget_bytes": 524288
+    },
+    "relaxed/speed": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.1046311462186857,
+      "worst_peak_oracle": 1.5657766173630911,
+      "worst_peak_balanced": 1.3173436279520572,
+      "budget_bytes": 8388608
+    },
+    "relaxed/memory": {
+      "memory_eligible": true,
+      "geomean_time_balanced": 1.2024447954589048,
+      "worst_peak_oracle": 1.3566544274998311,
+      "worst_peak_balanced": 1.3566544274998311,
+      "budget_bytes": 1048576
+    }
+  },
+  "plan_sha256": "87e1687c90a51e379ad33bd7533ac3e841d3a4495a9b4946885355f0308208a0",
+  "calibration_metadata": {
+    "tight": "f38aa56bae3c912d4c10c8199482a2dcf0499c01a73eb14753b8c6a86229f03e",
+    "medium": "dfad452b98077d27f60e63f9c602be0c8b7053f3ea2a8c3323cf1f258d68c11b",
+    "relaxed": "0d6df30a0d6c153808606e65af0fd8b171287a88e8a29a605af6db63a5fdc386"
+  },
+  "note": "Single-round calibration is exploratory; evaluate joint CPU and memory targets on repeated final measurements. No holdout results used."
+}
