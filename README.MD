@@ -2,7 +2,9 @@
 
 A C++17 JSON library.
 
-Version **1.0.0**. Licensed under [MIT](LICENSE).
+Version **1.1.0** (development). Latest published release:
+[1.0.0](https://github.com/RealMasket/MasketJSON/releases/tag/v1.0.0).
+Licensed under [MIT](LICENSE).
 
 A modular C++17 JSON library originally developed for college practice. It
 demonstrates tokenization, recursive descent parsing, a value tree based on
@@ -18,6 +20,7 @@ Previously named JsonHandlerCPP.
 - Source line, column, and contextual error messages.
 - Compact and pretty output with locale-independent number conversion.
 - Checked access, object/array helpers, and file I/O.
+- Optional atomic file replacement with `JsonFile::writeAtomic()`.
 - A command-line validator and formatter with stdin/stdout support.
 - Google Test tests integrated with CTest.
 - Corpus replay, deterministic mutations, and optional ASan/UBSan + libFuzzer.
@@ -178,8 +181,55 @@ Use `--` before filenames beginning with `-`.
 | 3 | File or stream I/O failure |
 | 4 | Other processing failure |
 
-Input is parsed and formatted before opening an output file. An output write
-failure can still leave a partial file; the CLI does not promise atomic writes.
+File output is prepared in a sibling temporary file and then replaces the
+destination with a same-filesystem rename. Input and output may be the same file.
+The CLI retains its final LF; stdout behavior is unchanged. Directories, symlinks,
+Windows reparse points, and alternate data streams are rejected as destinations.
+See the guarantees and limits below.
+
+## Atomic file output (1.1+)
+
+```cpp
+JsonFile::writeAtomic("settings.json", value);        // pretty JSON
+JsonFile::writeAtomic("settings.json", value, false); // compact JSON
+```
+
+Request `find_package(MasketJSON 1.1 CONFIG REQUIRED)` when using this API.
+The method adds no trailing newline and serializes before creating any file.
+The existing `JsonFile::write()` keeps its direct-write behavior.
+
+- The temporary file is created exclusively in the destination directory. Its
+  data is fully written, flushed (`fsync` / `FlushFileBuffers`), and closed before
+  a single `rename` / `MoveFileExW` replacement. There is no delete-first or
+  copy/delete fallback. Failures before replacement leave the destination intact.
+- This requires a filesystem supporting atomic same-directory replacement.
+  Guarantees apply to ordinary local files with a stable parent directory.
+  Remote/network filesystems can have ambiguous outcomes on a reported rename
+  failure. The method does not provide a transaction across files or compare-and-swap:
+  concurrent successful replacements use the last writer's contents.
+- Cleanup on exceptions removes only the temporary file owned by this call.
+  Cleanup is best effort if permissions change or the file becomes locked.
+  Process termination may leave a temporary file. Crash/power-loss durability
+  of the directory entry is not promised; no directory-sync protocol is provided.
+- Existing destinations must be regular files. Symlinks (including dangling
+  ones), directories, devices/FIFOs, Windows reparse points, and alternate data
+  streams are rejected. Hard-linked names and existing open handles retain the
+  old file; only the destination name is replaced. Windows handles that deny
+  delete sharing can prevent replacement, which is reported as `FileException`.
+- On POSIX, new files have mode `0600`; existing basic `rwx` mode bits are copied
+  from the initial destination. Ownership, ACLs, extended attributes, timestamps,
+  and special mode bits are not preserved. Windows files inherit the destination
+  directory's default security; existing file metadata is not copied. Parent
+  directory write/rename permissions are required. POSIX may allow replacement
+  of a read-only file; a Windows read-only destination blocks replacement.
+- Windows filename strings are UTF-8 for all `JsonFile` methods. Use
+  `std::filesystem::path::u8string()` rather than the locale-dependent `string()`.
+  The Windows CLI decodes wide command-line arguments to support Unicode paths.
+  POSIX paths retain their native byte representation. NUL-containing paths fail.
+
+The platform behavior is based on [Linux rename](https://man7.org/linux/man-pages/man2/rename.2.html),
+[mkstemp](https://man7.org/linux/man-pages/man3/mkstemp.3.html), and
+[Windows MoveFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw).
 
 ## Performance comparison
 
@@ -203,7 +253,7 @@ the Windows/Linux, Debug/Release, shared/static CI matrix and with sanitizers.
 When `MASKETJSON_ENABLE_PACKAGING=ON`, `Package.ArchiveConsumer` additionally
 checks the generated archive and checksum, then builds/runs from its extracted
 contents. See [RELEASING.md](RELEASING.md) for packaging commands and
-[RELEASE_NOTES.md](RELEASE_NOTES.md) for the 1.0.0 release notes.
+[RELEASE_NOTES.md](RELEASE_NOTES.md) for the next release's development notes.
 
 ## Access and errors
 
@@ -273,8 +323,9 @@ the same numeric ordering. Booleans and strings are never equal to numbers.
 - Objects use `std::map`, so keys are ordered lexicographically. For duplicate
   keys during parsing, the first value wins.
 - Pretty output uses two spaces. Compact output adds no formatting whitespace.
-- File writing serializes before opening the destination and checks I/O errors.
-  It is **not atomic**: an I/O failure during writing can leave a partial file.
+- `JsonFile::write()` serializes first and checks I/O errors, but writes directly
+  and can leave a partial file on failure. `writeAtomic()` and CLI file output
+  prepare a sibling file before replacement; see the guarantees above.
 - Benchmark datasets can be generated with `ParseBenchmark --generate DIR`.
 
 ## Architecture
@@ -298,7 +349,7 @@ Windows and Linux, in Debug and Release.
 
 ## Future work
 
-Atomic file replacement, longer fuzz campaigns, streaming/SAX parsing,
+Longer fuzz campaigns, streaming/SAX parsing,
 arbitrary-precision numbers, and memory profiling.
 
 ## License

@@ -6,7 +6,7 @@ endif()
 
 project(
     MasketJSON
-    VERSION 1.0.0
+    VERSION 1.1.0
     DESCRIPTION "A C++17 JSON library"
     LANGUAGES CXX
 )
@@ -73,6 +73,7 @@ target_sources(MasketJSON
     errors/TypeException.cpp
 
     # IO
+    io/AtomicFile.cpp
     io/JsonFile.cpp
 
     # Parser
@@ -114,7 +115,10 @@ target_include_directories(MasketJSON
 # =========================
 
 if(MASKETJSON_BUILD_CLI)
-    add_executable(masket-json tools/JsonCli.cpp)
+    add_executable(masket-json tools/JsonCli.cpp io/AtomicFile.cpp)
+    if(MINGW)
+        target_link_options(masket-json PRIVATE -municode)
+    endif()
     target_link_libraries(masket-json PRIVATE MasketJSON)
     file(RELATIVE_PATH masketjson_bin_to_lib "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}")
     if(APPLE)
@@ -157,6 +161,8 @@ if(BUILD_TESTING)
         set(BUILD_SHARED_LIBS ${MASKETJSON_SHARED_LIBS})
     endif()
     add_executable(MasketJSONTests
+        io/AtomicFile.cpp
+        "examples of tests/JsonAtomicFileTests.cpp"
         "examples of tests/JsonLexerTests.cpp"
         "examples of tests/JsonParserTests.cpp"
         "examples of tests/JsonRoundTripTests.cpp"

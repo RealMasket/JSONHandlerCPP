@@ -79,6 +79,8 @@ int main()
         const auto file = std::filesystem::path("installed-consumer-round-trip.json");
         JsonFile::write(file.string(), value);
         require(JsonFile::read(file.string()) == value, "Installed file I/O failed");
+        JsonFile::writeAtomic(file.u8string(), Json::JsonObject{{"atomic", true}}, false);
+        require(JsonFile::read(file.u8string()).at("atomic").asBool(), "Installed atomic write failed");
         require(std::filesystem::remove(file), "Failed to remove consumer output");
         std::cout << "Installed package works\n";
         return 0;

@@ -1,6 +1,6 @@
 # Preparing a release
 
-The current release version is **1.0.0**. The version is defined once in
+The next release version is **1.1.0** (development; 1.0.0 is published). The version is defined once in
 `CMakeLists.txt`; the public `MasketJSON/Version.hpp`, CMake version file,
 CLI, and archive names are generated from it. Release preparation does not
 automatically create a tag or publish a GitHub Release.
@@ -49,15 +49,15 @@ toolchains differ. This release does not claim macOS validation.
 
    ```sh
    cmake -E make_directory out/release
-   git archive --format=tar.gz --prefix=MasketJSON-1.0.0/ --output=out/release/MasketJSON-1.0.0-source.tar.gz VERIFIED_COMMIT_SHA
-   cmake -E sha256sum out/release/MasketJSON-1.0.0-source.tar.gz
+   git archive --format=tar.gz --prefix=MasketJSON-1.1.0/ --output=out/release/MasketJSON-1.1.0-source.tar.gz VERIFIED_COMMIT_SHA
+   cmake -E sha256sum out/release/MasketJSON-1.1.0-source.tar.gz
    ```
 
 4. Extract that source archive outside the repository and run a clean build and
    CTest. An offline build can use `-DBUILD_TESTING=OFF`, or tests can use a local
    Google Test source through `FETCHCONTENT_SOURCE_DIR_GOOGLETEST`.
 5. Review the license, notes, binary archives, source archive, checksums, and CI
-   results before creating the annotated `v1.0.0` tag and GitHub Release.
+   results before creating the annotated `v1.1.0` tag and GitHub Release.
    Use the verified SHA for the tag and `RELEASE_NOTES.md` as the release body.
    Attach the tested archives and their checksums. A GitHub draft allows one
    final review before making the release public.

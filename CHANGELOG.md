@@ -2,7 +2,20 @@
 
 ## Unreleased
 
-No changes yet.
+### Planned for 1.1.0
+
+- Add JsonFile::writeAtomic(filename, json, pretty=true), using an exclusively
+  created sibling temporary file, complete writes, flush/close checks, and one
+  native same-filesystem replacement with cleanup on failure.
+- Use the same mechanism for CLI file output, retaining formatting and final LF,
+  and support formatting a file in place.
+- Support UTF-8 Windows paths throughout JsonFile and wide CLI arguments.
+- Reject non-regular atomic destinations, including symlinks, Windows reparse
+  points, and alternate streams. Preserve existing basic POSIX mode bits;
+  document metadata, concurrency, network filesystem, and durability limits.
+- Test injected partial-write/flush/close/commit errors, native replacement
+  failures, Unicode paths, temporary cleanup, hard links, and installed DLL API.
+- Advance the development version to 1.1.0; the published 1.0.0 tag is unchanged.
 
 ## 1.0.0 — 2026-11-06
 
@@ -97,5 +110,6 @@ No changes yet.
 
 ### Remaining limits
 
-Decimal/exponent literals still use double. Arbitrary-precision numeric storage,
-atomic file replacement and streaming parsing are future work.
+Decimal/exponent literals still use double. Arbitrary-precision numeric storage
+and streaming parsing are future work. Atomic replacement is available in the
+1.1.0 development branch with documented filesystem and durability limits.

@@ -4,11 +4,12 @@
 #include "LexerException.hpp"
 #include "ParseException.hpp"
 #include "FileException.hpp"
+#include "AtomicFile.hpp"
 #include <MasketJSON/Version.hpp>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #ifdef _WIN32
 #include <cstdio>
 #include <fcntl.h>
@@ -24,6 +25,7 @@ constexpr const char* usage =
     "  masket-json --version\n"
     "\nINPUT is a file path or '-' for standard input.\n"
     "Format writes to standard output unless --output (or -o) is given.\n"
+    "File output uses a sibling temporary file; directories and symlinks are rejected.\n"
     "Use '--' before a file name beginning with '-'.\n"
     "Exit codes: 0 success, 1 invalid JSON, 2 usage error, 3 I/O error, 4 internal error.\n";
 
@@ -88,17 +90,11 @@ void writeOutput(const std::string& path, const std::string& text)
         if (!std::cout) throw FileException("Unable to write standard output");
         return;
     }
-    std::ofstream file(path, std::ios::binary | std::ios::trunc);
-    if (!file) throw FileException("Unable to open output file: " + path);
-    file << text << '\n';
-    file.flush();
-    if (!file) throw FileException("Unable to write output file: " + path);
-    file.close();
-    if (file.fail()) throw FileException("Unable to close output file: " + path);
+    MasketJSONDetail::writeTextAtomic(path, text + '\n');
 }
 }
 
-int main(int argc, char** argv)
+static int runCli(int argc, char** argv)
 {
     if (argc == 2 && std::string(argv[1]) == "--version") {
         std::cout << "masket-json " << MASKETJSON_VERSION_STRING << '\n';
@@ -131,3 +127,24 @@ int main(int argc, char** argv)
         return 4;
     }
 }
+
+#ifdef _WIN32
+int wmain(int argc, wchar_t** argv)
+{
+    try {
+        std::vector<std::string> text;
+        text.reserve(static_cast<size_t>(argc));
+        for (int i = 0; i < argc; ++i) text.push_back(std::filesystem::path(argv[i]).u8string());
+        std::vector<char*> arguments;
+        arguments.reserve(text.size());
+        for (auto& argument : text) arguments.push_back(argument.data());
+        arguments.push_back(nullptr);
+        return runCli(argc, arguments.data());
+    } catch (const std::exception& error) {
+        std::cerr << "masket-json: unable to decode command-line arguments: " << error.what() << '\n';
+        return 2;
+    }
+}
+#else
+int main(int argc, char** argv) { return runCli(argc, argv); }
+#endif

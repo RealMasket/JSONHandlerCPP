@@ -166,6 +166,7 @@
     <ClInclude Include="errors\ParseException.hpp" />
     <ClInclude Include="errors\TypeException.hpp" />
     <ClInclude Include="io\JsonFile.hpp" />
+    <ClInclude Include="io\AtomicFile.hpp" />
     <ClInclude Include="errors\OperationException.hpp" />
     <ClInclude Include="parser\JsonLexer.hpp" />
     <ClInclude Include="parser\JsonParser.hpp" />
@@ -186,6 +187,7 @@
     <ClCompile Include="errors\FileException.cpp" />
     <ClCompile Include="errors\TypeException.cpp" />
     <ClCompile Include="io\JsonFile.cpp" />
+    <ClCompile Include="io\AtomicFile.cpp" />
     <ClCompile Include="errors\OperationException.cpp" />
     <ClCompile Include="parser\JsonLexer.cpp" />
     <ClCompile Include="parser\JsonParser.cpp" />

@@ -1,18 +1,19 @@
-# MasketJSON 1.0.0
+# MasketJSON 1.1.0 (development draft)
 
-First packaged release of MasketJSON, previously named JsonHandlerCPP, originally developed for
-college practice, with a validator/formatter CLI and an installable CMake package.
+Adds atomic JSON file replacement and safer CLI file output. This version is
+under development; the latest published release remains 1.0.0.
 
 ## Highlights
 
-- Exact signed/unsigned 64-bit integers, checked access, and mixed numeric
-  comparisons without rounding integers through `double`.
-- UTF-8 validation, JSON escapes, surrogate-pair decoding, and line/column diagnostics.
-- Compact/pretty serialization, JSON algorithms, and file I/O.
-- `masket-json check`, `format`, and `--version`, including stdin/stdout support.
-- Relocatable shared/static packages, `find_package(MasketJSON 1.0 CONFIG REQUIRED)`,
-  and the `MasketJSON::MasketJSON` target.
-- MIT license, Copyright (c) 2026 RealMasket.
+- `JsonFile::writeAtomic(filename, json, pretty=true)` prepares a sibling temporary
+  file, checks complete writes/flush/close, then performs one native replacement.
+- CLI `format -o` uses the same mechanism, keeps its final LF, and supports
+  reading and replacing the same file.
+- Unicode Windows paths use UTF-8 in JsonFile and wide command-line arguments
+  in the CLI. POSIX paths retain native byte semantics.
+- Failure coverage includes partial writes, flush/close/commit errors, locked or
+  unwritable destinations, cleanup, Unicode paths, and exported DLL consumers.
+- Existing basic POSIX mode bits are retained; new POSIX files use mode 0600.
 
 ## Getting started
 
@@ -23,6 +24,13 @@ floating-point `std::from_chars` / `std::to_chars`:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build --config Release
 cmake --install build --config Release --prefix /path/to/masket-json
+```
+
+Request `find_package(MasketJSON 1.1 CONFIG REQUIRED)` for the new API:
+
+```cpp
+JsonFile::writeAtomic("settings.json", value);        // pretty, no final LF
+JsonFile::writeAtomic("settings.json", value, false); // compact, no final LF
 ```
 
 Alternatively, extract a binary archive and configure your application with
@@ -37,17 +45,25 @@ from source when the provided compiler/platform combination does not match.
 
 ## Compatibility and limits
 
-Rebuild applications that used the original educational library: the `Json`
-variant layout changed. `at()` is strict; mutable `operator[]` converts only null
-into a container. Digit-only strings remain quoted, whole-valued floating numbers
-retain `.0`, and negative zero retains its sign.
+This is an additive API; the Json value layout and numeric behavior are unchanged
+from 1.0.0. `JsonFile::write()` still performs a direct write. Windows filename
+strings now explicitly use UTF-8: use `path.u8string()` for filesystem paths.
+Atomic destinations must be regular files, not symlinks, directories, devices,
+Windows reparse points, or alternate streams. Parent-directory rename permission
+is required. File identity changes; hard links and existing handles retain the
+old file. Metadata beyond basic POSIX mode bits is not preserved.
+
+Failures before replacement preserve the destination, with best-effort temporary
+cleanup. Local-filesystem atomic rename support is required; remote filesystem
+errors can have ambiguous outcomes. Crash/power-loss durability, automatic cleanup
+after process termination, and coordination of concurrent writers are not promised.
 
 Decimal/exponent numbers use `double`; arbitrary-precision numbers and streaming
 parsing are not implemented. Objects sort keys lexicographically, and the first
 duplicate key wins. Nesting is limited to 128 containers. Input/output strings
-must be valid UTF-8, and non-finite output is rejected. File writes report errors
-but are not atomic. See [README](https://github.com/RealMasket/MasketJSON/blob/v1.0.0/README.MD)
-and [CHANGELOG](https://github.com/RealMasket/MasketJSON/blob/v1.0.0/CHANGELOG.md) for details.
+must be valid UTF-8, and non-finite output is rejected. Direct writes remain
+non-atomic. See [README](https://github.com/RealMasket/MasketJSON/blob/v1.1.0/README.MD)
+and [CHANGELOG](https://github.com/RealMasket/MasketJSON/blob/v1.1.0/CHANGELOG.md) for details.
 
 ## Verification
 
