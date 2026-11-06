@@ -1,4 +1,5 @@
 #include <MasketJSON/JsonHandler.hpp>
+#include <MasketJSON/ParseOptions.hpp>
 #include <MasketJSON/JsonParser.hpp>
 #include <MasketJSON/JsonLexer.hpp>
 #include <MasketJSON/JsonSerializer.hpp>
@@ -54,6 +55,11 @@ int main()
         const auto tokens = JsonLexer("[true]").tokenize();
         require(tokens.size() == 4 && tokens.at(1).type == Parser::TokenType::True,
             "Installed lexer failed");
+        const ParseOptions lowMemory{ParsePreset::LowMemory};
+        require(JsonParser::parse(value.serialize(false), lowMemory) == value,
+            "Installed LowMemory parser overload failed");
+        require(JsonLexer("[true]").tokenize(lowMemory).size() == tokens.size(),
+            "Installed LowMemory lexer overload failed");
         try {
             value.at("missing");
             throw std::runtime_error("Missing-key exception did not cross library boundary");

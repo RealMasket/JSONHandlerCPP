@@ -5,6 +5,7 @@
 
 #include "Token.hpp"
 #include "Api.hpp"
+#include "ParseOptions.hpp"
 
 class MASKETJSON_API JsonLexer
 {
@@ -21,6 +22,8 @@ public:
     * @throws LexerException if an unexpected character is encountered.
     */
     std::vector<Token> tokenize();
+    // Unknown preset values throw std::invalid_argument before consuming input.
+    std::vector<Token> tokenize(const ParseOptions& options);
 
 private:
     std::string source;
@@ -33,6 +36,9 @@ private:
     size_t tokenColumn = 1;
 
 private:
+    template<bool lowMemory>
+    std::vector<Token> tokenizeImpl();
+
     /*
     * @brief Checks if the lexer has reached the end of the input.
     * @return True if at the end of the input, false otherwise.

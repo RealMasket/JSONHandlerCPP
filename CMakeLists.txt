@@ -164,6 +164,7 @@ if(BUILD_TESTING)
         io/AtomicFile.cpp
         "examples of tests/JsonAtomicFileTests.cpp"
         "examples of tests/JsonLexerTests.cpp"
+        "examples of tests/JsonParseOptionsTests.cpp"
         "examples of tests/JsonParserTests.cpp"
         "examples of tests/JsonRoundTripTests.cpp"
         "examples of tests/JsonSerializerTests.cpp"
@@ -264,7 +265,7 @@ if(TARGET MasketJSONSanitizers)
 endif()
 install(FILES
     core/JsonHandler.hpp
-    parser/JsonLexer.hpp parser/JsonParser.hpp parser/Token.hpp
+    parser/JsonLexer.hpp parser/JsonParser.hpp parser/Token.hpp parser/ParseOptions.hpp
     serializer/JsonSerializer.hpp io/JsonFile.hpp
     errors/JsonException.hpp errors/AccessException.hpp errors/FileException.hpp
     errors/LexerException.hpp errors/OperationException.hpp errors/ParseException.hpp

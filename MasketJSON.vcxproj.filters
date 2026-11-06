@@ -51,6 +51,12 @@
     <ClInclude Include="parser\Token.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser\ParseOptions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\TokenReservation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="errors\JsonException.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

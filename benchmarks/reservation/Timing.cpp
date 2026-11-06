@@ -26,14 +26,14 @@ int main(int argc, char** argv) {
         for (int i = 3; i < argc; ++i) {
             const std::filesystem::path path(argv[i]);
             const auto source = MatrixData::read(path);
-            const auto value = JsonParser::parse(source);
-            if (!(JsonParser::parse(value.serialize(false)) == value)) throw std::runtime_error("Round-trip mismatch");
+            const auto value = MatrixData::parse(source);
+            if (!(MatrixData::parse(value.serialize(false)) == value)) throw std::runtime_error("Round-trip mismatch");
             for (bool lex : {false, true}) {
                 const auto time = lex ? BenchmarkUtils::measure([&] {
-                    const auto tokens = JsonLexer(source).tokenize();
+                    const auto tokens = MatrixData::tokenize(source);
                     return static_cast<std::uint64_t>(tokens.size());
                 }, iterations, samples) : BenchmarkUtils::measure([&] {
-                    const auto parsed = JsonParser::parse(source);
+                    const auto parsed = MatrixData::parse(source);
                     // Escape the entire result through an out-of-line consumer.
                     BenchmarkUtils::escape(&parsed);
                     return static_cast<std::uint64_t>(parsed.isArray() ? parsed.asArray().size()

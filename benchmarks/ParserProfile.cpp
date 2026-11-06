@@ -15,6 +15,20 @@
 
 namespace {
 using MemoryTracker::Category;
+Json parseInput(const std::string& source) {
+#ifdef MATRIX_LOW_MEMORY
+    return JsonParser::parse(source, ParseOptions{ParsePreset::LowMemory});
+#else
+    return JsonParser::parse(source);
+#endif
+}
+std::vector<Token> tokenizeInput(const std::string& source) {
+#ifdef MATRIX_LOW_MEMORY
+    return JsonLexer(source).tokenize(ParseOptions{ParsePreset::LowMemory});
+#else
+    return JsonLexer(source).tokenize();
+#endif
+}
 struct Inventory {
     size_t nodes=0, members=0, elements=0, capacity=0, strings=0, chars=0, stringCapacity=0;
 };
@@ -58,13 +72,13 @@ Row profile(const std::string& source, unsigned stage) {
 #endif
     MemoryTracker::Session session;
     if (stage==0) {
-        const auto value = JsonParser::parse(source);
+        const auto value = parseInput(source);
         MemoryTracker::LiveSet blocks(session);
         inspect(value, blocks, row.dom);
         row.memory=blocks.stats(); row.categories=blocks.categories();
     } else if (stage==1) {
         // Temporary lexer/source copy die here; only the tokens remain.
-        const auto tokens=JsonLexer(source).tokenize();
+        const auto tokens=tokenizeInput(source);
         MemoryTracker::LiveSet blocks(session);
         blocks.containing(tokens.data(), Category::Token);
         row.tokens=tokens.size(); row.tokenCapacity=tokens.capacity();
@@ -84,7 +98,7 @@ Row profile(const std::string& source, unsigned stage) {
 void selfTest() {
     MemoryTracker::selfTest();
     const std::string source="{\"array\":[\"short\",\""+std::string(1024,'x')+"\"],\"flag\":true}";
-    { const auto warm=JsonParser::parse(source); (void)warm; }
+    { const auto warm=parseInput(source); (void)warm; }
     const auto row=profile(source,0);
     if (row.dom.nodes!=5 || !row.categories[static_cast<size_t>(Category::Array)] ||
         row.categories[static_cast<size_t>(Category::String)]<1024 ||
@@ -94,7 +108,7 @@ void selfTest() {
     MemoryTracker::Stats after; bool rejected=false;
     {
         MemoryTracker::Session session;
-        try { (void)JsonParser::parse(invalid); } catch (const ParseException&) { rejected=true; }
+        try { (void)parseInput(invalid); } catch (const ParseException&) { rejected=true; }
         after=session.snapshot();
     }
     if (!rejected || after.liveBytes || after.liveBlocks) throw std::runtime_error("Unwind self-test failed");
@@ -121,8 +135,8 @@ int main(int argc,char** argv) {
             if(!file) throw std::runtime_error("Unable to open profile input");
             const std::string source((std::istreambuf_iterator<char>(file)),{});
             if(file.bad()) throw std::runtime_error("Unable to read profile input");
-            { const auto value=JsonParser::parse(source);
-              if(!(JsonParser::parse(value.serialize(false))==value)) throw std::runtime_error("Round-trip check failed"); }
+            { const auto value=parseInput(source);
+              if(!(parseInput(value.serialize(false))==value)) throw std::runtime_error("Round-trip check failed"); }
             const std::array<Row,3> rows{profile(source,0),profile(source,1),profile(source,2)};
             for(const auto& row:rows) {
                 std::cout<<'"'; for(char c:path.filename().string()) {std::cout<<c;if(c=='"')std::cout<<'"';}

@@ -24,7 +24,7 @@ void errors() {
         "\"\xFF\"", std::string(129, '[') + "0" + std::string(129, ']'), prefix + "\n false,@]"};
     for (size_t i = 0; i < inputs.size(); ++i) for (bool lex : {false, true}) {
         std::string result = "accepted";
-        try { if (lex) (void)JsonLexer(inputs[i]).tokenize(); else (void)JsonParser::parse(inputs[i]); }
+        try { if (lex) (void)MatrixData::tokenize(inputs[i]); else (void)MatrixData::parse(inputs[i]); }
         catch (const std::exception& ex) { result = ex.what(); }
         MatrixData::Fingerprint fingerprint; fingerprint.text(result);
         std::cout << i << ',' << lex << ',' << fingerprint.hex() << '\n';
@@ -40,10 +40,10 @@ int main(int argc, char** argv) {
         for (int i = 1; i < argc; ++i) {
             const std::filesystem::path path(argv[i]);
             const auto source = MatrixData::read(path);
-            const auto tokens = JsonLexer(source).tokenize();
-            const auto value = JsonParser::parse(source);
+            const auto tokens = MatrixData::tokenize(source);
+            const auto value = MatrixData::parse(source);
             const auto canonical = value.serialize(false);
-            if (!(JsonParser::parse(canonical) == value)) throw std::runtime_error("Inspection round-trip mismatch");
+            if (!(MatrixData::parse(canonical) == value)) throw std::runtime_error("Inspection round-trip mismatch");
             size_t whitespace = 0, strings = 0, stringBytes = 0, maxString = 0, escapes = 0, numbers = 0;
             size_t lastEnd = 0, first = 0, last = 0, depth = 0, arrayWidth = 0, objectWidth = 0;
             MatrixData::Fingerprint tokenHash, domHash;

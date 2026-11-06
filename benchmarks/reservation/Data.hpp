@@ -8,8 +8,24 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include "JsonParser.hpp"
+#include "JsonLexer.hpp"
 
 namespace MatrixData {
+inline Json parse(const std::string& source) {
+#ifdef MATRIX_LOW_MEMORY
+    return JsonParser::parse(source, ParseOptions{ParsePreset::LowMemory});
+#else
+    return JsonParser::parse(source);
+#endif
+}
+inline std::vector<Token> tokenize(const std::string& source) {
+#ifdef MATRIX_LOW_MEMORY
+    return JsonLexer(source).tokenize(ParseOptions{ParsePreset::LowMemory});
+#else
+    return JsonLexer(source).tokenize();
+#endif
+}
 inline std::string read(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file) throw std::runtime_error("Unable to open matrix input");

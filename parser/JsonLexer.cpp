@@ -3,6 +3,7 @@
 #include "LexerException.hpp"
 #include "DiagnosticFormatter.hpp"
 #include "Utf8.hpp"
+#include "TokenReservation.hpp"
 #include <string_view>
 
 namespace {
@@ -371,6 +372,22 @@ Token JsonLexer::keyword()
 */
 std::vector<Token> JsonLexer::tokenize()
 {
+    return tokenizeImpl<false>();
+}
+
+std::vector<Token> JsonLexer::tokenize(const ParseOptions& options)
+{
+    switch (options.preset)
+    {
+    case ParsePreset::Balanced: return tokenizeImpl<false>();
+    case ParsePreset::LowMemory: return tokenizeImpl<true>();
+    default: throw std::invalid_argument("Unknown JSON parse preset");
+    }
+}
+
+template<bool lowMemory>
+std::vector<Token> JsonLexer::tokenizeImpl()
+{
     std::vector<Token> tokens;
     // Input bytes alone are a poor token-count estimate for long strings or
     // whitespace. Start small and learn the density from consumed input.
@@ -393,7 +410,10 @@ std::vector<Token> JsonLexer::tokenize()
                 / static_cast<double>((std::max)(position, size_t{1})) + 1;
             const size_t desired = estimate >= static_cast<double>(upper)
                 ? upper : (std::min)(upper, (std::max)(lower, static_cast<size_t>(estimate)));
-            tokens.reserve(desired);
+            if constexpr (lowMemory)
+                tokens.reserve(MasketJSONDetail::lowMemoryCapacity(capacity, limit, estimate));
+            else
+                tokens.reserve(desired);
         }
         tokens.push_back(token);
     };

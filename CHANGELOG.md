@@ -4,6 +4,13 @@
 
 ### Planned for 1.1.0
 
+- Add `ParseOptions` with `Balanced` and opt-in `LowMemory` presets to parser and
+  lexer overloads. Bound speculative LowMemory token growth without changing the
+  existing default, Json layout, numeric rules, diagnostics or depth limit.
+- Select the reserve bound on 47 training fixtures, freeze it before a separate
+  12-input evaluation, and verify public-API memory/timing against the frozen
+  prototype. Test installed headers/DLL overloads, size-limit arithmetic and
+  cross-preset fuzz acceptance, diagnostics and round trips.
 - Add an opt-in, isolated four-strategy reservation experiment with 47 input
   shapes, token-relocation counters, rotating timing order, Windows/Linux smoke
   checks, raw measurements and a design proposal for future parser presets.

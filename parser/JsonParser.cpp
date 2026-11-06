@@ -161,6 +161,16 @@ Json JsonParser::parse(const std::string& source)
     return result;
 }
 
+Json JsonParser::parse(const std::string& source, const ParseOptions& options)
+{
+    JsonLexer lexer(source);
+    const auto tokens = lexer.tokenize(options);
+    JsonParser parser(tokens, source);
+    Json result = parser.parseValue();
+    if (!parser.isAtEnd()) parser.fail("Unexpected token after JSON value");
+    return result;
+}
+
 Json JsonParser::parseValue()
 {
     const Token& token = peek();

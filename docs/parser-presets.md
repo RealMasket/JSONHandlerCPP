@@ -1,9 +1,11 @@
 # Parser presets and optional parse reports (design proposal)
 
 This is a design note supported by the [reservation matrix](../benchmarks/results/reservation-matrix.md).
-No public preset/report API is implemented in this step. The production lexer and
-Json representation retain their current behavior. Experiments live in optional,
-isolated benchmark executables and do not add production allocation hooks.
+`ParseOptions`, `ParsePreset::Balanced` and `ParsePreset::LowMemory` are now
+implemented; see the [LowMemory experiment and evaluation](../benchmarks/results/low-memory.md).
+Balanced remains the default. Json layout is unchanged, and experimental allocation
+hooks remain isolated from production. Throughput, Auto and root-level ParseStats
+are future proposals.
 
 ## Evidence to collect
 
@@ -22,12 +24,12 @@ treated as available before parsing, or as free features for an automatic select
 
 ## Preset meanings
 
-| Proposed preset | Objective | Candidate mechanism to investigate |
+| Preset / status | Objective | Mechanism |
 | --- | --- | --- |
-| Balanced | Avoid extreme memory/copy costs across workloads | Current observed-density strategy, then validate tighter extrapolation bounds |
-| LowMemory | Limit unused token capacity and overlap during growth | Bound spare capacity or speculative reserve bytes; accept more copying |
-| Throughput | Reduce reallocations on known dense inputs | More eager reservation, possibly with a caller-supplied token-count hint |
-| Auto | Select/revise a strategy within explicit bounds | Online estimates with a conservative fallback when density changes |
+| Balanced — implemented | Existing behavior | Observed density, 1.5×…64× growth |
+| LowMemory — implemented | Limit speculative capacity | At growth request at most live token count + max(live token count, 256) slots; accept more copying |
+| Throughput — proposed | Reduce reallocations on known dense inputs | More eager reservation, possibly with a caller-supplied token-count hint |
+| Auto — proposed | Select/revise a strategy within explicit bounds | Online estimates with a conservative fallback when density changes |
 
 These are objectives, not names for the fastest/lowest-memory row on one fixture.
 The matrix already shows that small initial reserve alone does not ensure a low
@@ -48,17 +50,21 @@ required live tokens, DOM nodes and old/new-buffer overlap still consume memory.
 A hard overall limit would need defined allocation-failure semantics or another
 parser architecture; do not promise that through a reservation preset alone.
 
-## Possible API shape
+## Options API and possible report API
 
-Keep options separate from Json values. Preserve the existing parse(text) entry
-point and default. New overloads could be considered after policies are validated:
+Options are separate from Json values. The existing parse(text) entry point and
+default are preserved. Both parser and lexer accept ParseOptions:
 
 ```cpp
-// Illustrative only; names and fields are not committed API.
 ParseOptions options;
 options.preset = ParsePreset::LowMemory;
 auto value = JsonParser::parse(text, options);
+auto tokens = JsonLexer(text).tokenize(options);
+```
 
+The following report API is illustrative and not implemented:
+
+```cpp
 auto result = JsonParser::parseWithStats(text, options);
 use(result.value);
 inspect(result.stats);
@@ -81,15 +87,18 @@ ParseStats field. It currently requires separate allocation interception and
 excludes several allocation classes. Cheap logical counters, offline DOM walks and
 instrumented heap measurements have different costs and meanings.
 
-## Next implementation gate
+## Further validation and future modes
 
 1. Collect real user inputs and repeat the matrix on another toolchain; keep raw
    input private when appropriate and publish reproducible shape-equivalent cases.
-2. Define a spare-capacity budget and a workload-specific acceptable time penalty.
+2. Revisit the spare-capacity/time tradeoff for actual user workloads. LowMemory
+   currently caps each request as described above; this is an advisory reserve
+   bound, not a guarantee on STL allocator behavior or total live parser memory.
 3. Measure candidate LowMemory/Throughput/Auto policies end to end, with held-out
    transition cases and the current implementation as a control.
-4. Add an opt-in root report and options only after semantics and defaults are
+4. Add an opt-in root report or further options only after semantics and defaults are
    clear; test result/diagnostic equivalence and accounting without speed thresholds.
 
-This step supplies the evidence and repeatable experiment, rather than prematurely
-freezing heuristic names or an automatic classifier into the public API.
+LowMemory was selected on the 47-input training set before the 12-input holdout
+was generated. The final public API is also checked against that frozen prototype.
+The parameters were not changed in response to held-out results.

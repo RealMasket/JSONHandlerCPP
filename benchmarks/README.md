@@ -227,6 +227,38 @@ See [the matrix report](results/reservation-matrix.md) and
 [the preset design proposal](../docs/parser-presets.md). Generated files and logs
 remain in the ignored output directory; publish the small CSV/metadata files only.
 
+## LowMemory selection and public API evaluation
+
+The [LowMemory report](results/low-memory.md) separates training, held-out
+evaluation and final public-API measurement. The pre-recorded selection rules are
+in `reservation/lowmemory-plan.json`; the frozen decision is in the raw result
+directory. Three private candidates cap spare tokens at 25%, 50% or 100%, with
+256 slots of small-buffer allowance. The selected public preset uses the 100% cap.
+
+To reproduce the prototype, use commit `9d8f6ad` and enable
+`-DMASKETJSON_BUILD_LOWMEMORY_EXPERIMENT=ON` with the matrix build. Generate the
+47 training fixtures using the existing generators, run `run_lowmemory.py` with
+`--split training`, then apply `select_lowmemory.py`. Only after that selection is
+saved, generate the separate split with `generate_holdout.py` and evaluate the
+chosen candidate plus `current` using `run_lowmemory.py --split holdout`.
+Keep those executables frozen before checking out the public API implementation.
+
+With a current matrix build, `ReservationTimeLowMemory` and
+`ReservationInspectLowMemory` use the actual public ParseOptions overloads.
+`ReservationProfileLowMemory` instruments a generated copy preserving the public
+LowMemory algorithm, with counters kept out of ordinary timing executables.
+
+```powershell
+python benchmarks/reservation/run_public_lowmemory.py --bin build-matrix/benchmarks/reservation/Release --before-bin frozen-prototype --training-inputs training-data --holdout-inputs holdout-data --selection selection.json --output public-results
+```
+
+The runner checks all 59 token/DOM descriptors and invalid-input diagnostics,
+requires unchanged default allocation observations, and requires public LowMemory
+memory/copy observations to match the frozen candidate. It then rotates three
+timing builds (pre-API control, Balanced, LowMemory) across three rounds.
+CI exercises both public modes and held-out structures; the fuzzer compares their
+acceptance, diagnostic locations/messages, numeric kinds and round trips.
+
 ## References
 
 - [Boost.JSON 1.88 documentation](https://www.boost.org/doc/libs/1_88_0/libs/json/doc/html/index.html)

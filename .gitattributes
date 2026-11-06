@@ -3,6 +3,11 @@
 ###############################################################################
 * text=auto
 
+# Keep cross-file measurement/selection SHA-256 references stable on checkout.
+benchmarks/results/low-memory-msvc1951/** text eol=lf
+benchmarks/reservation/*.py text eol=lf
+benchmarks/reservation/*.json text eol=lf
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

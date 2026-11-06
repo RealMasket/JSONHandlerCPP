@@ -170,6 +170,8 @@
     <ClInclude Include="errors\OperationException.hpp" />
     <ClInclude Include="parser\JsonLexer.hpp" />
     <ClInclude Include="parser\JsonParser.hpp" />
+    <ClInclude Include="parser\ParseOptions.hpp" />
+    <ClInclude Include="parser\TokenReservation.hpp" />
     <ClInclude Include="parser\Token.hpp" />
     <ClInclude Include="serializer\JsonSerializer.hpp" />
     <ClInclude Include="utils\Api.hpp" />

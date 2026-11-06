@@ -69,7 +69,18 @@ def main():
                 assert all(row[c] == b[c] for c in (*CATEGORIES, "retained_bytes", "retained_blocks", "dom_nodes", "array_capacity"))
         rows = list(csv.DictReader(io.StringIO(run(executable(args.bin, f"ReservationTime-{policy}"), 1, 1, *inputs))))
         assert len(rows) == 94 and {r["operation"] for r in rows} == {"parse", "lex_only"}
-    print("47 fixtures: token/DOM/diagnostic fingerprints match production; 564 memory windows and timing smoke passed")
+    heldout = args.output / "holdout"
+    subprocess.run([sys.executable, str(Path(__file__).with_name("generate_holdout.py")), str(heldout), "--small"], check=True)
+    public_inputs = inputs + sorted(heldout.glob("*.json"))
+    expected_public = {p.name: p.stat().st_size for p in public_inputs}
+    assert len(public_inputs) == 59
+    reference_public = run(executable(args.bin, "ReservationInspectCurrent"), *public_inputs)
+    assert run(executable(args.bin, "ReservationInspectLowMemory"), *public_inputs) == reference_public
+    assert run(executable(args.bin, "ReservationInspectLowMemory"), "--errors") == errors
+    validate_memory(run(executable(args.bin, "ReservationProfileLowMemory"), *public_inputs), expected_public)
+    public_rows = list(csv.DictReader(io.StringIO(run(executable(args.bin, "ReservationTimeLowMemory"), 1, 1, *public_inputs))))
+    assert len(public_rows) == 118
+    print("47 strategy fixtures + 12 holdout structures: public LowMemory semantics, counters and timing smoke passed")
 
 
 if __name__ == "__main__":

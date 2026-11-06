@@ -1,6 +1,7 @@
 #pragma once
 #include "JsonHandler.hpp"
 #include "Token.hpp"
+#include "ParseOptions.hpp"
 
 class MASKETJSON_API JsonParser
 {
@@ -10,6 +11,9 @@ public:
     // Integers use int64_t/uint64_t; fractions/exponents use double.
     // Out-of-range literals throw ParseException, never silently fall back to double.
     static Json parse(const std::string& source);
+    // Options affect temporary token reservation, not JSON semantics/depth.
+    // Unknown preset values throw std::invalid_argument.
+    static Json parse(const std::string& source, const ParseOptions& options);
 
 private:
     const std::vector<Token>& tokens;

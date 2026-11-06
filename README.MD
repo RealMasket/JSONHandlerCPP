@@ -16,6 +16,7 @@ Previously named JsonHandlerCPP.
 - Objects, arrays, strings, exact signed/unsigned 64-bit integers, floating-point
   numbers, booleans, and null.
 - Tokens store source ranges instead of allocating a string per token.
+- Optional `LowMemory` parsing bounds speculative token reservation.
 - UTF-8 validation, JSON escapes, and UTF-16 surrogate-pair decoding.
 - Source line, column, and contextual error messages.
 - Compact and pretty output with locale-independent number conversion.
@@ -25,6 +26,26 @@ Previously named JsonHandlerCPP.
 - Google Test tests integrated with CTest.
 - Corpus replay, deterministic mutations, and optional ASan/UBSan + libFuzzer.
 - An installable CMake package with shared and static library support.
+
+## Parse options
+
+Choose token reservation when parsing:
+
+```cpp
+#include <MasketJSON/JsonParser.hpp>
+#include <MasketJSON/ParseOptions.hpp>
+
+const ParseOptions options{ParsePreset::LowMemory};
+auto value = JsonParser::parse(text, options);
+```
+
+`parse(text)` and `ParseOptions{}` use the existing `Balanced` policy.
+`LowMemory` limits speculative token capacity and can reduce waste on documents
+with whitespace tails or misleadingly dense prefixes. It may require more allocations/copying, run slower,
+or have a higher peak on some inputs. It is not a total-memory limit; JSON values,
+numeric rules, diagnostics and the nesting limit are the same in both modes.
+The lexer also accepts `tokenize(options)`. Unknown preset values throw
+`std::invalid_argument`. See [the measured tradeoffs](benchmarks/results/low-memory.md).
 
 ## Build and test
 
