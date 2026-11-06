@@ -70,7 +70,7 @@ endforeach()
 # Exported metadata must not silently refer to producer source/build trees.
 file(TO_CMAKE_PATH "${PRODUCER_SOURCE_DIR}" producer_source)
 file(TO_CMAKE_PATH "${PRODUCER_BINARY_DIR}" producer_build)
-file(GLOB package_files "${relocated}/${INSTALL_LIBDIR}/cmake/JsonHandlerCPP/*.cmake")
+file(GLOB package_files "${relocated}/${INSTALL_LIBDIR}/cmake/MasketJSON/*.cmake")
 if(NOT package_files)
     message(FATAL_ERROR "Installed package configuration is missing")
 endif()
@@ -107,7 +107,7 @@ run_checked("${CMAKE_COMMAND}" --build "${consumer_build}" --config "${CONFIG}" 
 run_checked("${CTEST_COMMAND}" --test-dir "${consumer_build}" -C "${CONFIG}" --output-on-failure)
 
 if(CLI_ENABLED)
-    set(cli "${relocated}/${INSTALL_BINDIR}/jsonhandler${EXECUTABLE_SUFFIX}")
+    set(cli "${relocated}/${INSTALL_BINDIR}/masket-json${EXECUTABLE_SUFFIX}")
     execute_process(COMMAND "${cli}" format --compact "${consumer_source}/input.json"
         RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
     string(REPLACE "\r\n" "\n" output "${output}")
@@ -117,7 +117,7 @@ if(CLI_ENABLED)
     execute_process(COMMAND "${cli}" --version RESULT_VARIABLE result
         OUTPUT_VARIABLE output ERROR_VARIABLE error)
     string(REPLACE "\r\n" "\n" output "${output}")
-    if(NOT "${result}" STREQUAL "0" OR NOT output STREQUAL "jsonhandler ${EXPECTED_VERSION}\n")
+    if(NOT "${result}" STREQUAL "0" OR NOT output STREQUAL "masket-json ${EXPECTED_VERSION}\n")
         message(FATAL_ERROR "Installed CLI version mismatch (${result}): ${output}\n${error}")
     endif()
 endif()

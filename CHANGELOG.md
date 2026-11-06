@@ -4,7 +4,7 @@
 
 No changes yet.
 
-## 1.0.0
+## 1.0.0 — 2026-11-06
 
 ### Correctness
 
@@ -34,6 +34,10 @@ No changes yet.
 
 ### API compatibility
 
+- Rename the project from JsonHandlerCPP to MasketJSON before its first release:
+  use find_package(MasketJSON), MasketJSON::MasketJSON, MasketJSON/ includes,
+  the MASKETJSON_* build options/macros, and the masket-json CLI. Public C++
+  class names and short header names remain unchanged.
 - Add integer type checks, checked asInt64()/asUInt64(), and compareNumbers().
   asNumber() remains a potentially rounded double conversion for compatibility.
 - Numeric equality compares values across signed/unsigned/double storage. All
@@ -58,8 +62,8 @@ No changes yet.
   extracted-archive consumer test and Release CI artifacts.
 - Prepare release notes and a repeatable source/binary release procedure.
 - Install a relocatable CMake package with version configuration and the imported
-  JsonHandlerCPP::JsonHandlerCPP target, public headers, libraries, CLI, and docs.
-- Preserve short installed includes and add the JsonHandlerCPP/ header prefix;
+  MasketJSON::MasketJSON target, public headers, libraries, CLI, and docs.
+- Preserve short installed includes and add the MasketJSON/ header prefix;
   keep implementation-only headers out of the package.
 - Add library version metadata, a Debug suffix, and relative CLI runtime lookup
   on Linux/macOS. Export static definitions and sanitizer requirements.
@@ -75,7 +79,7 @@ No changes yet.
   strict replay of known valid regressions, and failure-artifact checks to CTest.
 - Preserve corpus bytes with .gitattributes and upload Linux sanitizer/fuzzer
   logs, crash inputs, and generated corpus from bounded CI jobs.
-- Add shared/static CMake options and the JsonHandlerCPP::JsonHandlerCPP alias.
+- Add shared/static CMake options and the MasketJSON::MasketJSON alias.
 - Integrate Google Test and CTest, with a pinned, checksummed dependency.
 - Add regression tests for the failure cases above.
 - Compile all examples and update them to the actual public API.
@@ -83,7 +87,7 @@ No changes yet.
 - Align all legacy Visual Studio configurations with C++17 and common include
   paths; disable inconsistent precompiled-header settings.
 - Add a Windows/Linux, shared/static, Debug/Release CI matrix.
-- Add the jsonhandler CLI: file/stdin validation, pretty/compact output,
+- Add the masket-json CLI: file/stdin validation, pretty/compact output,
   output files, source diagnostics, and documented exit codes.
 - Add CLI integration checks and a bundled example document.
 - Replace the interactive benchmark with deterministic dataset generation,

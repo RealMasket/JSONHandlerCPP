@@ -4,7 +4,7 @@
 #include "LexerException.hpp"
 #include "ParseException.hpp"
 #include "FileException.hpp"
-#include <JsonHandlerCPP/Version.hpp>
+#include <MasketJSON/Version.hpp>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -18,10 +18,10 @@
 namespace {
 constexpr const char* usage =
     "Usage:\n"
-    "  jsonhandler check INPUT\n"
-    "  jsonhandler format [--compact] [--output FILE] INPUT\n"
-    "  jsonhandler --help\n"
-    "  jsonhandler --version\n"
+    "  masket-json check INPUT\n"
+    "  masket-json format [--compact] [--output FILE] INPUT\n"
+    "  masket-json --help\n"
+    "  masket-json --version\n"
     "\nINPUT is a file path or '-' for standard input.\n"
     "Format writes to standard output unless --output (or -o) is given.\n"
     "Use '--' before a file name beginning with '-'.\n"
@@ -101,7 +101,7 @@ void writeOutput(const std::string& path, const std::string& text)
 int main(int argc, char** argv)
 {
     if (argc == 2 && std::string(argv[1]) == "--version") {
-        std::cout << "jsonhandler " << JSONHANDLER_VERSION_STRING << '\n';
+        std::cout << "masket-json " << MASKETJSON_VERSION_STRING << '\n';
         return std::cout ? 0 : 3;
     }
     if (argc == 2 && std::string(argv[1]) == "--help") {
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
         else writeOutput(options.output, value.serialize(!options.compact));
         return 0;
     } catch (const std::invalid_argument& error) {
-        std::cerr << "jsonhandler: " << error.what() << '\n' << usage;
+        std::cerr << "masket-json: " << error.what() << '\n' << usage;
         return 2;
     } catch (const LexerException& error) {
         std::cerr << error.what() << '\n';
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
         std::cerr << error.what() << '\n';
         return 3;
     } catch (const std::exception& error) {
-        std::cerr << "jsonhandler: " << error.what() << '\n';
+        std::cerr << "masket-json: " << error.what() << '\n';
         return 4;
     }
 }

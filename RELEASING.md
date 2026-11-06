@@ -1,7 +1,7 @@
 # Preparing a release
 
-The current release candidate is **1.0.0**. The version is defined once in
-`CMakeLists.txt`; the public `JsonHandlerCPP/Version.hpp`, CMake version file,
+The current release version is **1.0.0**. The version is defined once in
+`CMakeLists.txt`; the public `MasketJSON/Version.hpp`, CMake version file,
 CLI, and archive names are generated from it. Release preparation does not
 automatically create a tag or publish a GitHub Release.
 
@@ -10,7 +10,7 @@ automatically create a tag or publish a GitHub Release.
 Run each linkage type in its own build directory. For a shared build:
 
 ```sh
-cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DJSONHANDLER_ENABLE_PACKAGING=ON
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DMASKETJSON_ENABLE_PACKAGING=ON
 cmake --build build-release --config Release --parallel 2
 ctest --test-dir build-release -C Release --output-on-failure
 ```
@@ -49,8 +49,8 @@ toolchains differ. This release does not claim macOS validation.
 
    ```sh
    cmake -E make_directory out/release
-   git archive --format=tar.gz --prefix=JsonHandlerCPP-1.0.0/ --output=out/release/JsonHandlerCPP-1.0.0-source.tar.gz VERIFIED_COMMIT_SHA
-   cmake -E sha256sum out/release/JsonHandlerCPP-1.0.0-source.tar.gz
+   git archive --format=tar.gz --prefix=MasketJSON-1.0.0/ --output=out/release/MasketJSON-1.0.0-source.tar.gz VERIFIED_COMMIT_SHA
+   cmake -E sha256sum out/release/MasketJSON-1.0.0-source.tar.gz
    ```
 
 4. Extract that source archive outside the repository and run a clean build and

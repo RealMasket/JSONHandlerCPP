@@ -6,7 +6,7 @@
 #include "Token.hpp"
 #include "Api.hpp"
 
-class JSON_API JsonLexer
+class MASKETJSON_API JsonLexer
 {
 public:
     /*

@@ -1,28 +1,28 @@
-#include <JsonHandlerCPP/JsonHandler.hpp>
-#include <JsonHandlerCPP/JsonParser.hpp>
-#include <JsonHandlerCPP/JsonLexer.hpp>
-#include <JsonHandlerCPP/JsonSerializer.hpp>
-#include <JsonHandlerCPP/JsonFile.hpp>
-#include <JsonHandlerCPP/JsonAlgorithms.hpp>
-#include <JsonHandlerCPP/AccessException.hpp>
-#include <JsonHandlerCPP/FileException.hpp>
-#include <JsonHandlerCPP/LexerException.hpp>
-#include <JsonHandlerCPP/OperationException.hpp>
-#include <JsonHandlerCPP/ParseException.hpp>
-#include <JsonHandlerCPP/TypeException.hpp>
-#include <JsonHandlerCPP/Version.hpp>
+#include <MasketJSON/JsonHandler.hpp>
+#include <MasketJSON/JsonParser.hpp>
+#include <MasketJSON/JsonLexer.hpp>
+#include <MasketJSON/JsonSerializer.hpp>
+#include <MasketJSON/JsonFile.hpp>
+#include <MasketJSON/JsonAlgorithms.hpp>
+#include <MasketJSON/AccessException.hpp>
+#include <MasketJSON/FileException.hpp>
+#include <MasketJSON/LexerException.hpp>
+#include <MasketJSON/OperationException.hpp>
+#include <MasketJSON/ParseException.hpp>
+#include <MasketJSON/TypeException.hpp>
+#include <MasketJSON/Version.hpp>
 #include <filesystem>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
 
 #if CONSUMER_EXPECT_SHARED
-#ifdef JSONHANDLER_STATIC
-#error "Shared package incorrectly propagated JSONHANDLER_STATIC"
+#ifdef MASKETJSON_STATIC
+#error "Shared package incorrectly propagated MASKETJSON_STATIC"
 #endif
 #else
-#ifndef JSONHANDLER_STATIC
-#error "Static package did not propagate JSONHANDLER_STATIC"
+#ifndef MASKETJSON_STATIC
+#error "Static package did not propagate MASKETJSON_STATIC"
 #endif
 #endif
 
@@ -36,9 +36,9 @@ int main()
 {
     try {
         require(legacyHeadersWork(), "Legacy include paths failed");
-        const auto headerVersion = std::to_string(JSONHANDLER_VERSION_MAJOR) + "." +
-            std::to_string(JSONHANDLER_VERSION_MINOR) + "." + std::to_string(JSONHANDLER_VERSION_PATCH);
-        require(headerVersion == JSONHANDLER_VERSION_STRING && headerVersion == CONSUMER_EXPECT_VERSION,
+        const auto headerVersion = std::to_string(MASKETJSON_VERSION_MAJOR) + "." +
+            std::to_string(MASKETJSON_VERSION_MINOR) + "." + std::to_string(MASKETJSON_VERSION_PATCH);
+        require(headerVersion == MASKETJSON_VERSION_STRING && headerVersion == CONSUMER_EXPECT_VERSION,
             "Installed version header and CMake package disagree");
         const auto value = JsonParser::parse(R"({"id":18446744073709551615,"text":"001","emoji":"\uD83D\uDE00"})");
         require(value.at("id").asUInt64() == (std::numeric_limits<std::uint64_t>::max)(),

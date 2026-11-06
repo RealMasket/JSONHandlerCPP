@@ -259,7 +259,7 @@ protected:
     std::filesystem::path dir;
     void SetUp() override {
         dir = std::filesystem::temp_directory_path() /
-            ("jsonhandler-test-" + std::to_string(std::random_device{}()));
+            ("masket-json-test-" + std::to_string(std::random_device{}()));
         ASSERT_TRUE(std::filesystem::create_directory(dir));
     }
     void TearDown() override {

@@ -1,7 +1,7 @@
 #pragma once
 #include "JsonHandler.hpp"
 
-class JSON_API JsonFile
+class MASKETJSON_API JsonFile
 {
 public:
     // File failures throw FileException. Invalid contents propagate LexerException

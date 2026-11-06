@@ -2,7 +2,7 @@
 #include "JsonHandler.hpp"
 #include "Token.hpp"
 
-class JSON_API JsonParser
+class MASKETJSON_API JsonParser
 {
 public:
     explicit JsonParser(const std::vector<Token>& tokens, const std::string& source);

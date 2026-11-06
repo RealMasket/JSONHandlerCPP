@@ -2,7 +2,7 @@
 
 #include "JsonException.hpp"
 
-class JSON_API LexerException : public JsonException
+class MASKETJSON_API LexerException : public JsonException
 {
 public:
     LexerException(

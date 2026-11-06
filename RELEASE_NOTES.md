@@ -1,6 +1,6 @@
-# JsonHandlerCPP 1.0.0
+# MasketJSON 1.0.0
 
-First packaged release of the C++17 JSON library originally developed for
+First packaged release of MasketJSON, previously named JsonHandlerCPP, originally developed for
 college practice, with a validator/formatter CLI and an installable CMake package.
 
 ## Highlights
@@ -9,9 +9,9 @@ college practice, with a validator/formatter CLI and an installable CMake packag
   comparisons without rounding integers through `double`.
 - UTF-8 validation, JSON escapes, surrogate-pair decoding, and line/column diagnostics.
 - Compact/pretty serialization, JSON algorithms, and file I/O.
-- `jsonhandler check`, `format`, and `--version`, including stdin/stdout support.
-- Relocatable shared/static packages, `find_package(JsonHandlerCPP 1.0 CONFIG REQUIRED)`,
-  and the `JsonHandlerCPP::JsonHandlerCPP` target.
+- `masket-json check`, `format`, and `--version`, including stdin/stdout support.
+- Relocatable shared/static packages, `find_package(MasketJSON 1.0 CONFIG REQUIRED)`,
+  and the `MasketJSON::MasketJSON` target.
 - MIT license, Copyright (c) 2026 RealMasket.
 
 ## Getting started
@@ -22,7 +22,7 @@ floating-point `std::from_chars` / `std::to_chars`:
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build --config Release
-cmake --install build --config Release --prefix /path/to/jsonhandler
+cmake --install build --config Release --prefix /path/to/masket-json
 ```
 
 Alternatively, extract a binary archive and configure your application with
@@ -46,7 +46,8 @@ Decimal/exponent numbers use `double`; arbitrary-precision numbers and streaming
 parsing are not implemented. Objects sort keys lexicographically, and the first
 duplicate key wins. Nesting is limited to 128 containers. Input/output strings
 must be valid UTF-8, and non-finite output is rejected. File writes report errors
-but are not atomic. See [README](README.MD) and [CHANGELOG](CHANGELOG.md) for details.
+but are not atomic. See [README](https://github.com/RealMasket/MasketJSON/blob/v1.0.0/README.MD)
+and [CHANGELOG](https://github.com/RealMasket/MasketJSON/blob/v1.0.0/CHANGELOG.md) for details.
 
 ## Verification
 
@@ -54,4 +55,4 @@ CI covers Windows/Linux, shared/static, Debug/Release, independent consumers
 after installation and relocation, and consumers built from generated release
 archives. Linux also runs ASan/UBSan and a bounded libFuzzer campaign. Performance
 measurements and their limitations are recorded in
-[the optimization report](benchmarks/results/parse-optimization.md).
+[the optimization report](https://github.com/RealMasket/MasketJSON/blob/v1.0.0/benchmarks/results/parse-optimization.md).

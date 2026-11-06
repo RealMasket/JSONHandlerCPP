@@ -5,9 +5,9 @@ if(POLICY CMP0135)
 endif()
 
 project(
-    JsonHandlerCPP
+    MasketJSON
     VERSION 1.0.0
-    DESCRIPTION "Modern modular JSON library for C++"
+    DESCRIPTION "A C++17 JSON library"
     LANGUAGES CXX
 )
 
@@ -27,20 +27,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # =========================
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(JSONHANDLER_BUILD_EXAMPLES "Build usage examples" ON)
-option(JSONHANDLER_BUILD_CLI "Build the JSON validation/formatting command line tool" ON)
-option(JSONHANDLER_BUILD_BENCHMARKS "Build benchmarks (requires external input data)" OFF)
-option(JSONHANDLER_ENABLE_SANITIZERS "Enable ASan and UBSan (Linux GCC/Clang)" OFF)
-option(JSONHANDLER_BUILD_FUZZERS "Build libFuzzer target (Linux Clang, static, sanitizers)" OFF)
-option(JSONHANDLER_BUILD_FUZZ_REPLAY "Build portable corpus replay without unit tests" OFF)
-option(JSONHANDLER_ENABLE_PACKAGING "Generate release archives with CPack" OFF)
+option(MASKETJSON_BUILD_EXAMPLES "Build usage examples" ON)
+option(MASKETJSON_BUILD_CLI "Build the JSON validation/formatting command line tool" ON)
+option(MASKETJSON_BUILD_BENCHMARKS "Build benchmarks (requires external input data)" OFF)
+option(MASKETJSON_ENABLE_SANITIZERS "Enable ASan and UBSan (Linux GCC/Clang)" OFF)
+option(MASKETJSON_BUILD_FUZZERS "Build libFuzzer target (Linux Clang, static, sanitizers)" OFF)
+option(MASKETJSON_BUILD_FUZZ_REPLAY "Build portable corpus replay without unit tests" OFF)
+option(MASKETJSON_ENABLE_PACKAGING "Generate release archives with CPack" OFF)
 
 configure_file(utils/Version.hpp.in
-    "${CMAKE_CURRENT_BINARY_DIR}/include/JsonHandlerCPP/Version.hpp" @ONLY)
+    "${CMAKE_CURRENT_BINARY_DIR}/include/MasketJSON/Version.hpp" @ONLY)
 
-add_library(JsonHandlerCPP)
-add_library(JsonHandlerCPP::JsonHandlerCPP ALIAS JsonHandlerCPP)
-set_target_properties(JsonHandlerCPP PROPERTIES
+add_library(MasketJSON)
+add_library(MasketJSON::MasketJSON ALIAS MasketJSON)
+set_target_properties(MasketJSON PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     DEBUG_POSTFIX d
@@ -48,14 +48,14 @@ set_target_properties(JsonHandlerCPP PROPERTIES
 
 include(cmake/Sanitizers.cmake)
 
-target_compile_definitions(JsonHandlerCPP
-    PRIVATE JSONHANDLERC_EXPORTS
+target_compile_definitions(MasketJSON
+    PRIVATE MASKETJSON_EXPORTS
 )
 if(NOT BUILD_SHARED_LIBS)
-    target_compile_definitions(JsonHandlerCPP PUBLIC JSONHANDLER_STATIC)
+    target_compile_definitions(MasketJSON PUBLIC MASKETJSON_STATIC)
 endif()
 
-target_sources(JsonHandlerCPP
+target_sources(MasketJSON
     PRIVATE
 
     # Core
@@ -93,7 +93,7 @@ target_sources(JsonHandlerCPP
 # Include Directories
 # =========================
 
-target_include_directories(JsonHandlerCPP
+target_include_directories(MasketJSON
     PUBLIC
 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -106,33 +106,33 @@ target_include_directories(JsonHandlerCPP
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/utils>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/MasketJSON>
 )
 
 # =========================
 # Benchmarks
 # =========================
 
-if(JSONHANDLER_BUILD_CLI)
-    add_executable(jsonhandler tools/JsonCli.cpp)
-    target_link_libraries(jsonhandler PRIVATE JsonHandlerCPP)
-    file(RELATIVE_PATH jsonhandler_bin_to_lib "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}")
+if(MASKETJSON_BUILD_CLI)
+    add_executable(masket-json tools/JsonCli.cpp)
+    target_link_libraries(masket-json PRIVATE MasketJSON)
+    file(RELATIVE_PATH masketjson_bin_to_lib "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}")
     if(APPLE)
-        set_target_properties(jsonhandler PROPERTIES INSTALL_RPATH "@loader_path/${jsonhandler_bin_to_lib}")
+        set_target_properties(masket-json PROPERTIES INSTALL_RPATH "@loader_path/${masketjson_bin_to_lib}")
     elseif(UNIX)
-        set_target_properties(jsonhandler PROPERTIES INSTALL_RPATH "\$ORIGIN/${jsonhandler_bin_to_lib}")
+        set_target_properties(masket-json PROPERTIES INSTALL_RPATH "\$ORIGIN/${masketjson_bin_to_lib}")
     endif()
-    install(TARGETS jsonhandler RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS masket-json RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-if(JSONHANDLER_BUILD_BENCHMARKS)
+if(MASKETJSON_BUILD_BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
-if(JSONHANDLER_BUILD_EXAMPLES)
+if(MASKETJSON_BUILD_EXAMPLES)
     foreach(example BasicJsonExample ArrayExample ParsingExample)
         add_executable(${example} examples/${example}.cpp)
-        target_link_libraries(${example} PRIVATE JsonHandlerCPP)
+        target_link_libraries(${example} PRIVATE MasketJSON)
     endforeach()
 endif()
 
@@ -149,14 +149,14 @@ if(BUILD_TESTING)
         )
         # Keep the test framework static so Windows test discovery can load the
         # executable without extra DLL search paths, even for a shared library.
-        set(JSONHANDLER_SHARED_LIBS ${BUILD_SHARED_LIBS})
+        set(MASKETJSON_SHARED_LIBS ${BUILD_SHARED_LIBS})
         set(BUILD_SHARED_LIBS OFF)
         set(BUILD_GMOCK OFF)
         set(INSTALL_GTEST OFF)
         FetchContent_MakeAvailable(googletest)
-        set(BUILD_SHARED_LIBS ${JSONHANDLER_SHARED_LIBS})
+        set(BUILD_SHARED_LIBS ${MASKETJSON_SHARED_LIBS})
     endif()
-    add_executable(JsonHandlerTests
+    add_executable(MasketJSONTests
         "examples of tests/JsonLexerTests.cpp"
         "examples of tests/JsonParserTests.cpp"
         "examples of tests/JsonRoundTripTests.cpp"
@@ -164,10 +164,10 @@ if(BUILD_TESTING)
         "examples of tests/JsonRegressionTests.cpp"
         "examples of tests/JsonNumberTests.cpp"
     )
-    target_link_libraries(JsonHandlerTests PRIVATE JsonHandlerCPP GTest::gtest_main)
+    target_link_libraries(MasketJSONTests PRIVATE MasketJSON GTest::gtest_main)
     include(GoogleTest)
-    gtest_discover_tests(JsonHandlerTests)
-    set(jsonhandler_consumer_test_args
+    gtest_discover_tests(MasketJSONTests)
+    set(masketjson_consumer_test_args
         "-DPRODUCER_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
         "-DPRODUCER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
         "-DCONSUMER_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/tests/installed-consumer"
@@ -182,22 +182,22 @@ if(BUILD_TESTING)
         "-DINSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}"
         "-DINSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}"
         "-DINSTALL_DOCDIR=${CMAKE_INSTALL_DOCDIR}"
-        "-DCLI_ENABLED=${JSONHANDLER_BUILD_CLI}"
+        "-DCLI_ENABLED=${MASKETJSON_BUILD_CLI}"
         "-DEXECUTABLE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
         "-DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
         "-DEXPECTED_VERSION=${PROJECT_VERSION}")
     add_test(NAME Package.InstalledConsumer COMMAND "${CMAKE_COMMAND}"
-        ${jsonhandler_consumer_test_args}
+        ${masketjson_consumer_test_args}
         -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/InstalledPackage.cmake")
     set_tests_properties(Package.InstalledConsumer PROPERTIES TIMEOUT 180)
-    if(JSONHANDLER_BUILD_CLI)
+    if(MASKETJSON_BUILD_CLI)
         add_test(NAME JsonCli.Integration COMMAND ${CMAKE_COMMAND}
-            "-DCLI=$<TARGET_FILE:jsonhandler>"
+            "-DCLI=$<TARGET_FILE:masket-json>"
             "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/cli-integration"
             "-DEXPECTED_VERSION=${PROJECT_VERSION}"
             -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/CliIntegration.cmake")
     endif()
-    if(JSONHANDLER_BUILD_BENCHMARKS)
+    if(MASKETJSON_BUILD_BENCHMARKS)
         add_test(NAME Benchmark.Generate COMMAND ParseBenchmark --generate
             "${CMAKE_CURRENT_BINARY_DIR}/benchmark-smoke")
         set_tests_properties(Benchmark.Generate PROPERTIES FIXTURES_SETUP benchmark_data)
@@ -217,23 +217,23 @@ endif()
 # Compiler Features
 # =========================
 
-target_compile_features(JsonHandlerCPP
+target_compile_features(MasketJSON
     PUBLIC cxx_std_17
 )
 
-if(BUILD_TESTING OR JSONHANDLER_BUILD_FUZZ_REPLAY OR JSONHANDLER_BUILD_FUZZERS)
+if(BUILD_TESTING OR MASKETJSON_BUILD_FUZZ_REPLAY OR MASKETJSON_BUILD_FUZZERS)
     add_subdirectory(fuzz)
 endif()
 
 # Public package. Implementation-only diagnostics/UTF-8/PCH headers stay private.
-install(TARGETS JsonHandlerCPP EXPORT JsonHandlerCPPTargets
+install(TARGETS MasketJSON EXPORT MasketJSONTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-if(TARGET JsonHandlerSanitizers)
+if(TARGET MasketJSONSanitizers)
     # Sanitized developer packages must retain their runtime link requirements.
-    install(TARGETS JsonHandlerSanitizers EXPORT JsonHandlerCPPTargets)
+    install(TARGETS MasketJSONSanitizers EXPORT MasketJSONTargets)
 endif()
 install(FILES
     core/JsonHandler.hpp
@@ -243,30 +243,30 @@ install(FILES
     errors/LexerException.hpp errors/OperationException.hpp errors/ParseException.hpp
     errors/TypeException.hpp
     utils/Api.hpp utils/JsonAlgorithms.hpp
-    "${CMAKE_CURRENT_BINARY_DIR}/include/JsonHandlerCPP/Version.hpp"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/JsonHandlerCPP
+    "${CMAKE_CURRENT_BINARY_DIR}/include/MasketJSON/Version.hpp"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/MasketJSON
 )
-set(jsonhandler_package_dir ${CMAKE_INSTALL_LIBDIR}/cmake/JsonHandlerCPP)
-configure_package_config_file(cmake/JsonHandlerCPPConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfig.cmake"
-    INSTALL_DESTINATION ${jsonhandler_package_dir}
+set(masketjson_package_dir ${CMAKE_INSTALL_LIBDIR}/cmake/MasketJSON)
+configure_package_config_file(cmake/MasketJSONConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/MasketJSONConfig.cmake"
+    INSTALL_DESTINATION ${masketjson_package_dir}
 )
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/MasketJSONConfigVersion.cmake"
     VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion
 )
-install(EXPORT JsonHandlerCPPTargets
-    FILE JsonHandlerCPPTargets.cmake NAMESPACE JsonHandlerCPP::
-    DESTINATION ${jsonhandler_package_dir}
+install(EXPORT MasketJSONTargets
+    FILE MasketJSONTargets.cmake NAMESPACE MasketJSON::
+    DESTINATION ${masketjson_package_dir}
 )
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/JsonHandlerCPPConfigVersion.cmake"
-    DESTINATION ${jsonhandler_package_dir}
+    "${CMAKE_CURRENT_BINARY_DIR}/MasketJSONConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/MasketJSONConfigVersion.cmake"
+    DESTINATION ${masketjson_package_dir}
 )
 install(FILES README.MD CHANGELOG.md LICENSE RELEASE_NOTES.md RELEASING.md
     DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
-if(JSONHANDLER_ENABLE_PACKAGING)
+if(MASKETJSON_ENABLE_PACKAGING)
     include(cmake/Packaging.cmake)
 endif()

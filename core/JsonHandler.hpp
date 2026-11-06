@@ -10,7 +10,7 @@
 #include <type_traits>
 #include "Api.hpp"
 
-class JSON_API Json {
+class MASKETJSON_API Json {
 public:
     using JsonObject = std::map<std::string, Json>;
     using JsonArray = std::vector<Json>;

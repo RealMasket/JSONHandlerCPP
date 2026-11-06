@@ -18,7 +18,7 @@ artifact preservation. No Clang or Python installation is needed.
 To build the replay tool without Google Test:
 
 ```sh
-cmake -S . -B build-replay -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_BUILD_FUZZ_REPLAY=ON
+cmake -S . -B build-replay -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_FUZZ_REPLAY=ON
 cmake --build build-replay --config Release --target JsonFuzzReplay
 ```
 
@@ -42,7 +42,7 @@ and wrapping. This runner is **not coverage-guided**; libFuzzer is.
 Use GCC or Clang and a separate build directory:
 
 ```sh
-CC=clang CXX=clang++ cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_BENCHMARKS=ON
+CC=clang CXX=clang++ cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON
 cmake --build build-sanitized --parallel 2
 ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 ctest --test-dir build-sanitized --output-on-failure
 ```
@@ -60,7 +60,7 @@ instrumentation, so ordinary executables do not acquire a libFuzzer `main()`
 or coverage-runtime dependency.
 
 ```sh
-CC=clang CXX=clang++ cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJSONHANDLER_BUILD_CLI=OFF -DJSONHANDLER_BUILD_EXAMPLES=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_FUZZERS=ON
+CC=clang CXX=clang++ cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DMASKETJSON_BUILD_CLI=OFF -DMASKETJSON_BUILD_EXAMPLES=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_FUZZERS=ON
 cmake --build build-fuzz --target JsonParserFuzz --parallel 2
 mkdir -p build-fuzz/corpus build-fuzz/artifacts
 cp fuzz/corpus/* fuzz/regressions/* build-fuzz/corpus/

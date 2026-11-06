@@ -1,7 +1,7 @@
 #pragma once
 #include "JsonHandler.hpp"
 
-class JSON_API JsonSerializer
+class MASKETJSON_API JsonSerializer
 {
 public:
     /**

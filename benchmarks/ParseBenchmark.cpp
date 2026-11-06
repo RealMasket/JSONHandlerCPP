@@ -13,11 +13,11 @@
 #include <string_view>
 #include <vector>
 
-#ifdef JSONHANDLER_HAS_BOOST
+#ifdef MASKETJSON_HAS_BOOST
 #include <boost/json.hpp>
 #include <boost/version.hpp>
 #endif
-#ifdef JSONHANDLER_HAS_QT
+#ifdef MASKETJSON_HAS_QT
 #include <QByteArray>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -25,8 +25,11 @@
 #include <QJsonParseError>
 #include <QtGlobal>
 #endif
-#ifndef JSONHANDLER_BENCHMARK_BUILD_TYPE
-#define JSONHANDLER_BENCHMARK_BUILD_TYPE "unspecified"
+#ifndef MASKETJSON_BENCHMARK_BUILD_TYPE
+#define MASKETJSON_BENCHMARK_BUILD_TYPE "unspecified"
+#endif
+#ifndef MASKETJSON_BENCHMARK_VERSION
+#define MASKETJSON_BENCHMARK_VERSION "unversioned"
 #endif
 
 namespace {
@@ -182,15 +185,15 @@ void benchmarkFile(const std::filesystem::path& path, const Options& options, st
     if (!(JsonParser::parse(original.serialize(false)) == original))
         throw std::runtime_error("JsonHandler round-trip failed for " + path.string());
 
-    measure(rows, options, name, text.size(), "JsonHandlerCPP", "1.0", "parse", [&] {
+    measure(rows, options, name, text.size(), "MasketJSON", MASKETJSON_BENCHMARK_VERSION, "parse", [&] {
         const auto value = JsonParser::parse(text);
         return rootSize(value);
     });
-    measure(rows, options, name, text.size(), "JsonHandlerCPP", "1.0", "serialize", [&] {
+    measure(rows, options, name, text.size(), "MasketJSON", MASKETJSON_BENCHMARK_VERSION, "serialize", [&] {
         return original.serialize(false).size();
     });
 
-#ifdef JSONHANDLER_HAS_BOOST
+#ifdef MASKETJSON_HAS_BOOST
     boost::json::parse_options boostOptions;
     boostOptions.max_depth = 128;
     const auto boostValue = boost::json::parse(text, {}, boostOptions);
@@ -206,7 +209,7 @@ void benchmarkFile(const std::filesystem::path& path, const Options& options, st
     });
 #endif
 
-#ifdef JSONHANDLER_HAS_QT
+#ifdef MASKETJSON_HAS_QT
     // QJsonDocument represents object/array roots; don't time rejected scalars.
     if (!original.isArray() && !original.isObject()) {
         std::cerr << name << ": Qt QJsonDocument skipped (scalar root)\n";
@@ -246,7 +249,7 @@ void writeCsv(const std::string& path, const Options& options, const std::vector
             << ',' << csvQuote(row.operation) << ',' << row.bytes << ',' << options.iterations << ','
             << options.samples << ',' << row.time.medianUs << ',' << row.time.minUs << ','
             << row.time.maxUs << ',' << throughput << ',' << csvQuote(compilerName()) << ','
-            << csvQuote(JSONHANDLER_BENCHMARK_BUILD_TYPE) << '\n';
+            << csvQuote(MASKETJSON_BENCHMARK_BUILD_TYPE) << '\n';
     }
     writeFile(path, output.str());
 }
@@ -262,7 +265,7 @@ int main(int argc, char** argv)
 #ifndef NDEBUG
         std::cerr << "Warning: use a Release build for performance results.\n";
 #endif
-        std::cout << compilerName() << "; " << JSONHANDLER_BENCHMARK_BUILD_TYPE
+        std::cout << compilerName() << "; " << MASKETJSON_BENCHMARK_BUILD_TYPE
             << "; iterations=" << options.iterations << "; samples=" << options.samples << '\n';
         std::cout << std::left << std::setw(15) << "Dataset" << std::setw(16) << "Library"
             << std::setw(11) << "Operation" << std::right << std::setw(12) << "Bytes"

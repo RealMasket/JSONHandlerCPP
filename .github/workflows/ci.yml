@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DJSONHANDLER_BUILD_BENCHMARKS=ON -DJSONHANDLER_BUILD_PROFILER=${{ matrix.shared == 'OFF' && 'ON' || 'OFF' }} -DJSONHANDLER_ENABLE_PACKAGING=${{ matrix.config == 'Release' && 'ON' || 'OFF' }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=${{ matrix.shared == 'OFF' && 'ON' || 'OFF' }} -DMASKETJSON_ENABLE_PACKAGING=${{ matrix.config == 'Release' && 'ON' || 'OFF' }}
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel 2
       - name: Test
@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure ASan and UBSan
-        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_BENCHMARKS=ON
+        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON
       - name: Build
         run: cmake --build build-sanitized --parallel 2
       - name: Test with sanitizers
@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure instrumented libFuzzer target
-        run: cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJSONHANDLER_BUILD_EXAMPLES=OFF -DJSONHANDLER_BUILD_CLI=OFF -DJSONHANDLER_ENABLE_SANITIZERS=ON -DJSONHANDLER_BUILD_FUZZERS=ON
+        run: cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DMASKETJSON_BUILD_EXAMPLES=OFF -DMASKETJSON_BUILD_CLI=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_FUZZERS=ON
       - name: Build fuzzer
         run: cmake --build build-fuzz --target JsonParserFuzz --parallel 2
       - name: Prepare working corpus

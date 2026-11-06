@@ -1,12 +1,12 @@
 add_library(JsonFuzzChecks STATIC FuzzChecks.cpp)
 target_include_directories(JsonFuzzChecks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(JsonFuzzChecks PUBLIC JsonHandlerCPP)
+target_link_libraries(JsonFuzzChecks PUBLIC MasketJSON)
 
 add_executable(JsonFuzzReplay FuzzReplay.cpp)
 target_link_libraries(JsonFuzzReplay PRIVATE JsonFuzzChecks)
 if(WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET JsonFuzzReplay POST_BUILD COMMAND "${CMAKE_COMMAND}" -E
-        copy_if_different "$<TARGET_FILE:JsonHandlerCPP>" "$<TARGET_FILE_DIR:JsonFuzzReplay>")
+        copy_if_different "$<TARGET_FILE:MasketJSON>" "$<TARGET_FILE_DIR:JsonFuzzReplay>")
 endif()
 
 if(BUILD_TESTING)
@@ -25,19 +25,19 @@ if(BUILD_TESTING)
         Fuzz.FailureArtifacts PROPERTIES TIMEOUT 30)
 endif()
 
-if(JSONHANDLER_BUILD_FUZZERS)
+if(MASKETJSON_BUILD_FUZZERS)
     # Use the same source list as the normal library. Coverage instrumentation
     # belongs to a separate static target, so ordinary executables don't acquire
     # libFuzzer runtime dependencies or a second main().
-    get_target_property(fuzz_sources JsonHandlerCPP SOURCES)
+    get_target_property(fuzz_sources MasketJSON SOURCES)
     list(TRANSFORM fuzz_sources PREPEND "${PROJECT_SOURCE_DIR}/")
     add_library(JsonFuzzInstrumented STATIC ${fuzz_sources} FuzzChecks.cpp)
     target_include_directories(JsonFuzzInstrumented PUBLIC
-        "$<TARGET_PROPERTY:JsonHandlerCPP,INTERFACE_INCLUDE_DIRECTORIES>"
+        "$<TARGET_PROPERTY:MasketJSON,INTERFACE_INCLUDE_DIRECTORIES>"
         "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_compile_definitions(JsonFuzzInstrumented PUBLIC JSONHANDLER_STATIC)
+    target_compile_definitions(JsonFuzzInstrumented PUBLIC MASKETJSON_STATIC)
     target_compile_options(JsonFuzzInstrumented PRIVATE -fsanitize=fuzzer-no-link)
-    target_link_libraries(JsonFuzzInstrumented PUBLIC JsonHandlerSanitizers)
+    target_link_libraries(JsonFuzzInstrumented PUBLIC MasketJSONSanitizers)
     add_executable(JsonParserFuzz ParserFuzz.cpp)
     target_compile_options(JsonParserFuzz PRIVATE -fsanitize=fuzzer-no-link)
     target_link_options(JsonParserFuzz PRIVATE -fsanitize=fuzzer)

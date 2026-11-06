@@ -1,10 +1,13 @@
-# JsonHandlerC++
+# MasketJSON
 
-Version **1.0.0** (first release candidate). Licensed under [MIT](LICENSE).
+A C++17 JSON library.
+
+Version **1.0.0**. Licensed under [MIT](LICENSE).
 
 A modular C++17 JSON library originally developed for college practice. It
 demonstrates tokenization, recursive descent parsing, a value tree based on
 `std::variant`, serialization, and contextual diagnostics.
+Previously named JsonHandlerCPP.
 
 ## Features
 
@@ -49,13 +52,13 @@ directory with `-DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=/path/to/googletest`.
 | --- | --- | --- |
 | `BUILD_SHARED_LIBS` | `ON` | Use `OFF` for a static library |
 | `BUILD_TESTING` | `ON` | Build and discover Google Test tests |
-| `JSONHANDLER_BUILD_EXAMPLES` | `ON` | Build usage examples |
-| `JSONHANDLER_BUILD_CLI` | `ON` | Build the validator/formatter |
-| `JSONHANDLER_BUILD_BENCHMARKS` | `OFF` | Build the parser benchmark |
-| `JSONHANDLER_ENABLE_SANITIZERS` | `OFF` | ASan/UBSan on Linux GCC/Clang |
-| `JSONHANDLER_BUILD_FUZZERS` | `OFF` | Linux Clang libFuzzer; static + sanitizers required |
-| `JSONHANDLER_BUILD_FUZZ_REPLAY` | `OFF` | Build corpus replay without unit tests |
-| `JSONHANDLER_ENABLE_PACKAGING` | `OFF` | Generate CPack release archives and SHA-256 checksums |
+| `MASKETJSON_BUILD_EXAMPLES` | `ON` | Build usage examples |
+| `MASKETJSON_BUILD_CLI` | `ON` | Build the validator/formatter |
+| `MASKETJSON_BUILD_BENCHMARKS` | `OFF` | Build the parser benchmark |
+| `MASKETJSON_ENABLE_SANITIZERS` | `OFF` | ASan/UBSan on Linux GCC/Clang |
+| `MASKETJSON_BUILD_FUZZERS` | `OFF` | Linux Clang libFuzzer; static + sanitizers required |
+| `MASKETJSON_BUILD_FUZZ_REPLAY` | `OFF` | Build corpus replay without unit tests |
+| `MASKETJSON_ENABLE_PACKAGING` | `OFF` | Generate CPack release archives and SHA-256 checksums |
 
 With a multi-configuration generator such as Visual Studio, select the same
 configuration for build and CTest. With a single-configuration generator, set
@@ -69,9 +72,9 @@ toolset. CMake is the common entry point for the library, examples, and tests.
 Build and install a Release package into a prefix of your choice:
 
 ```sh
-cmake -S . -B build-package -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DJSONHANDLER_BUILD_EXAMPLES=OFF
+cmake -S . -B build-package -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DMASKETJSON_BUILD_EXAMPLES=OFF
 cmake --build build-package --config Release
-cmake --install build-package --config Release --prefix /path/to/jsonhandler-install
+cmake --install build-package --config Release --prefix /path/to/masket-json-install
 ```
 
 Add `-DBUILD_SHARED_LIBS=OFF` when configuring to install a static library.
@@ -84,20 +87,20 @@ In the consuming project, define your executable and link the imported target:
 ```cmake
 cmake_minimum_required(VERSION 3.20)
 project(MyApp LANGUAGES CXX)
-find_package(JsonHandlerCPP 1.0 CONFIG REQUIRED)
+find_package(MasketJSON 1.0 CONFIG REQUIRED)
 add_executable(my_app main.cpp)
-target_link_libraries(my_app PRIVATE JsonHandlerCPP::JsonHandlerCPP)
+target_link_libraries(my_app PRIVATE MasketJSON::MasketJSON)
 ```
 
 Configure that project with
-`-DCMAKE_PREFIX_PATH=/path/to/jsonhandler-install`. Installed headers support
-`#include <JsonHandlerCPP/JsonParser.hpp>` as well as the existing short form
+`-DCMAKE_PREFIX_PATH=/path/to/masket-json-install`. Installed headers support
+`#include <MasketJSON/JsonParser.hpp>` as well as the existing short form
 `#include "JsonParser.hpp"`. CMake propagates include directories, C++17, and
-`JSONHANDLER_STATIC` for static builds; consumers do not need Google Test,
+`MASKETJSON_STATIC` for static builds; consumers do not need Google Test,
 Boost, or Qt. The version file accepts compatible requests within major version 1.
 
-The prefix contains public headers under `include/JsonHandlerCPP`, libraries
-under `lib`, package configuration under `lib/cmake/JsonHandlerCPP`, and the CLI
+The prefix contains public headers under `include/MasketJSON`, libraries
+under `lib`, package configuration under `lib/cmake/MasketJSON`, and the CLI
 under `bin` when enabled. GNUInstallDirs options can customize these locations.
 Keep them relative to the prefix to retain relocatability. The whole installed
 prefix can then be moved without rebuilding; configure consumers with its new
@@ -112,13 +115,13 @@ Alternatively, include the source tree directly and use short header includes:
 
 ```cmake
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(JSONHANDLER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(JSONHANDLER_BUILD_CLI OFF CACHE BOOL "" FORCE)
-add_subdirectory(path/to/JsonHandlerCPP)
-target_link_libraries(my_app PRIVATE JsonHandlerCPP::JsonHandlerCPP)
+set(MASKETJSON_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(MASKETJSON_BUILD_CLI OFF CACHE BOOL "" FORCE)
+add_subdirectory(path/to/MasketJSON)
+target_link_libraries(my_app PRIVATE MasketJSON::MasketJSON)
 ```
 
-When linking a static build manually on Windows, define `JSONHANDLER_STATIC`
+When linking a static build manually on Windows, define `MASKETJSON_STATIC`
 for the consumer.
 
 The Windows DLL exposes standard-library types in its C++ interface. Build DLL
@@ -126,8 +129,8 @@ consumers with compatible MSVC toolset and runtime settings; a stable C ABI
 across unrelated compiler versions is not provided. The legacy Visual Studio
 build can report C4251/C4275 warnings for this interface.
 
-The generated `<JsonHandlerCPP/Version.hpp>` provides `JSONHANDLER_VERSION_STRING`
-and `JSONHANDLER_VERSION_MAJOR`, `_MINOR`, and `_PATCH` macros.
+The generated `<MasketJSON/Version.hpp>` provides `MASKETJSON_VERSION_STRING`
+and `MASKETJSON_VERSION_MAJOR`, `_MINOR`, and `_PATCH` macros.
 
 ## Example
 
@@ -155,11 +158,11 @@ With Visual Studio, the executable is in `build/Debug/` or `build/Release/`.
 For single-configuration generators it is in `build/`.
 
 ```sh
-jsonhandler check examples/data/student.json
-jsonhandler format examples/data/student.json
-jsonhandler format --compact -o compact.json examples/data/student.json
-jsonhandler format --compact -
-jsonhandler --version
+masket-json check examples/data/student.json
+masket-json format examples/data/student.json
+masket-json format --compact -o compact.json examples/data/student.json
+masket-json format --compact -
+masket-json --version
 ```
 
 The last command reads stdin, so it also accepts input from a pipe or redirected
@@ -197,7 +200,7 @@ containing spaces, and builds/runs a separate `find_package` consumer. It checks
 each public header independently, both include styles, exported compile settings,
 exception and file APIs, and the relocated CLI when enabled. This check runs in
 the Windows/Linux, Debug/Release, shared/static CI matrix and with sanitizers.
-When `JSONHANDLER_ENABLE_PACKAGING=ON`, `Package.ArchiveConsumer` additionally
+When `MASKETJSON_ENABLE_PACKAGING=ON`, `Package.ArchiveConsumer` additionally
 checks the generated archive and checksum, then builds/runs from its extracted
 contents. See [RELEASING.md](RELEASING.md) for packaging commands and
 [RELEASE_NOTES.md](RELEASE_NOTES.md) for the 1.0.0 release notes.

@@ -1,5 +1,9 @@
 # JSON performance comparison
 
+Historical files under `results/` retain the JsonHandlerCPP name and original
+version labels from the measured commits. New measurements identify the library
+as MasketJSON and use the configured project version.
+
 The benchmark measures this library and optional local installations of
 Boost.JSON and Qt6 Core. It is a comparison harness, not a claim of universal
 performance. It does not download Boost or Qt and does not measure peak memory.
@@ -9,14 +13,14 @@ performance. It does not download Boost or Qt and does not measure peak memory.
 A library-only benchmark needs no extra JSON dependency:
 
 ```sh
-cmake -S . -B build-bench -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_BUILD_BENCHMARKS=ON
+cmake -S . -B build-bench -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON
 cmake --build build-bench --config Release --target ParseBenchmark
 ```
 
 To compare all three libraries with the installations on this Windows machine:
 
 ```powershell
-cmake -S . -B build-bench -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DJSONHANDLER_BUILD_BENCHMARKS=ON -DJSONHANDLER_BENCHMARK_BOOST=ON -DJSONHANDLER_BOOST_ROOT=E:/C++Libs/boost_1_88_0 -DJSONHANDLER_BENCHMARK_QT=ON -DCMAKE_PREFIX_PATH=C:/Qt/Qt6.11.0/6.11.0/msvc2022_64
+cmake -S . -B build-bench -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BENCHMARK_BOOST=ON -DMASKETJSON_BOOST_ROOT=E:/C++Libs/boost_1_88_0 -DMASKETJSON_BENCHMARK_QT=ON -DCMAKE_PREFIX_PATH=C:/Qt/Qt6.11.0/6.11.0/msvc2022_64
 cmake --build build-bench --config Release --target ParseBenchmark
 ```
 
@@ -99,7 +103,7 @@ storage was introduced. Rerun the harness to measure the current revision.
 
 ## Allocation and stage profiling
 
-`JSONHANDLER_BUILD_PROFILER=ON` adds `ParserProfile` to a static, unsanitized
+`MASKETJSON_BUILD_PROFILER=ON` adds `ParserProfile` to a static, unsanitized
 benchmark build. Run `ParserProfile INPUT [ITERATIONS]` to measure whole parsing,
 lexing with token destruction, and source copying. It reports a nine-sample
 timing summary and one-operation counts of ordinary C++ `new`/`new[]` calls and

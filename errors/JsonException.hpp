@@ -4,7 +4,7 @@
 #include <string>
 #include "Api.hpp"
 
-class JSON_API JsonException : public std::runtime_error
+class MASKETJSON_API JsonException : public std::runtime_error
 {
 public:
     explicit JsonException(
