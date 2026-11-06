@@ -10,6 +10,9 @@ benchmarks/reservation/*.json text eol=lf
 benchmarks/results/auto-msvc1951/** text eol=lf
 benchmarks/auto/*.py text eol=lf
 benchmarks/auto/*.json text eol=lf
+benchmarks/results/auto-v2-msvc1951/** text eol=lf
+benchmarks/auto-v2/*.py text eol=lf
+benchmarks/auto-v2/*.json text eol=lf
 
 ###############################################################################
 # Set default behavior for command prompt diff.

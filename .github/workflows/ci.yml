@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure experimental reservation matrix
-        run: cmake -S . -B build-matrix -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_RESERVATION_MATRIX=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON
+        run: cmake -S . -B build-matrix -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_RESERVATION_MATRIX=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON -DMASKETJSON_BUILD_AUTO_V2_EXPERIMENT=ON -DAUTO_V2_SPEED_BUDGET=4194304 -DAUTO_V2_MEMORY_BUDGET=1048576
       - name: Build
         run: cmake --build build-matrix --config Release --parallel 2
       - name: Check all strategies against production
@@ -30,6 +30,7 @@ jobs:
           name: auto-journals-${{ matrix.os }}
           path: |
             build-matrix/auto-smoke/*-decisions.csv
+            build-matrix/auto-v2-smoke/*-decisions.csv
             build-matrix/Testing/Temporary/
           if-no-files-found: ignore
           retention-days: 14
@@ -73,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure ASan and UBSan
-        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON
+        run: cmake -S . -B build-sanitized -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON -DMASKETJSON_BUILD_AUTO_V2_EXPERIMENT=ON -DAUTO_V2_SPEED_BUDGET=4194304 -DAUTO_V2_MEMORY_BUDGET=1048576
       - name: Build
         run: cmake --build build-sanitized --parallel 2
       - name: Test with sanitizers
@@ -89,12 +90,13 @@ jobs:
             build-sanitized/auto-*-artifacts/
             build-sanitized/auto-*-regressions/
             build-sanitized/auto-smoke/*-decisions.csv
+            build-sanitized/auto-v2-smoke/*-decisions.csv
           if-no-files-found: ignore
           retention-days: 14
 
   fuzz:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       CC: clang
       CXX: clang++
@@ -103,14 +105,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure instrumented libFuzzer target
-        run: cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DMASKETJSON_BUILD_EXAMPLES=OFF -DMASKETJSON_BUILD_CLI=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_FUZZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON
+        run: cmake -S . -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DMASKETJSON_BUILD_EXAMPLES=OFF -DMASKETJSON_BUILD_CLI=OFF -DMASKETJSON_ENABLE_SANITIZERS=ON -DMASKETJSON_BUILD_FUZZERS=ON -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON -DMASKETJSON_BUILD_AUTO_V2_EXPERIMENT=ON -DAUTO_V2_SPEED_BUDGET=4194304 -DAUTO_V2_MEMORY_BUDGET=1048576
       - name: Build fuzzer
-        run: cmake --build build-fuzz --target JsonParserFuzz AutoFuzz-speed AutoFuzz-memory --parallel 2
+        run: cmake --build build-fuzz --target JsonParserFuzz AutoFuzz-speed AutoFuzz-memory AutoV2Fuzz-speed AutoV2Fuzz-memory --parallel 2
       - name: Prepare working corpus
         run: |
           mkdir -p build-fuzz/artifacts build-fuzz/corpus
           cp fuzz/corpus/* fuzz/regressions/* build-fuzz/corpus/
-          for goal in speed memory; do
+          for goal in speed memory v2-speed v2-memory; do
             mkdir -p "build-fuzz/auto-corpus-$goal"
             cp fuzz/corpus/* fuzz/regressions/* "build-fuzz/auto-corpus-$goal/"
           done
@@ -125,6 +127,13 @@ jobs:
           set -o pipefail
           for goal in speed memory; do
             ./build-fuzz/benchmarks/auto/AutoFuzz-$goal "build-fuzz/auto-corpus-$goal" -dict=fuzz/json.dict -seed=20261107 -max_total_time=30 -max_len=65536 -timeout=5 -rss_limit_mb=2048 -print_final_stats=1 -artifact_prefix="build-fuzz/artifacts/auto-$goal-" 2>&1 | tee "build-fuzz/auto-$goal.log"
+          done
+      - name: Fuzz Auto v2 byte budgets and remaining-byte bound
+        shell: bash
+        run: |
+          set -o pipefail
+          for goal in speed memory; do
+            ./build-fuzz/benchmarks/auto-v2/AutoV2Fuzz-$goal "build-fuzz/auto-corpus-v2-$goal" -dict=fuzz/json.dict -seed=20261108 -max_total_time=30 -max_len=65536 -timeout=5 -rss_limit_mb=2048 -print_final_stats=1 -artifact_prefix="build-fuzz/artifacts/v2-$goal-" 2>&1 | tee "build-fuzz/auto-v2-$goal.log"
           done
       - name: Preserve corpus, crash inputs, and log
         if: always()

@@ -92,6 +92,20 @@ instrumented heap measurements have different costs and meanings.
 
 ## Further validation and future modes
 
+The [Auto v2 experiment](../benchmarks/results/auto-v2-reservation.md) adds byte
+ceilings for speculative token slots and a remaining-byte bound near EOF. Minimum
+geometric growth can exceed the ceiling; each exception is logged. This is not a
+total-memory limit. The selected private budgets are 4 MiB for speed and 1 MiB for
+memory, calibrated on 75 known documents before freezing a new 16-document split.
+
+Both goals pass the joint targets on the new split, but fail the known-set CPU
+targets: speed reaches 1.723 times the better fixed mode (limit 1.5), and memory
+reaches 2.421 times Balanced (limit 2). Original heap failures improve from 70.494
+to 15.132 MiB and from 6.812 to 5.557 MiB. These mixed results do not qualify Auto
+for public promotion; retain the explicit Balanced/LowMemory choice while
+collecting representative user workloads. No thresholds or budgets were retuned
+using the new split. Raw measurements and decision journals remain in the report.
+
 1. Collect real user inputs and repeat the matrix on another toolchain; keep raw
    input private when appropriate and publish reproducible shape-equivalent cases.
 2. Revisit the spare-capacity/time tradeoff for actual user workloads. LowMemory

@@ -4,6 +4,12 @@
 
 ### Planned for 1.1.0
 
+- Evaluate private Auto v2 byte budgets with geometric-growth exceptions and a
+  remaining-byte token bound. Preserve calibration, frozen executables, repeated
+  75-input measurements and an independent 16-input evaluation. Fix the original
+  memory failures, record failed joint CPU targets, and keep Auto experimental.
+- Check v2 token/value/diagnostic equivalence, overflow and journal invariants,
+  corpus mutations, Windows/Linux builds, sanitizers and differential fuzzing.
 - Add private experimental Auto reservation controllers with explicit speed/memory
   goals, checkpoint density/stability, bounded speculative growth, copy-pressure
   handling, fixed-size decision journals and exact EOF reservation. Preserve

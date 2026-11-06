@@ -309,6 +309,57 @@ With Linux Clang sanitizers and `MASKETJSON_BUILD_FUZZERS=ON`, optional
 representation and error diagnostics to production with coverage instrumentation.
 Neither goal is a public preset or a promise of a hard time/whole-memory limit.
 
+## Auto v2: byte budgets and joint targets
+
+The [v2 report](results/auto-v2-reservation.md) compares frozen v1 and v2 with both
+production modes. Byte ceilings limit speculative slots, with logged exceptions
+for geometric growth. A checked remaining-byte bound can reserve all future
+tokens near EOF without another scan. Neither mechanism limits total parser heap.
+
+The selected private budgets are explicit in this configuration; the research
+CMake default for the memory candidate is 512 KiB, not the selected 1 MiB:
+
+```powershell
+cmake -S . -B build-auto-v2 -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON -DMASKETJSON_BUILD_AUTO_V2_EXPERIMENT=ON -DAUTO_V2_SPEED_BUDGET=4194304 -DAUTO_V2_MEMORY_BUDGET=1048576
+cmake --build build-auto-v2 --config Release --parallel 2
+ctest --test-dir build-auto-v2 -C Release -R Auto --output-on-failure
+```
+
+Python 3 is required. Sanitizer builds omit the profiler. V2 adds exact comparisons,
+size-limit arithmetic tests, bounded journals, corpus replay and optional
+`AutoV2Fuzz-speed`/`AutoV2Fuzz-memory` differential fuzzers. CI checks correctness
+and counters without asserting wall-clock speed.
+
+Calibration sources and all three candidate observations are at commit
+`77c50bf9fbf9c254e7247e3094d7c34b1f2dd79b`. Follow `auto-v2/plan.json`: generate the
+47 original fixtures plus the 12 LowMemory and 16 v1 evaluation fixtures; build
+each candidate pair and snapshot its executables before rebuilding. Run
+`auto-v2/calibrate.py --bin SNAPSHOT --inputs DIRS --output RESULTS --candidate NAME`
+for tight, medium and relaxed, placing results under a common calibration root.
+Then `auto-v2/select_budget.py CALIBRATION_ROOT selection.json` applies the fixed
+selection rule. Assemble selected per-goal executables plus the fixed controls
+into a separate immutable directory. Keep v1 executables from commit `5689e9c`.
+
+```powershell
+python benchmarks/auto-v2/run_final.py --bin selected-bin --v1-bin v1-bin --inputs known-data --output known-results --selection selection.json --stage known
+python benchmarks/auto-v2/freeze.py known-results selection.json freeze.json
+python benchmarks/auto-v2/generate_holdout.py new-evaluation-inputs
+python benchmarks/auto-v2/run_final.py --bin selected-bin --v1-bin v1-bin --inputs new-evaluation-inputs --output holdout-results --selection selection.json --freeze freeze.json --stage holdout
+```
+
+Use fresh output directories and an idle machine. The recorded runs used an
+i5-12600KF, Windows 10, MSVC 19.51 Release static builds (`/O2 /Ob2 /DNDEBUG`) pinned
+to logical CPU 0, six cyclic rounds with five samples and three operations each.
+Binary, normalized source and input hashes accompany the CSVs. After copying
+known/holdout results, selection, freeze and calibration files into one result
+root, `auto-v2/summarize.py ROOT report.md` audits their cross-references and
+evaluates the unchanged joint CPU/heap targets.
+
+V2 fixes both original heap failures and passes the new split, but exceeds CPU
+targets on the known dense array. It remains private and does not qualify for
+public promotion. Keep the failed results when comparing another candidate;
+the new split is now known data and cannot serve as an independent test again.
+
 ## References
 
 - [Boost.JSON 1.88 documentation](https://www.boost.org/doc/libs/1_88_0/libs/json/doc/html/index.html)

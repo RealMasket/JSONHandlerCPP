@@ -205,6 +205,25 @@ if(BUILD_TESTING)
             -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/CliIntegration.cmake")
     endif()
     if(MASKETJSON_BUILD_BENCHMARKS)
+        if(MASKETJSON_BUILD_AUTO_V2_EXPERIMENT)
+            find_package(Python3 REQUIRED COMPONENTS Interpreter)
+            set(v2_profile_arg)
+            if(TARGET AutoV2Profile-speed)
+                set(v2_profile_arg --profiles)
+            endif()
+            add_test(NAME Benchmark.AutoV2Experiment COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/auto-v2/check_v2.py"
+                --bin "$<TARGET_FILE_DIR:AutoV2Verify-speed>" --fixed-bin "$<TARGET_FILE_DIR:AutoInspect-balanced>"
+                --reference-bin "$<TARGET_FILE_DIR:ParseBenchmark>" --output "${CMAKE_CURRENT_BINARY_DIR}/auto-v2-smoke" ${v2_profile_arg})
+            set_tests_properties(Benchmark.AutoV2Experiment PROPERTIES TIMEOUT 240)
+            foreach(goal speed memory)
+                add_test(NAME AutoV2.Corpus-${goal} COMMAND AutoV2Replay-${goal} --mutations 2000 --seed 20261108
+                    --artifacts "${CMAKE_CURRENT_BINARY_DIR}/auto-v2-${goal}-artifacts" "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/corpus")
+                add_test(NAME AutoV2.Regressions-${goal} COMMAND AutoV2Replay-${goal} --require-valid
+                    --artifacts "${CMAKE_CURRENT_BINARY_DIR}/auto-v2-${goal}-regressions" "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/regressions")
+                set_tests_properties(AutoV2.Corpus-${goal} AutoV2.Regressions-${goal} PROPERTIES TIMEOUT 60)
+            endforeach()
+        endif()
         if(MASKETJSON_BUILD_AUTO_EXPERIMENT)
             find_package(Python3 REQUIRED COMPONENTS Interpreter)
             set(auto_profile_arg)
