@@ -3,6 +3,7 @@ option(MASKETJSON_BENCHMARK_QT "Compare with the installed Qt6 Core JSON impleme
 set(MASKETJSON_BOOST_ROOT "" CACHE PATH "Boost source tree containing boost/json/src.hpp")
 option(MASKETJSON_BUILD_PROFILER "Build standalone parser allocation/stage profiler (static, unsanitized)" OFF)
 option(MASKETJSON_BUILD_RESERVATION_MATRIX "Build isolated experimental token reservation variants (requires Python 3)" OFF)
+option(MASKETJSON_BUILD_AUTO_EXPERIMENT "Build private Auto controllers and decision journals" OFF)
 
 add_executable(ParseBenchmark ParseBenchmark.cpp BenchmarkUtils.cpp)
 target_link_libraries(ParseBenchmark PRIVATE MasketJSON)
@@ -20,6 +21,9 @@ endif()
 
 if(MASKETJSON_BUILD_RESERVATION_MATRIX)
     add_subdirectory(reservation)
+endif()
+if(MASKETJSON_BUILD_AUTO_EXPERIMENT)
+    add_subdirectory(auto)
 endif()
 if(WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET ParseBenchmark POST_BUILD COMMAND "${CMAKE_COMMAND}" -E

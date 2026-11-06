@@ -1,0 +1,28 @@
+{
+  "base_revision": "b94639e6a70ae467db7ae095daca1bc3a4d231e3",
+  "scope": "Private experimental controllers only; no public Auto preset.",
+  "goals": {
+    "speed": {"minimum_growth": "1/2", "warming_max_request": "4*n+258", "mature_max_request": "16*n+258", "copy_pressure_ratio": 2, "prediction_margin": 0.0625},
+    "memory": {"minimum_growth": "1/4; 1/2 under copy pressure", "max_request": "2*n+258", "copy_pressure_ratio": 3, "prediction_margin": 0}
+  },
+  "observations": "Only at buffer expansion; compare recent checkpoint density with previous and global density. Existing reservations cannot be undone.",
+  "maturity": "n>=1024, consumed bytes>=4096, two stable checkpoints (ratio 0.5..2), or one stable checkpoint under copy pressure.",
+  "density_change": "Drop below 0.25 or rise above 4 times previous checkpoint density; rescale future reservations, never restart parsing.",
+  "endpoint": "When consumed bytes equal input length, reserve only pending token and necessary EOF; geometric floor is unnecessary there.",
+  "structural_checks": {
+    "speed_relocated_tokens": "<=5*final_token_count+4096",
+    "memory_relocated_tokens": "<=8*final_token_count+4096",
+    "journal": "Fixed 512-entry stack buffer in separate trace builds; require zero dropped decisions.",
+    "semantics": "Compare full token fields, canonical values and diagnostics with both production fixed modes."
+  },
+  "development_inputs": 59,
+  "holdout_inputs": 16,
+  "holdout_seed": 20261107,
+  "freeze": "Freeze controller, plan and measured binaries before generating the full holdout; do not retune using held-out results.",
+  "empirical_promotion_targets": {
+    "non_tiny": "Inputs with production Balanced median parse time >=1 ms; report all inputs regardless.",
+    "speed": "Worst median time/oracle(min fixed times) <=1.5 on non-tiny inputs.",
+    "memory": "Worst median time/Balanced <=2 and peak/oracle(min fixed peaks) <=1.5 on non-tiny inputs.",
+    "meaning": "Experimental acceptance targets on this machine; not latency or allocator guarantees. Public promotion is a separate decision."
+  }
+}

@@ -5,7 +5,10 @@ This is a design note supported by the [reservation matrix](../benchmarks/result
 implemented; see the [LowMemory experiment and evaluation](../benchmarks/results/low-memory.md).
 Balanced remains the default. Json layout is unchanged, and experimental allocation
 hooks remain isolated from production. Throughput, Auto and root-level ParseStats
-are future proposals.
+are future proposals. Private Auto controllers and decision journals are now
+available in the optional [Auto experiment](../benchmarks/results/auto-reservation.md).
+Its speed goal passes the stated time targets locally, but it can use much more
+memory; the memory goal fails a development-set peak target. Neither is a public preset.
 
 ## Evidence to collect
 

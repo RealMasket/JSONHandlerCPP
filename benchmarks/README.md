@@ -259,6 +259,56 @@ timing builds (pre-API control, Balanced, LowMemory) across three rounds.
 CI exercises both public modes and held-out structures; the fuzzer compares their
 acceptance, diagnostic locations/messages, numeric kinds and round trips.
 
+## Experimental Auto controller
+
+`MASKETJSON_BUILD_AUTO_EXPERIMENT=ON` builds private controllers for an explicit
+speed or memory goal, plus decision journals and exact comparators. It requires
+Python 3 and a static library. Production `ParseOptions` and defaults are unchanged.
+See [the full report](results/auto-reservation.md) for worst-case regret and
+failed promotion targets, as well as average observations.
+
+```powershell
+cmake -S . -B build-auto -DBUILD_SHARED_LIBS=OFF -DMASKETJSON_BUILD_BENCHMARKS=ON -DMASKETJSON_BUILD_PROFILER=ON -DMASKETJSON_BUILD_AUTO_EXPERIMENT=ON
+cmake --build build-auto --config Release --parallel 2
+ctest --test-dir build-auto -C Release -R Auto --output-on-failure
+.\build-auto\benchmarks\auto\Release\AutoTrace-speed.exe input.json > decisions.csv
+.\build-auto\benchmarks\auto\Release\AutoTrace-memory.exe input.json > memory-decisions.csv
+```
+
+Single-configuration generators need `-DCMAKE_BUILD_TYPE=Release` and paths without
+`Release`. Timing tools have no journal hooks; trace tools use a fixed stack buffer.
+Heap profiles are separate, unsanitized executables. With sanitizers enabled, omit
+the profiler option; exact comparators, traces and corpus checks remain available.
+
+Generate the known development split into one directory using ParseBenchmark
+`--generate`, `--generate-profile DIR 256`, `reservation/generate_inputs.py DIR`
+and `reservation/generate_holdout.py DIR` (the previous 12 cases). Then:
+
+```powershell
+python benchmarks/auto/run_auto.py --bin build-auto/benchmarks/auto/Release --inputs development-inputs --output development-results --stage development
+python benchmarks/auto/freeze.py development-results freeze.json
+python benchmarks/auto/generate_holdout.py new-evaluation-inputs
+python benchmarks/auto/run_auto.py --bin build-auto/benchmarks/auto/Release --inputs new-evaluation-inputs --output holdout-results --stage holdout --freeze freeze.json
+```
+
+Use fresh result directories. Keep the machine idle and do not rebuild while
+measuring. The runner pins CPU affinity and rotates four policies across four
+rounds (5 samples × 3 operations by default), checks exact results against both
+fixed production modes, validates journal bounds and matches copy counts with
+separate profiles. Freeze verifies unchanged controller sources and executable
+hashes before full held-out evaluation; do not retune using that split.
+
+The pre-recorded `auto/plan.json` sets separate speed/memory targets. The journal
+explains warming, stable density, density changes, copy pressure and exact EOF
+reservations. `clamped`/`floored` describe the prediction relative to the ordinary
+window; EOF intentionally bypasses its geometric floor. A parser error can follow
+a completed lexer journal. Traces include invalid-input status and error fingerprints.
+
+With Linux Clang sanitizers and `MASKETJSON_BUILD_FUZZERS=ON`, optional
+`AutoFuzz-speed`/`AutoFuzz-memory` targets compare full token fields, values, numeric
+representation and error diagnostics to production with coverage instrumentation.
+Neither goal is a public preset or a promise of a hard time/whole-memory limit.
+
 ## References
 
 - [Boost.JSON 1.88 documentation](https://www.boost.org/doc/libs/1_88_0/libs/json/doc/html/index.html)

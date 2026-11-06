@@ -4,6 +4,13 @@
 
 ### Planned for 1.1.0
 
+- Add private experimental Auto reservation controllers with explicit speed/memory
+  goals, checkpoint density/stability, bounded speculative growth, copy-pressure
+  handling, fixed-size decision journals and exact EOF reservation. Preserve
+  public presets/defaults; record failed targets and worst-case regret.
+- Evaluate on 59 known and 16 newly generated held-out documents with frozen
+  policy/binary hashes. Check exact token/value/diagnostic agreement with both
+  production modes; add Windows/Linux, sanitizer, corpus and Auto fuzz coverage.
 - Add `ParseOptions` with `Balanced` and opt-in `LowMemory` presets to parser and
   lexer overloads. Bound speculative LowMemory token growth without changing the
   existing default, Json layout, numeric rules, diagnostics or depth limit.

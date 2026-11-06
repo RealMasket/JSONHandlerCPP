@@ -205,6 +205,29 @@ if(BUILD_TESTING)
             -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/CliIntegration.cmake")
     endif()
     if(MASKETJSON_BUILD_BENCHMARKS)
+        if(MASKETJSON_BUILD_AUTO_EXPERIMENT)
+            find_package(Python3 REQUIRED COMPONENTS Interpreter)
+            set(auto_profile_arg)
+            if(TARGET AutoProfile-speed)
+                set(auto_profile_arg --profiles)
+            endif()
+            add_test(NAME Benchmark.AutoExperiment COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/auto/check_auto.py"
+                --bin "$<TARGET_FILE_DIR:AutoVerify-speed>"
+                --reference-bin "$<TARGET_FILE_DIR:ParseBenchmark>"
+                --output "${CMAKE_CURRENT_BINARY_DIR}/auto-smoke" ${auto_profile_arg})
+            set_tests_properties(Benchmark.AutoExperiment PROPERTIES TIMEOUT 180)
+            foreach(goal speed memory)
+                add_test(NAME Auto.Corpus-${goal} COMMAND AutoReplay-${goal}
+                    --mutations 2000 --seed 20261107
+                    --artifacts "${CMAKE_CURRENT_BINARY_DIR}/auto-${goal}-artifacts"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/corpus")
+                add_test(NAME Auto.Regressions-${goal} COMMAND AutoReplay-${goal} --require-valid
+                    --artifacts "${CMAKE_CURRENT_BINARY_DIR}/auto-${goal}-regressions"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/regressions")
+                set_tests_properties(Auto.Corpus-${goal} Auto.Regressions-${goal} PROPERTIES TIMEOUT 60)
+            endforeach()
+        endif()
         if(MASKETJSON_BUILD_RESERVATION_MATRIX)
             find_package(Python3 REQUIRED COMPONENTS Interpreter)
             add_test(NAME Benchmark.ReservationMatrix COMMAND "${Python3_EXECUTABLE}"

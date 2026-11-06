@@ -1,0 +1,41 @@
+{
+  "frozen_utc": "2026-11-06T17:20:07.091181+00:00",
+  "development_metadata_sha256": "f25b5b242f7cad9c8b35db1a1edfe2e21032641c79e25c9596e1644d5b916c31",
+  "policy_sources": [
+    {
+      "file": "benchmarks/auto/AutoReservation.hpp",
+      "sha256": "78854425cde2eb1e90d5f31b23bb47e34e1d09c1f8cdb91ed5e01774dab938c7"
+    },
+    {
+      "file": "benchmarks/auto/generate_lexer.py",
+      "sha256": "cf8f6eb8f92aa173586367207ca874ccd2116b9a00b4db6d80fa74f2aa1351b2"
+    },
+    {
+      "file": "benchmarks/auto/generate_holdout.py",
+      "sha256": "7da940e200c94a7a70d66b79f813faaea86bf64b5e1f50d12e5df3d81068e2bb"
+    },
+    {
+      "file": "benchmarks/auto/plan.json",
+      "sha256": "1a10506e39ef7460a6b1aca29bb3f944e1b9c43c6858d65d6993d89ef806b8ea"
+    }
+  ],
+  "binaries": {
+    "AutoInspect-balanced.exe": "8a63c4f7ecddaf13193949f5bc2749158ff978d270f7e8b0a17d994a28fa1d1c",
+    "AutoInspect-low-memory.exe": "86da1052159e567af96467539511ee3708057fbe92991b9031f6b544352faba9",
+    "AutoInspect-memory.exe": "321c83f7cc6569cb8b2e2343ccc625d7dfaca5129e89bd073aa1e5445ca075a4",
+    "AutoInspect-speed.exe": "70584fb729a5125e15652b8bddb228cafdbbe6901fa05362c219291bb70000d0",
+    "AutoProfile-balanced.exe": "e9187e4f2060ef6da8aa3bb75033aff9e49cefc93abceb9a2e9007eb3e643761",
+    "AutoProfile-low-memory.exe": "a93826653a82bfe04f873338c850ed28e2012ef6fb4a52f1dc98d54bac136976",
+    "AutoProfile-memory.exe": "c0ecadf605920b0459b91d90eae83f0394cf9c54671914c154d538e8531e219e",
+    "AutoProfile-speed.exe": "ab49f8d93e2abbd9e6faaede97cb59760a3619942701a826645697f41cf8c2e0",
+    "AutoTime-balanced.exe": "47733af643c100541b445df179ad9517cf71b853e42dd8b403e0403d41487ca6",
+    "AutoTime-low-memory.exe": "4ecce19f96882c75997c9c428b22aa30414cdb77832c4dec050516724938d107",
+    "AutoTime-memory.exe": "0e4c159cf59541343b601fd91d08e15b90137ba90f6e761e4bd37835d3be85d6",
+    "AutoTime-speed.exe": "85e24acbe020053face3829f3d69c4490b5dc7a0dd9ef35f6164873df67062da",
+    "AutoTrace-memory.exe": "2a5ed0cdfee7866154386f9b769cc0e59269067ae5d97900555fbc4f38c93390",
+    "AutoTrace-speed.exe": "c5e09f8fc1ccf06e0b6ef8a42914b6069e3bbb5202902c1a88d0f1c36c941e31",
+    "AutoVerify-memory.exe": "2dc8b4bceaf2804e2bc96ab4521e45ea710a09fed7f7739a2224c232f6e23bd9",
+    "AutoVerify-speed.exe": "6599d70d2be3b61989b228b6b0d2dea73d5ff9ca9c681afd4266320fabcebdc0"
+  },
+  "decision": "Freeze this experimental controller without held-out retuning; assess promotion targets after evaluation."
+}

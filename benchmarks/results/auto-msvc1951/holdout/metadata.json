@@ -1,0 +1,271 @@
+{
+  "base_revision": "b94639e6a70ae467db7ae095daca1bc3a4d231e3",
+  "stage": "holdout",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-12600KF",
+  "os": "Windows-10-10.0.19045-SP0",
+  "logical_cpu": 0,
+  "rounds": 4,
+  "samples": 5,
+  "iterations": 3,
+  "policies": [
+    "balanced",
+    "speed",
+    "low-memory",
+    "memory"
+  ],
+  "round_order": [
+    [
+      "balanced",
+      "speed",
+      "low-memory",
+      "memory"
+    ],
+    [
+      "speed",
+      "low-memory",
+      "memory",
+      "balanced"
+    ],
+    [
+      "low-memory",
+      "memory",
+      "balanced",
+      "speed"
+    ],
+    [
+      "memory",
+      "balanced",
+      "speed",
+      "low-memory"
+    ]
+  ],
+  "build_info": "compiler=MSVC\ncompiler_version=19.51.36257.0\nconfiguration=Release\ncxx_standard=17\nflags=/DWIN32 /D_WINDOWS /EHsc\nconfig_flags=/O2 /Ob2 /DNDEBUG\nlto=\n",
+  "freeze_sha256": "a285ba8e56d4f382482716c0aca8cd3d3142d9a40de192a491e6a9d7d9598b69",
+  "inputs": [
+    {
+      "name": "auto-held-bursts-2053.json",
+      "bytes": 1517861,
+      "sha256": "a0759e149f37b111e1ec88c9d82a25b46911bfb4cffcbe9e39e50f468ec80aa7"
+    },
+    {
+      "name": "auto-held-bursts-73.json",
+      "bytes": 62423,
+      "sha256": "9cc4ffe326b14776ae735460a32f74f89bd838cf6262f024b5499047cde49fbf"
+    },
+    {
+      "name": "auto-held-inner-padding-2053.json",
+      "bytes": 1108621,
+      "sha256": "f7ed8fa0a3e8270f90fa3313607294d480caf257cc22d3c9f5c559ad0de6df61"
+    },
+    {
+      "name": "auto-held-inner-padding-73.json",
+      "bytes": 39421,
+      "sha256": "f54eac0a5f26dc53cf6e3572781046efe21094b7f98b5575baea6334f6cc47e8"
+    },
+    {
+      "name": "auto-held-late-padding-2053.json",
+      "bytes": 3182151,
+      "sha256": "5c7c3b01a70306920c682af5f19e82fb80d5d1817a26d9ce1ab31c2f120bc7ff"
+    },
+    {
+      "name": "auto-held-late-padding-73.json",
+      "bytes": 113151,
+      "sha256": "2ad550db90c0ae03d8e317e999ccf6dcc5f637fa7ca4bcd8458422865c7b2603"
+    },
+    {
+      "name": "auto-held-long-keys-2053.json",
+      "bytes": 673143,
+      "sha256": "150735ee7b9f08815d05d98436e9ceb98a9821e482792da2d77e059f26f16bd1"
+    },
+    {
+      "name": "auto-held-long-keys-73.json",
+      "bytes": 25383,
+      "sha256": "32df81cad6839c7d19ce91a90f3a8db44b89be95996fee1d76335b14cd407dcf"
+    },
+    {
+      "name": "auto-held-phases-2053.json",
+      "bytes": 9511553,
+      "sha256": "37e32e45a99772ef87349ec9d72afd91cc8a8fdffdb85d3257ee3265440568d7"
+    },
+    {
+      "name": "auto-held-phases-73.json",
+      "bytes": 338213,
+      "sha256": "828fea86a2e52f9f77df52e2b2e7248a11621dc3909cc75f520a5edb0ee3a980"
+    },
+    {
+      "name": "auto-held-ragged-numbers-2053.json",
+      "bytes": 408038,
+      "sha256": "736ef0283657cd5bb0507aa606a07211684ed70c8ce9e649a86aa441e5997b21"
+    },
+    {
+      "name": "auto-held-ragged-numbers-73.json",
+      "bytes": 14475,
+      "sha256": "0d27d5c63b1ba0da4a2d9c3584161745b60cc9c60d8e76b05db112c9b83c6169"
+    },
+    {
+      "name": "auto-held-spiky-strings-2053.json",
+      "bytes": 9593364,
+      "sha256": "d26f4a3581ec18765efbdece4fe487dc3be2c82b677b8706cbbe4be478da1fdf"
+    },
+    {
+      "name": "auto-held-spiky-strings-73.json",
+      "bytes": 426224,
+      "sha256": "28b71fdacf806d7acd41a6c79c5dd2fd6b3681cb5b2563abf88dc286cbc308e4"
+    },
+    {
+      "name": "auto-held-zigzag-2053.json",
+      "bytes": 1052847,
+      "sha256": "0ecb7a3268393900ddc65d13f62789f5ca9a5d6760f84fc697a87f11eedbd5ce"
+    },
+    {
+      "name": "auto-held-zigzag-73.json",
+      "bytes": 39087,
+      "sha256": "7dba9a8b7e0745b7e8a81e912872177e026999ca0f3e755fbd013cd19b49bea2"
+    }
+  ],
+  "binaries": {
+    "AutoInspect-balanced.exe": "8a63c4f7ecddaf13193949f5bc2749158ff978d270f7e8b0a17d994a28fa1d1c",
+    "AutoInspect-low-memory.exe": "86da1052159e567af96467539511ee3708057fbe92991b9031f6b544352faba9",
+    "AutoInspect-memory.exe": "321c83f7cc6569cb8b2e2343ccc625d7dfaca5129e89bd073aa1e5445ca075a4",
+    "AutoInspect-speed.exe": "70584fb729a5125e15652b8bddb228cafdbbe6901fa05362c219291bb70000d0",
+    "AutoProfile-balanced.exe": "e9187e4f2060ef6da8aa3bb75033aff9e49cefc93abceb9a2e9007eb3e643761",
+    "AutoProfile-low-memory.exe": "a93826653a82bfe04f873338c850ed28e2012ef6fb4a52f1dc98d54bac136976",
+    "AutoProfile-memory.exe": "c0ecadf605920b0459b91d90eae83f0394cf9c54671914c154d538e8531e219e",
+    "AutoProfile-speed.exe": "ab49f8d93e2abbd9e6faaede97cb59760a3619942701a826645697f41cf8c2e0",
+    "AutoTime-balanced.exe": "47733af643c100541b445df179ad9517cf71b853e42dd8b403e0403d41487ca6",
+    "AutoTime-low-memory.exe": "4ecce19f96882c75997c9c428b22aa30414cdb77832c4dec050516724938d107",
+    "AutoTime-memory.exe": "0e4c159cf59541343b601fd91d08e15b90137ba90f6e761e4bd37835d3be85d6",
+    "AutoTime-speed.exe": "85e24acbe020053face3829f3d69c4490b5dc7a0dd9ef35f6164873df67062da",
+    "AutoTrace-memory.exe": "2a5ed0cdfee7866154386f9b769cc0e59269067ae5d97900555fbc4f38c93390",
+    "AutoTrace-speed.exe": "c5e09f8fc1ccf06e0b6ef8a42914b6069e3bbb5202902c1a88d0f1c36c941e31",
+    "AutoVerify-memory.exe": "2dc8b4bceaf2804e2bc96ab4521e45ea710a09fed7f7739a2224c232f6e23bd9",
+    "AutoVerify-speed.exe": "6599d70d2be3b61989b228b6b0d2dea73d5ff9ca9c681afd4266320fabcebdc0"
+  },
+  "source_hash_format": "UTF-8 without BOM, LF line endings",
+  "sources": [
+    {
+      "file": "benchmarks/auto/AutoReservation.hpp",
+      "sha256": "78854425cde2eb1e90d5f31b23bb47e34e1d09c1f8cdb91ed5e01774dab938c7"
+    },
+    {
+      "file": "benchmarks/auto/Baseline.cpp",
+      "sha256": "64328d7dcfa49e020d20ef9d163920e69fcfe0a8f8eef71176b9963e5c8b5fcc"
+    },
+    {
+      "file": "benchmarks/auto/check_auto.py",
+      "sha256": "4842a682d26093d0bb45a00e34c5368a0a2407981186aa12df630b020488c830"
+    },
+    {
+      "file": "benchmarks/auto/check_journal.py",
+      "sha256": "385e8c72498f3695bff7f96c68e5d980002e1bb6e6e7eb448b1ad5c1a3ee6afa"
+    },
+    {
+      "file": "benchmarks/auto/CMakeLists.txt",
+      "sha256": "a19698498c4defa32e386051e1921ecd8285263c83815efde56211d604eb9548"
+    },
+    {
+      "file": "benchmarks/auto/Compare.cpp",
+      "sha256": "5af3021e2fa4213324a24f50295511ad33cfea57b0053a4b904c30e3a7e2c474"
+    },
+    {
+      "file": "benchmarks/auto/Compare.hpp",
+      "sha256": "403470b1df25b446260b98d47b4e95c6607ebe0a9d77c1b3e233f31e4fb4ce92"
+    },
+    {
+      "file": "benchmarks/auto/freeze.py",
+      "sha256": "2d9ab75a7f5882f93593ee0ec13ca283467367b9037c091ef3b4a4c3e6173a0a"
+    },
+    {
+      "file": "benchmarks/auto/generate_holdout.py",
+      "sha256": "7da940e200c94a7a70d66b79f813faaea86bf64b5e1f50d12e5df3d81068e2bb"
+    },
+    {
+      "file": "benchmarks/auto/generate_lexer.py",
+      "sha256": "cf8f6eb8f92aa173586367207ca874ccd2116b9a00b4db6d80fa74f2aa1351b2"
+    },
+    {
+      "file": "benchmarks/auto/plan.json",
+      "sha256": "1a10506e39ef7460a6b1aca29bb3f944e1b9c43c6858d65d6993d89ef806b8ea"
+    },
+    {
+      "file": "benchmarks/auto/run_auto.py",
+      "sha256": "55cbdd2052fb7630a0b4e2f537ef4e4423a283cb88687a0bbd811b98f577add8"
+    },
+    {
+      "file": "benchmarks/auto/Trace.cpp",
+      "sha256": "90bc1b38f1332f98c3a03d520d8263eb169116ea3aeb5de03adc85681d040c50"
+    },
+    {
+      "file": "benchmarks/auto/Verify.cpp",
+      "sha256": "5fb355a3481f2a0d753acac40e4578cc07c0cde7e088a11ba8f3079858228a1f"
+    },
+    {
+      "file": "benchmarks/BenchmarkUtils.cpp",
+      "sha256": "db230a04070829d9140bb260761e3d78349371a3ebb65c00724695d458a9593a"
+    },
+    {
+      "file": "benchmarks/BenchmarkUtils.hpp",
+      "sha256": "c8d14e94b775950fb12445e01b0109014ca30cf109150d53f4181f4618530236"
+    },
+    {
+      "file": "benchmarks/CMakeLists.txt",
+      "sha256": "a03372e1cb8576b7c0a08f6f164c9134946b173f59df20f1a59177b3b9a66e18"
+    },
+    {
+      "file": "benchmarks/MemoryTracker.cpp",
+      "sha256": "1bfb5af48e0750f24d588369ac7f7237e4180b3b39f273cf281973d96472616f"
+    },
+    {
+      "file": "benchmarks/MemoryTracker.hpp",
+      "sha256": "9cefa14171a8ab2255524d5cf4e19783bce98f5afd03119e9828ad4bf8695ca3"
+    },
+    {
+      "file": "benchmarks/ParserProfile.cpp",
+      "sha256": "47d3d28a5949939200d2b7fd32938928ca5cf8092df3d6b382d8e51c409a30ab"
+    },
+    {
+      "file": "benchmarks/reservation/Data.hpp",
+      "sha256": "360acc67e010d2977700d076d07a14cec2d2b01d88fd3c0621e13ed1049c2760"
+    },
+    {
+      "file": "benchmarks/reservation/Inspect.cpp",
+      "sha256": "b5aaf0ac4dbfb99b8dd0f8d1b46e6603a6548cb256b2300a35919df83d8b69f6"
+    },
+    {
+      "file": "benchmarks/reservation/Timing.cpp",
+      "sha256": "cf7d639dce88ff03178b36aa3ae295c129b6ffe8f76e7dfff65cb37c77a0e7ef"
+    },
+    {
+      "file": "CMakeLists.txt",
+      "sha256": "b92d9fca425cd474eaa99112eee617207c709cbd260bed302bc3a89b517fe671"
+    },
+    {
+      "file": "parser/JsonLexer.cpp",
+      "sha256": "59bd2733d35caad5605be373587e3811b16cb16d734114f25a0ca577a0e435b2"
+    },
+    {
+      "file": "parser/JsonLexer.hpp",
+      "sha256": "e72da42f50f2379331c8b0185fb3ec40b3b1506865d228a942bb1bda46c2aba6"
+    },
+    {
+      "file": "parser/JsonParser.cpp",
+      "sha256": "ea66e451674ae6c43f46977ca51893cc51ad94acf65474acb798fd5f79454cdf"
+    },
+    {
+      "file": "parser/JsonParser.hpp",
+      "sha256": "e4cf15b8edde6feadff255a3a41d2cebd6c4769c557132d342a012130feeaef3"
+    },
+    {
+      "file": "parser/ParseOptions.hpp",
+      "sha256": "2402bd7a78efff045145211b9895eb877028b866da4d6d1d7470f706f8c09774"
+    },
+    {
+      "file": "parser/Token.hpp",
+      "sha256": "c8985f42148273ccdcd4010a1fd6d2c4688a6e56bd42799fbe95a229e5bf5534"
+    },
+    {
+      "file": "parser/TokenReservation.hpp",
+      "sha256": "9e2b511b0d9d8e748d8d2dd113ecdbed4f627625f3e8e75bedc531deb08a3a5a"
+    }
+  ]
+}
